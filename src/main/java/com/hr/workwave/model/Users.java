@@ -17,5 +17,8 @@ public class Users{
     private String department;
     private String role;
     private String created_at;
+//    private List<Managers> menagerList;
     private String last_login;
+    private String managerEmail;
+    private Boolean notifyManager;
 }
