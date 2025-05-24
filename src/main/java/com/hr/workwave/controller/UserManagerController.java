@@ -27,5 +27,5 @@ public class UserManagerController {
         userManagerService.addManagersToUser(userEmail, managerEmails);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
-
 }
+

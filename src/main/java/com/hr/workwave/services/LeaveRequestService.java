@@ -3,6 +3,7 @@ package com.hr.workwave.services;
 import lombok.RequiredArgsConstructor;
 import com.hr.workwave.model.LeaveRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import com.hr.workwave.repo.LeaveRequestRepository;
 
@@ -16,15 +17,37 @@ public class LeaveRequestService {
 
     @Autowired
     private LeaveRequestRepository leaveRequestRepository;
+    private EmailService emailService;
 
     public  List<LeaveRequest> getAllLeaveRequests() {
         return leaveRequestRepository.findAll();
     }
 
+//    public boolean deleteRequestById(Long id) {
+//        Optional<LeaveRequest> request = leaveRequestRepository.findById(id);
+//        if (request.isPresent()) {
+//            leaveRequestRepository.delete(request.get());
+//            return true;
+//        }
+//        return false;
+//    }
     public boolean deleteRequestById(Long id) {
-        Optional<LeaveRequest> request = leaveRequestRepository.findById(id);
-        if (request.isPresent()) {
-            leaveRequestRepository.delete(request.get());
+        Optional<LeaveRequest> requestOpt = leaveRequestRepository.findById(id);
+        if (requestOpt.isPresent()) {
+            LeaveRequest request = requestOpt.get();
+
+
+            String status = request.getStatus();
+            String userEmail = request.getEmployee_email();
+
+
+            leaveRequestRepository.delete(request);
+
+
+            if ("approved".equalsIgnoreCase(status)) {
+                emailService.sendEmail(userEmail, "Your approved leave request has been deleted.");
+            }
+
             return true;
         }
         return false;

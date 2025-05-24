@@ -21,5 +21,5 @@ public class LeaveRequest {
     private String end_date;
     private String reason;
     private String status;
-
+    private String employee_email;
 }

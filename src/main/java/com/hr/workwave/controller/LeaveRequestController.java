@@ -22,11 +22,14 @@ public class LeaveRequestController {
     public List<LeaveRequest> getAllLeaveRequests() {
         return leaveRequestService.getAllLeaveRequests();
     }
-    @DeleteMapping("/delete/{id}")
+
+    @DeleteMapping("/request/delete/{id}")
     public ResponseEntity<Void> deleteRequestById(@PathVariable Long id) {
-        if (leaveRequestService.deleteRequestById(id)) {
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        boolean deleted = leaveRequestService.deleteRequestById(id);
+        if (deleted) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 }

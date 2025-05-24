@@ -24,4 +24,3 @@ public class UserManagerService {
         return userManagerRepository.findByUserEmail(userEmail);
     }
 }
-
