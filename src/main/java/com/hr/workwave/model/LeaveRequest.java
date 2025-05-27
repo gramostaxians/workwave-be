@@ -15,6 +15,11 @@ public class LeaveRequest {
 
     @Id
     private Long id;
-    private String name;
-
+    private String employee_Id;
+    private String leave_type;
+    private String start_date;
+    private String end_date;
+    private String reason;
+    private String status;
+    private String employee_email;
 }

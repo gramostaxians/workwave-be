@@ -4,9 +4,9 @@ import com.hr.workwave.model.LeaveRequest;
 import com.hr.workwave.services.LeaveRequestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -18,8 +18,18 @@ public class LeaveRequestController {
     @Autowired
     private LeaveRequestService leaveRequestService;
 
-    @GetMapping("/users")
+    @GetMapping("/request")
     public List<LeaveRequest> getAllLeaveRequests() {
         return leaveRequestService.getAllLeaveRequests();
+    }
+
+    @DeleteMapping("/request/delete/{id}")
+    public ResponseEntity<Void> deleteRequestById(@PathVariable Long id) {
+        boolean deleted = leaveRequestService.deleteRequestById(id);
+        if (deleted) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 }
