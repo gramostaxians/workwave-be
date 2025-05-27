@@ -12,40 +12,36 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-
 public class LeaveRequestService {
 
-    @Autowired
-    private LeaveRequestRepository leaveRequestRepository;
-    private EmailService emailService;
+    private final LeaveRequestRepository leaveRequestRepository;
+    private final EmailService emailService;
 
-    public  List<LeaveRequest> getAllLeaveRequests() {
+    public List<LeaveRequest> getAllLeaveRequests() {
         return leaveRequestRepository.findAll();
     }
 
-//    public boolean deleteRequestById(Long id) {
-//        Optional<LeaveRequest> request = leaveRequestRepository.findById(id);
-//        if (request.isPresent()) {
-//            leaveRequestRepository.delete(request.get());
-//            return true;
-//        }
-//        return false;
-//    }
+
     public boolean deleteRequestById(Long id) {
         Optional<LeaveRequest> requestOpt = leaveRequestRepository.findById(id);
         if (requestOpt.isPresent()) {
             LeaveRequest request = requestOpt.get();
 
-
             String status = request.getStatus();
             String userEmail = request.getEmployee_email();
 
+            System.out.println("Deleting leave request with status: " + status);
 
             leaveRequestRepository.delete(request);
 
-
             if ("approved".equalsIgnoreCase(status)) {
-                emailService.sendEmail(userEmail, "Your approved leave request has been deleted.");
+                emailService.sendEmail(
+                        userEmail,
+                        "Your approved leave request has been deleted.",
+                        "Has canceled the leave request."
+                );
+
+                System.out.println("Leave request approved, cancelled by user");
             }
 
             return true;
