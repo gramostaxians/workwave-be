@@ -1,6 +1,5 @@
 package com.hr.workwave.services;
 
-
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -38,22 +37,3 @@ public class EmailService {
         }
     }
 }
-
-//    public void sendEmail(String to, String body) {
-//
-//        System.out.println("Sending email to " + to + " with body: " + body);
-//    }
-//
-////    @Value("${workwave.service.mail.enabled}")
-////    private boolean mailServiceEnabled;
-////
-////    public EmailService() {
-//
-//        //if(mailServiceEnabled)
-//        //insertTable
-//
-////        else{
-////            // send.email(body,to,subject);
-////        }
-//    }
-//

@@ -1,8 +1,6 @@
 package com.hr.workwave.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,5 +19,7 @@ public class LeaveRequest {
     private String end_date;
     private String reason;
     private String status;
+
+    @Column(name = "employee_email")
     private String employee_email;
 }

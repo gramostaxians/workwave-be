@@ -19,6 +19,9 @@ public class LeaveRequestService {
         return leaveRequestRepository.findAll();
     }
 
+    public List<LeaveRequest> getLeaveRequestsByEmail(String email) {
+        return leaveRequestRepository.getLeaveRequestsByEmail(email);
+    }
 
     public boolean deleteRequestById(Long id) {
         Optional<LeaveRequest> requestOpt = leaveRequestRepository.findById(id);

@@ -12,17 +12,15 @@ import lombok.Setter;
 @Setter
 
 @Entity
-@Table(name = "user_managers")
+
 public class UserManagers {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "manager_email")
     private String managerEmail;
 
-    @Column(name = "user_email")
     private String userEmail;
 
     public UserManagers(String managerEmail, String userEmail) {
