@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigInteger;
 import java.util.List;
 
 @RestController
@@ -16,15 +17,15 @@ public class UserManagerController {
 
     private final UserManagerService userManagerService;
 
-    @GetMapping("/{userEmail}/managers")
-    public ResponseEntity<List<UserManagers>> getManagersForUser(@PathVariable String userEmail) {
-        List<UserManagers> managers = userManagerService.getManagersForUser(userEmail);
+    @GetMapping("/{userId}/managers")
+    public ResponseEntity<List<UserManagers>> getManagersForUser(@PathVariable BigInteger userId) {
+        List<UserManagers> managers = userManagerService.getManagersForUser(userId);
         return ResponseEntity.ok(managers);
     }
 
-    @PostMapping("/{userEmail}/managers")
-    public ResponseEntity<Void> addManagersToUser(@PathVariable String userEmail, @RequestBody List<String> managerEmails) {
-        userManagerService.addManagersToUser(userEmail, managerEmails);
+    @PostMapping("/{userId}/managers")
+    public ResponseEntity<Void> addManagersToUser(@PathVariable BigInteger userId, @RequestBody List<BigInteger> managerIds) {
+        userManagerService.addManagersToUser(userId, managerIds);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }

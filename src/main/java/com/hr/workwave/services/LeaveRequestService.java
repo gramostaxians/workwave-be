@@ -5,6 +5,7 @@ import com.hr.workwave.model.LeaveRequest;
 import org.springframework.stereotype.Service;
 import com.hr.workwave.repo.LeaveRequestRepository;
 
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,9 +20,10 @@ public class LeaveRequestService {
         return leaveRequestRepository.findAll();
     }
 
-    public List<LeaveRequest> getLeaveRequestsByEmail(String email) {
-        return leaveRequestRepository.getLeaveRequestsByEmail(email);
+    public List<LeaveRequest> getLeaveRequestsById(BigInteger userId) {
+        return leaveRequestRepository.getLeaveRequestsById(userId);
     }
+
 
     public boolean deleteRequestById(Long id) {
         Optional<LeaveRequest> requestOpt = leaveRequestRepository.findById(id);

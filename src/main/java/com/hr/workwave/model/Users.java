@@ -1,11 +1,10 @@
 package com.hr.workwave.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigInteger;
 import java.util.List;
 
 @Getter
@@ -13,6 +12,9 @@ import java.util.List;
 @Entity
 public class Users{
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    BigInteger id;
+
     @Column(unique=true)
     private String email;
     private String name;

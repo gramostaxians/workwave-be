@@ -1,0 +1,80 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd">
+
+    <changeSet id="003-add-id-primary-key-users-table-drop-foreign-key" author="ERVIN">
+        <preConditions onFail="MARK_RAN">
+            <foreignKeyConstraintExists foreignKeyName="fk_employee_email" />
+        </preConditions>
+        <dropForeignKeyConstraint baseTableName="leave_requests" constraintName="fk_employee_email"/>
+    </changeSet>
+
+<!--    <changeSet id="drop-fk-manager-email" author="ERVIN">-->
+<!--        <preConditions onFail="MARK_RAN">-->
+<!--            <foreignKeyConstraintExists foreignKeyName="fk_manager_email" />-->
+<!--        </preConditions>-->
+<!--        <dropForeignKeyConstraint baseTableName="users" constraintName="fk_manager_email"/>-->
+<!--    </changeSet>-->
+
+<!--    <changeSet id="drop-fk-ms-graph-tokens" author="ERVIN">-->
+<!--        <preConditions onFail="MARK_RAN">-->
+<!--            <foreignKeyConstraintExists foreignKeyName="ms_graph_tokens_user_email_fkey" />-->
+<!--        </preConditions>-->
+<!--        <dropForeignKeyConstraint baseTableName="ms_graph_tokens" constraintName="ms_graph_tokens_user_email_fkey"/>-->
+<!--    </changeSet>-->
+
+
+    <changeSet id="003-add-id-primary-key-users-table-drop-users-primary-key" author="ERVIN">
+        <preConditions onFail="MARK_RAN">
+            <primaryKeyExists tableName="users" primaryKeyName="users_pkey"/>
+        </preConditions>
+        <dropPrimaryKey tableName="users" constraintName="users_pkey"/>
+        <addPrimaryKey columnNames="id" constraintName="users_pkey" tableName="users"/>
+    </changeSet>
+
+    <changeSet id="003-add-id-primary-key-users-table-create-id-users-table" author="ERVIN">
+        <addColumn tableName="users">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="003-add-id-primary-key-users-table-add-column-id-foreign-tables" author="ERVIN">
+        <addColumn tableName="leave_requests">
+            <column name="user_id" type="bigint" />
+        </addColumn>
+        <addColumn tableName="ms_graph_tokens">
+            <column name="user_id" type="bigint" />
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="003-add-id-primary-key-users-table-add-id-values-foreign-tables" author="ERVIN" runAlways="true">
+        <sql>
+            UPDATE leave_requests lr
+            SET user_id = u.id
+                FROM users u
+            WHERE lr.employee_email = u.email;
+
+            UPDATE ms_graph_tokens mgt
+            SET user_id = u.id
+                FROM users u
+            WHERE mgt.user_email = u.email;
+        </sql>
+    </changeSet>
+
+
+    <changeSet id="5" author="ervin">
+        <addForeignKeyConstraint baseTableName="leave_requests" baseColumnNames="user_id"
+                                 referencedTableName="users" referencedColumnNames="id"
+                                 constraintName="fk_leave_requests_user_id"/>
+
+        <addForeignKeyConstraint baseTableName="ms_graph_tokens" baseColumnNames="user_id"
+                                 referencedTableName="users" referencedColumnNames="id"
+                                 constraintName="fk_ms_graph_tokens_user_id"/>
+    </changeSet>
+
+</databaseChangeLog>

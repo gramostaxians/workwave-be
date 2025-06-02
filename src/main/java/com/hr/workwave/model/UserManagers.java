@@ -6,25 +6,29 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigInteger;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-
 @Entity
-
 public class UserManagers {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String managerEmail;
 
-    private String userEmail;
+    private BigInteger managerId;
 
-    public UserManagers(String managerEmail, String userEmail) {
-        this.managerEmail = managerEmail;
-        this.userEmail = userEmail;
+
+    private BigInteger userId;
+
+    public UserManagers(BigInteger userId, BigInteger managerId) {
+        this.userId = userId;
+        this.managerId = managerId;
     }
+
+
 }

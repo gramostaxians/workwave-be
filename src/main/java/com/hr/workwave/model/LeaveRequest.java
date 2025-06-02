@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.math.BigDecimal;
+
 @Data
 @Entity
 @Table(name = "leave_requests")
@@ -22,4 +24,7 @@ public class LeaveRequest {
 
     @Column(name = "employee_email")
     private String employee_email;
+
+    private BigDecimal user_id;
+
 }

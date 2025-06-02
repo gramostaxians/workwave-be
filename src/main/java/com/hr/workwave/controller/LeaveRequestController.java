@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigInteger;
 import java.util.List;
 
 @RestController
@@ -21,11 +22,10 @@ public class LeaveRequestController {
         return leaveRequestService.getAllLeaveRequests();
     }
 
-    @GetMapping("/employee/{email}/leave-request")
-    public List<LeaveRequest> getLeaveRequestsByEmail(@PathVariable String email) {
-        return leaveRequestService.getLeaveRequestsByEmail(email);
+    @GetMapping("/employee/{userId}/leave-request")
+    public List<LeaveRequest> getLeaveRequestsById(@PathVariable BigInteger userId) {
+        return leaveRequestService.getLeaveRequestsById(userId);
     }
-
 
     @DeleteMapping("/leave-request/{id}/delete")
     public ResponseEntity<Void> deleteRequestById(@PathVariable Long id) {
