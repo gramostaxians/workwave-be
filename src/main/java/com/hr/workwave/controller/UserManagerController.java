@@ -32,4 +32,3 @@ public class UserManagerController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }
-

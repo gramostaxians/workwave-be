@@ -24,6 +24,9 @@ public class LeaveRequestService {
         return leaveRequestRepository.getLeaveRequestsById(userId);
     }
 
+    public List<LeaveRequest> getLeaveRequestsByStatus(String status) {
+        return leaveRequestRepository.findByStatus(status);
+    }
 
     public boolean deleteRequestById(Long id) {
         Optional<LeaveRequest> requestOpt = leaveRequestRepository.findById(id);

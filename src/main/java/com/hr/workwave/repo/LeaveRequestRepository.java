@@ -14,6 +14,8 @@ import java.util.Optional;
 public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long> {
     Optional<LeaveRequest> findById(Long id);
 
+    List<LeaveRequest> findByStatus(String status);
+
     @Query("SELECT lr FROM LeaveRequest lr WHERE lr.user_id = :userId")
     List<LeaveRequest> getLeaveRequestsById(@Param("userId") BigInteger Id);
 }

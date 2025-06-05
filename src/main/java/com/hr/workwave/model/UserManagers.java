@@ -22,13 +22,10 @@ public class UserManagers {
 
     private BigInteger managerId;
 
-
     private BigInteger userId;
 
     public UserManagers(BigInteger userId, BigInteger managerId) {
         this.userId = userId;
         this.managerId = managerId;
     }
-
-
 }

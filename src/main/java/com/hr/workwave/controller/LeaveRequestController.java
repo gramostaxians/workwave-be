@@ -22,6 +22,15 @@ public class LeaveRequestController {
         return leaveRequestService.getAllLeaveRequests();
     }
 
+    @GetMapping(value ="/leave-request",params = "status")
+    public List<LeaveRequest> getOrdersByStatus(@RequestParam(required = false) String status) {
+        if (status != null) {
+            return leaveRequestService.getLeaveRequestsByStatus(status);
+        } else {
+            return leaveRequestService.getAllLeaveRequests();
+        }
+    }
+
     @GetMapping("/employee/{userId}/leave-request")
     public List<LeaveRequest> getLeaveRequestsById(@PathVariable BigInteger userId) {
         return leaveRequestService.getLeaveRequestsById(userId);
