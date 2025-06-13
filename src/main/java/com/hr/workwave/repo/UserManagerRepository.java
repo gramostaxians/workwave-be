@@ -8,7 +8,6 @@ import java.util.List;
 
 public interface UserManagerRepository extends JpaRepository<UserManagers, BigInteger>{
 
-
     List<UserManagers> findByUserId(BigInteger userId);
 
 }

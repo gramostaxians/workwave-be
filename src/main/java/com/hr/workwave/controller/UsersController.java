@@ -1,7 +1,7 @@
 package com.hr.workwave.controller;
 
 import com.hr.workwave.dto.UserWithManagersDTO;
-import com.hr.workwave.model.Users;
+import com.hr.workwave.model.User;
 import com.hr.workwave.services.UsersService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +19,7 @@ public class UsersController {
     private final UsersService usersService;
 
     @GetMapping("/users")
-    public List<Users> getAllUser() {
+    public List<User> getAllUser() {
         return usersService.getAllUsers();
     }
 

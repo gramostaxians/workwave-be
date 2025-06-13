@@ -3,7 +3,7 @@ package com.hr.workwave.services;
 import com.hr.workwave.dto.ManagerDTO;
 import com.hr.workwave.dto.UserWithManagersDTO;
 import com.hr.workwave.model.UserManagers;
-import com.hr.workwave.model.Users;
+import com.hr.workwave.model.User;
 import com.hr.workwave.repo.UserManagerRepository;
 import com.hr.workwave.repo.UsersRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,16 +20,16 @@ public class UsersService {
     private final UsersRepository usersRepository;
     private final UserManagerRepository userManagerRepository;
 
-    public List<Users> getAllUsers() {
+    public List<User> getAllUsers() {
         return usersRepository.findAll();
     }
 
     public List<UserWithManagersDTO> getAllUsersWithManagers() {
-        List<Users> users = usersRepository.findAll();
+        List<User> users = usersRepository.findAll();
 
         List<UserWithManagersDTO> result = new ArrayList<>();
 
-        for (Users user : users) {
+        for (User user : users) {
 
             BigInteger userId = user.getId();
             List<UserManagers> links = userManagerRepository.findByUserId(userId);
@@ -38,7 +38,7 @@ public class UsersService {
                     .map(link -> {
                         // link.getManagerId()
                         String managerIdStr = link.getManagerId().toString();
-                        return usersRepository.findById(managerIdStr).orElse(null);
+                        return usersRepository.findById(link.getManagerId().longValue()).orElse(null);
                     })
                     .filter(Objects::nonNull)
                     .map(manager -> new ManagerDTO(

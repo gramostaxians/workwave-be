@@ -1,5 +1,7 @@
 package com.hr.workwave.controller;
 
+import com.hr.workwave.dto.LeaveRequestApprovalSummaryDTO;
+import com.hr.workwave.enums.LeaveRequestStatusEnum;
 import com.hr.workwave.model.LeaveRequest;
 import com.hr.workwave.services.LeaveRequestService;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +25,8 @@ public class LeaveRequestController {
     }
 
     @GetMapping(value ="/leave-request",params = "status")
-    public List<LeaveRequest> getOrdersByStatus(@RequestParam(required = false) String status) {
+    public List<LeaveRequest> getOrdersByStatus(@RequestParam(required = false) LeaveRequestStatusEnum status) {
+        System.out.println("1"+status.getValue());
         if (status != null) {
             return leaveRequestService.getLeaveRequestsByStatus(status);
         } else {
@@ -36,6 +39,12 @@ public class LeaveRequestController {
         return leaveRequestService.getLeaveRequestsById(userId);
     }
 
+    @GetMapping("/leave-requests/{id}/with-approvals")
+    public ResponseEntity<LeaveRequestApprovalSummaryDTO> getLeaveRequestWithApprovals(@PathVariable("id") Long id) {
+        LeaveRequestApprovalSummaryDTO dto = leaveRequestService.getLeaveRequestWithApprovals(id);
+        return ResponseEntity.ok(dto);
+    }
+
     @DeleteMapping("/leave-request/{id}/delete")
     public ResponseEntity<Void> deleteRequestById(@PathVariable Long id) {
         boolean deleted = leaveRequestService.deleteRequestById(id);
@@ -44,5 +53,11 @@ public class LeaveRequestController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @PostMapping("/create/leave-request")
+    public ResponseEntity<LeaveRequest> createLeaveRequest(@RequestBody LeaveRequest request) {
+        LeaveRequest created = leaveRequestService.createLeaveRequest(request);
+        return ResponseEntity.ok(created);
     }
 }

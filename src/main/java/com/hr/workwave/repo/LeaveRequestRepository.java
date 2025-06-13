@@ -14,6 +14,7 @@ import java.util.Optional;
 public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long> {
     Optional<LeaveRequest> findById(Long id);
 
+    @Query("SELECT lr FROM LeaveRequest lr WHERE lr.status = ?1")
     List<LeaveRequest> findByStatus(String status);
 
     @Query("SELECT lr FROM LeaveRequest lr WHERE lr.user_id = :userId")

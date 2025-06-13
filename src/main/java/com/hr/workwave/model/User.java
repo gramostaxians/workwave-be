@@ -10,10 +10,11 @@ import java.math.BigInteger;
 
 @Getter
 @Setter
-@Entity
 @AllArgsConstructor
 @NoArgsConstructor
-public class Users{
+@Entity
+@Table(name = "Users")
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     BigInteger id;
@@ -26,5 +27,4 @@ public class Users{
     private String created_at;
     private String last_login;
     private Boolean notifyManager;
-
 }

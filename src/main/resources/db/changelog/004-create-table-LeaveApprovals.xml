@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+<changeSet id="004-create-table-LeaveApprovals" author="Ervin">
+    <createTable tableName="leave_approvals">
+        <column name="id" type="BIGINT" autoIncrement="true">
+            <constraints primaryKey="true" nullable="false"/>
+        </column>
+        <column name="manager_id" type="BIGINT">
+            <constraints nullable="false"/>
+        </column>
+        <column name="leave_request_id" type="BIGINT">
+            <constraints nullable="false"/>
+        </column>
+        <column name="approved_date" type="DATE">
+            <constraints nullable="true"/>
+        </column>
+        <column name="approved_status" type="VARCHAR(20)" defaultValue="pending">
+            <constraints nullable="false"/>
+        </column>
+    </createTable>
+
+
+    <addForeignKeyConstraint
+            baseTableName="leave_approvals"
+            baseColumnNames="manager_id"
+            referencedTableName="users"
+            referencedColumnNames="id"
+            constraintName="fk_leave_approvals_manager_user"/>
+
+    <addForeignKeyConstraint baseTableName="leave_approvals"
+                             baseColumnNames="leave_request_id"
+                             constraintName="fk_leave_approvals_leave_request"
+                             referencedTableName="leave_requests"
+                             referencedColumnNames="id"
+                             onDelete="CASCADE"/>
+</changeSet>
+
+</databaseChangeLog>

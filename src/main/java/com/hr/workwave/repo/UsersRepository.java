@@ -1,7 +1,7 @@
 package com.hr.workwave.repo;
 
-import com.hr.workwave.model.Users;
+import com.hr.workwave.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UsersRepository extends JpaRepository<Users, String> {
+public interface UsersRepository extends JpaRepository<User, Long> {
 }

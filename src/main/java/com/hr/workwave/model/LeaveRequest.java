@@ -1,26 +1,31 @@
 package com.hr.workwave.model;
-
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Data
 @Entity
 @Table(name = "leave_requests")
 public class LeaveRequest {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String employee_Id;
+    private Integer employee_Id;
     private String leave_type;
-    private String start_date;
-    private String end_date;
+    private LocalDate start_date;
+    private LocalDate end_date;
     private String reason;
+
+
     private String status;
 
     @Column(name = "employee_email")
@@ -28,4 +33,14 @@ public class LeaveRequest {
 
     private BigDecimal user_id;
 
+    @OneToMany(mappedBy = "leaveRequest", cascade = CascadeType.ALL)
+    private List<LeaveApprovals> approvals;
+
+    @Column(name = "created_date", nullable = false)
+    private LocalDateTime createdDate;
+
+    @PrePersist
+    public void prePersist() {
+        createdDate = LocalDateTime.now();
+    }
 }
