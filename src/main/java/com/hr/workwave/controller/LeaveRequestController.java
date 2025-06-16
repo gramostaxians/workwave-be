@@ -39,10 +39,11 @@ public class LeaveRequestController {
         return leaveRequestService.getLeaveRequestsById(userId);
     }
 
-    @GetMapping("/leave-requests/{id}/with-approvals")
-    public ResponseEntity<LeaveRequestApprovalSummaryDTO> getLeaveRequestWithApprovals(@PathVariable("id") Long id) {
-        LeaveRequestApprovalSummaryDTO dto = leaveRequestService.getLeaveRequestWithApprovals(id);
-        return ResponseEntity.ok(dto);
+    @GetMapping("/users/{userId}/leave-requests/with-approvals")
+    public ResponseEntity<List<LeaveRequestApprovalSummaryDTO>> getLeaveRequestsWithApprovalsByUserId(@PathVariable("userId") Long userId) {
+        List<LeaveRequestApprovalSummaryDTO> dtos = leaveRequestService.getLeaveRequestsWithApprovalsByUserId(userId);
+        return ResponseEntity.ok(dtos);
+
     }
 
     @DeleteMapping("/leave-request/{id}/delete")

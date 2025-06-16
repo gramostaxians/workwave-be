@@ -1,16 +1,73 @@
 package com.hr.workwave.services;
 
-
-
+import com.hr.workwave.enums.LeaveRequestStatusEnum;
+import com.hr.workwave.model.LeaveApprovals;
+import com.hr.workwave.model.LeaveRequest;
+import com.hr.workwave.repo.LeaveApprovalsRepository;
 import com.hr.workwave.repo.LeaveRequestRepository;
+import com.hr.workwave.repo.UsersRepository;
+import jakarta.transaction.Transactional;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.List;
 
+@Getter
+@Setter
 @Service
 @RequiredArgsConstructor
 public class LeaveApprovalsService {
+    private final LeaveApprovalsRepository leaveApprovalsRepository;
+    private final UsersRepository usersRepository;
     private final LeaveRequestRepository leaveRequestRepository;
+    private final LeaveRequestService leaveRequestService;
 
 
+    @Transactional
+    public LeaveApprovals updateStatus(Long leaveRequestId, Long managerId, String statusString) {
+        LeaveApprovals approval = leaveApprovalsRepository.findByLeaveRequestIdAndManagerId(leaveRequestId, managerId)
+                .orElseThrow(() -> new RuntimeException("LeaveApproval not found for leaveRequestId " + leaveRequestId + " and managerId " + managerId));
+
+        LeaveRequestStatusEnum newStatus = LeaveRequestStatusEnum.fromValue(statusString);
+        approval.setApprovedStatus(newStatus);
+        approval.setApprovedDate(LocalDate.now());
+
+        LeaveApprovals updatedApproval = leaveApprovalsRepository.save(approval);
+
+        updateLeaveRequestStatus(leaveRequestId);
+
+        return updatedApproval;
+    }
+    @Transactional
+    public void updateLeaveRequestStatus(Long leaveRequestId) {
+        List<LeaveApprovals> approvals = leaveApprovalsRepository.findByLeaveRequestId(leaveRequestId);
+
+        boolean hasRejected = approvals.stream()
+                .anyMatch(a -> a.getApprovedStatus() == LeaveRequestStatusEnum.REJECTED);
+        if (hasRejected) {
+            setLeaveRequestStatus(leaveRequestId, LeaveRequestStatusEnum.REJECTED);
+            return;
+        }
+
+        boolean hasPending = approvals.stream()
+                .anyMatch(a -> a.getApprovedStatus() == LeaveRequestStatusEnum.PENDING);
+        if (hasPending) {
+            setLeaveRequestStatus(leaveRequestId, LeaveRequestStatusEnum.PENDING);
+            return;
+        }
+
+        setLeaveRequestStatus(leaveRequestId, LeaveRequestStatusEnum.APPROVED);
+    }
+
+
+    private void setLeaveRequestStatus(Long leaveRequestId, LeaveRequestStatusEnum status) {
+        LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId)
+                .orElseThrow(() -> new RuntimeException("LeaveRequest not found with id " + leaveRequestId));
+
+        leaveRequest.setStatus(status);
+        leaveRequestRepository.save(leaveRequest);
+    }
 }

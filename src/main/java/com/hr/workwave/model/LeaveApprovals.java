@@ -1,5 +1,6 @@
 package com.hr.workwave.model;
 
+import com.hr.workwave.enums.LeaveRequestStatusEnum;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -31,7 +32,8 @@ public class LeaveApprovals {
 
     private LocalDate approvedDate;
 
-    private String approvedStatus;
+    @Enumerated(EnumType.STRING)
+    private LeaveRequestStatusEnum approvedStatus;
 }
 
 

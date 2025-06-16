@@ -1,4 +1,5 @@
 package com.hr.workwave.model;
+import com.hr.workwave.enums.LeaveRequestStatusEnum;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -26,12 +27,13 @@ public class LeaveRequest {
     private String reason;
 
 
-    private String status;
-
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private LeaveRequestStatusEnum status;
     @Column(name = "employee_email")
     private String employee_email;
 
-    private BigDecimal user_id;
+    private BigDecimal userId;
 
     @OneToMany(mappedBy = "leaveRequest", cascade = CascadeType.ALL)
     private List<LeaveApprovals> approvals;

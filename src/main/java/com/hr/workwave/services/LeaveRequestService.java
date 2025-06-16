@@ -48,7 +48,7 @@ public class LeaveRequestService {
         if (requestOpt.isPresent()) {
             LeaveRequest request = requestOpt.get();
 
-            LeaveRequestStatusEnum status = LeaveRequestStatusEnum.fromValue(request.getStatus());
+            LeaveRequestStatusEnum status = request.getStatus();
             String userEmail = request.getEmployee_email();
 
             System.out.println("Deleting leave request with status: " + status);
@@ -71,36 +71,38 @@ public class LeaveRequestService {
     }
 
     @Transactional
-    public LeaveRequestApprovalSummaryDTO getLeaveRequestWithApprovals(Long leaveRequestId) {
-        LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId)
-                .orElseThrow(() -> new RuntimeException("Leave request not found"));
+    public List<LeaveRequestApprovalSummaryDTO> getLeaveRequestsWithApprovalsByUserId(Long userId) {
+        List<LeaveRequest> leaveRequests = leaveRequestRepository.findByUserId(userId);
 
-        List<ManagerApprovalDTO> managerApprovals = leaveRequest.getApprovals().stream().map(approval -> {
-            ManagerApprovalDTO dto = new ManagerApprovalDTO();
-            dto.setManagerId(approval.getManager().getId().longValue());
-            dto.setManagerEmail(approval.getManager().getEmail());
-            dto.setApprovedStatus(LeaveRequestStatusEnum.fromValue(approval.getApprovedStatus()));
-            dto.setApprovedDate(approval.getApprovedDate());
-            return dto;
+        return leaveRequests.stream().map(leaveRequest -> {
+            List<ManagerApprovalDTO> managerApprovals = leaveRequest.getApprovals().stream().map(approval -> {
+                ManagerApprovalDTO dto = new ManagerApprovalDTO();
+                dto.setManagerId(approval.getManager().getId().longValue());
+                dto.setManagerEmail(approval.getManager().getEmail());
+                dto.setApprovedStatus(approval.getApprovedStatus());
+                dto.setApprovedDate(approval.getApprovedDate());
+                return dto;
+            }).collect(Collectors.toList());
+
+            LeaveRequestApprovalSummaryDTO summaryDTO = new LeaveRequestApprovalSummaryDTO();
+            summaryDTO.setLeaveRequestId(leaveRequest.getId());
+            summaryDTO.setEmployeeEmail(leaveRequest.getEmployee_email());
+            summaryDTO.setLeaveType(leaveRequest.getLeave_type());
+            summaryDTO.setStartDate(leaveRequest.getStart_date());
+            summaryDTO.setEndDate(leaveRequest.getEnd_date());
+            summaryDTO.setReason(leaveRequest.getReason());
+            summaryDTO.setStatus(leaveRequest.getStatus());
+            summaryDTO.setApprovals(managerApprovals);
+
+            return summaryDTO;
         }).collect(Collectors.toList());
 
-        LeaveRequestApprovalSummaryDTO summaryDTO = new LeaveRequestApprovalSummaryDTO();
-        summaryDTO.setLeaveRequestId(leaveRequest.getId());
-        summaryDTO.setEmployeeEmail(leaveRequest.getEmployee_email());
-        summaryDTO.setLeaveType(leaveRequest.getLeave_type());
-        summaryDTO.setStartDate(leaveRequest.getStart_date());
-        summaryDTO.setEndDate(leaveRequest.getEnd_date());
-        summaryDTO.setReason(leaveRequest.getReason());
-        summaryDTO.setStatus(LeaveRequestStatusEnum.fromValue(leaveRequest.getStatus()));
-        summaryDTO.setApprovals(managerApprovals);
-
-        return summaryDTO;
     }
 
     public LeaveRequest createLeaveRequest(LeaveRequest leaveRequest) {
         LeaveRequest savedRequest = leaveRequestRepository.save(leaveRequest);
 
-        BigInteger userId = new BigInteger(savedRequest.getUser_id().toString());
+        BigInteger userId = new BigInteger(savedRequest.getUserId().toString());
         List<UserManagers> managerLinks = userManagerRepository.findByUserId(userId);
 
         managerLinks.forEach(link -> {
@@ -111,11 +113,19 @@ public class LeaveRequestService {
             LeaveApprovals approval = new LeaveApprovals();
             approval.setLeaveRequest(savedRequest);
             approval.setManager(manager);
-            approval.setApprovedStatus("PENDING");
+            approval.setApprovedStatus(LeaveRequestStatusEnum.PENDING);
 
             leaveApprovalsRepository.save(approval);
         });
 
         return savedRequest;
     }
+    private void setLeaveRequestStatus(Long leaveRequestId, LeaveRequestStatusEnum status) {
+        LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId)
+                .orElseThrow(() -> new RuntimeException("LeaveRequest not found with id " + leaveRequestId));
+
+        leaveRequest.setStatus(status);
+        leaveRequestRepository.save(leaveRequest);
+    }
+
 }
