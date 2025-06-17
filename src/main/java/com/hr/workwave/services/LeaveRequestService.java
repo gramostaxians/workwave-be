@@ -40,7 +40,7 @@ public class LeaveRequestService {
 
     public List<LeaveRequest> getLeaveRequestsByStatus(LeaveRequestStatusEnum status) {
         System.out.println(status.getValue());
-        return leaveRequestRepository.findByStatus(status.getValue());
+        return leaveRequestRepository.findByStatus(status);
     }
 
     public boolean deleteRequestById(Long id) {
@@ -102,7 +102,7 @@ public class LeaveRequestService {
     public LeaveRequest createLeaveRequest(LeaveRequest leaveRequest) {
         LeaveRequest savedRequest = leaveRequestRepository.save(leaveRequest);
 
-        BigInteger userId = new BigInteger(savedRequest.getUserId().toString());
+        BigInteger userId = new BigInteger(savedRequest.getUser().getId().toString());
         List<UserManagers> managerLinks = userManagerRepository.findByUserId(userId);
 
         managerLinks.forEach(link -> {
@@ -126,6 +126,42 @@ public class LeaveRequestService {
 
         leaveRequest.setStatus(status);
         leaveRequestRepository.save(leaveRequest);
+    }
+
+    public List<LeaveRequestApprovalSummaryDTO> getAllPendingLeaveRequests() {
+
+        List<LeaveRequest> leaveRequests = leaveRequestRepository.findByStatus(LeaveRequestStatusEnum.PENDING);
+
+        return leaveRequests.stream()
+                .map(leaveRequest -> {
+                    List<ManagerApprovalDTO> managerApprovals = leaveRequest.getApprovals().stream().map(approval -> {
+                        ManagerApprovalDTO dto = new ManagerApprovalDTO();
+                        dto.setManagerId(approval.getManager().getId().longValue());
+                        dto.setManagerEmail(approval.getManager().getEmail());
+                        dto.setApprovedStatus(approval.getApprovedStatus());
+                        dto.setApprovedDate(approval.getApprovedDate());
+                        return dto;
+                    }).collect(Collectors.toList());
+
+                    LeaveRequestApprovalSummaryDTO summaryDTO = new LeaveRequestApprovalSummaryDTO();
+                    summaryDTO.setLeaveRequestId(leaveRequest.getId());
+                    summaryDTO.setEmployeeEmail(leaveRequest.getEmployee_email());
+                    summaryDTO.setLeaveType(leaveRequest.getLeave_type());
+                    summaryDTO.setStartDate(leaveRequest.getStart_date());
+                    summaryDTO.setEndDate(leaveRequest.getEnd_date());
+                    summaryDTO.setReason(leaveRequest.getReason());
+                    summaryDTO.setCreatedDate(leaveRequest.getCreatedDate());
+                    summaryDTO.setStatus(leaveRequest.getStatus());
+                    summaryDTO.setApprovals(managerApprovals);
+
+                    if (leaveRequest.getUser() != null) {
+                        summaryDTO.setName(leaveRequest.getUser().getName());
+                        summaryDTO.setEmail(leaveRequest.getUser().getEmail());
+                        summaryDTO.setDepartment(leaveRequest.getUser().getDepartment());
+                    }
+                    return summaryDTO;
+                })
+                .collect(Collectors.toList());
     }
 
 }

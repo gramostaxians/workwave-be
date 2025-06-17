@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -14,12 +15,16 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class LeaveRequestApprovalSummaryDTO {
+    private String name;
+    private String email;
+    private String department;
     private Long leaveRequestId;
     private String employeeEmail;
     private String leaveType;
     private LocalDate startDate;
     private LocalDate endDate;
     private String reason;
+    private LocalDateTime createdDate;
     private LeaveRequestStatusEnum status;
     private List<ManagerApprovalDTO> approvals;
 }

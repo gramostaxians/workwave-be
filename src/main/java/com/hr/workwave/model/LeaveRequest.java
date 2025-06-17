@@ -26,14 +26,15 @@ public class LeaveRequest {
     private LocalDate end_date;
     private String reason;
 
-
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private LeaveRequestStatusEnum status;
     @Column(name = "employee_email")
     private String employee_email;
 
-    private BigDecimal userId;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @OneToMany(mappedBy = "leaveRequest", cascade = CascadeType.ALL)
     private List<LeaveApprovals> approvals;

@@ -24,9 +24,8 @@ public class LeaveRequestController {
         return leaveRequestService.getAllLeaveRequests();
     }
 
-    @GetMapping(value ="/leave-request",params = "status")
+    @GetMapping("/leave-request/by-status")
     public List<LeaveRequest> getOrdersByStatus(@RequestParam(required = false) LeaveRequestStatusEnum status) {
-        System.out.println("1"+status.getValue());
         if (status != null) {
             return leaveRequestService.getLeaveRequestsByStatus(status);
         } else {
@@ -43,7 +42,12 @@ public class LeaveRequestController {
     public ResponseEntity<List<LeaveRequestApprovalSummaryDTO>> getLeaveRequestsWithApprovalsByUserId(@PathVariable("userId") Long userId) {
         List<LeaveRequestApprovalSummaryDTO> dtos = leaveRequestService.getLeaveRequestsWithApprovalsByUserId(userId);
         return ResponseEntity.ok(dtos);
+    }
 
+    @GetMapping("/leave-requests/pending")
+    public ResponseEntity<List<LeaveRequestApprovalSummaryDTO>> getAllPendingLeaveRequests() {
+        List<LeaveRequestApprovalSummaryDTO> dto = leaveRequestService.getAllPendingLeaveRequests();
+        return ResponseEntity.ok(dto);
     }
 
     @DeleteMapping("/leave-request/{id}/delete")
