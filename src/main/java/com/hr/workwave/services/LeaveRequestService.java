@@ -5,13 +5,13 @@ import com.hr.workwave.dto.ManagerApprovalDTO;
 import com.hr.workwave.enums.LeaveRequestStatusEnum;
 import com.hr.workwave.model.LeaveApprovals;
 import com.hr.workwave.model.LeaveRequest;
+import com.hr.workwave.model.User;
 import com.hr.workwave.model.UserManagers;
 import com.hr.workwave.repo.LeaveApprovalsRepository;
 import com.hr.workwave.repo.LeaveRequestRepository;
 import com.hr.workwave.repo.UserManagerRepository;
 import com.hr.workwave.repo.UsersRepository;
 import lombok.RequiredArgsConstructor;
-import com.hr.workwave.model.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -163,5 +163,4 @@ public class LeaveRequestService {
                 })
                 .collect(Collectors.toList());
     }
-
 }

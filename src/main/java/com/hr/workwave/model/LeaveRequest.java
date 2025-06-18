@@ -3,7 +3,6 @@ import com.hr.workwave.enums.LeaveRequestStatusEnum;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,7 +19,6 @@ public class LeaveRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Integer employee_Id;
     private String leave_type;
     private LocalDate start_date;
     private LocalDate end_date;
@@ -33,7 +31,6 @@ public class LeaveRequest {
     private String employee_email;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
     private User user;
 
     @OneToMany(mappedBy = "leaveRequest", cascade = CascadeType.ALL)
