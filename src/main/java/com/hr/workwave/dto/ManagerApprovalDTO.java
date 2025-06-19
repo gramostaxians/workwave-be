@@ -14,6 +14,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class ManagerApprovalDTO {
     private Long managerId;
+    private String name;
     private String managerEmail;
     private LeaveRequestStatusEnum approvedStatus;
     private LocalDate approvedDate;

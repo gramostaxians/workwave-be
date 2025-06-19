@@ -78,6 +78,7 @@ public class LeaveRequestService {
                 ManagerApprovalDTO dto = new ManagerApprovalDTO();
                 dto.setManagerId(approval.getManager().getId().longValue());
                 dto.setManagerEmail(approval.getManager().getEmail());
+                dto.setName(approval.getManager().getName());
                 dto.setApprovedStatus(approval.getApprovedStatus());
                 dto.setApprovedDate(approval.getApprovedDate());
                 return dto;
