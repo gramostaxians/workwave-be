@@ -152,6 +152,7 @@ public class LeaveRequestService {
                     List<ManagerApprovalDTO> managerApprovals = leaveRequest.getApprovals().stream().map(approval -> {
                         ManagerApprovalDTO dto = new ManagerApprovalDTO();
                         dto.setManagerId(approval.getManager().getId().longValue());
+                        dto.setName(approval.getManager().getName());
                         dto.setManagerEmail(approval.getManager().getEmail());
                         dto.setApprovedStatus(approval.getApprovedStatus());
                         dto.setApprovedDate(approval.getApprovedDate());
