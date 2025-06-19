@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Getter
 @Setter
@@ -24,6 +25,7 @@ public class LeaveApprovalsService {
     private final UsersRepository usersRepository;
     private final LeaveRequestRepository leaveRequestRepository;
     private final LeaveRequestService leaveRequestService;
+    private final EmailService emailService;
 
 
     @Transactional
@@ -49,6 +51,8 @@ public class LeaveApprovalsService {
                 .anyMatch(a -> a.getApprovedStatus() == LeaveRequestStatusEnum.REJECTED);
         if (hasRejected) {
             setLeaveRequestStatus(leaveRequestId, LeaveRequestStatusEnum.REJECTED);
+            Optional<LeaveRequest> leaveRequest = leaveRequestRepository.findById(leaveRequestId);
+            emailService.sendEmail(leaveRequest.get().getUser().getEmail(), "Rejected Leave Request", leaveRequest.get().getReason());
             return;
         }
 

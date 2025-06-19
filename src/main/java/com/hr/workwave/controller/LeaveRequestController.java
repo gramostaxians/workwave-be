@@ -1,10 +1,12 @@
 package com.hr.workwave.controller;
 
 import com.hr.workwave.dto.LeaveRequestApprovalSummaryDTO;
+import com.hr.workwave.dto.LeaveRequestDTO;
 import com.hr.workwave.enums.LeaveRequestStatusEnum;
 import com.hr.workwave.model.LeaveRequest;
 import com.hr.workwave.services.LeaveRequestService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -61,8 +63,14 @@ public class LeaveRequestController {
     }
 
     @PostMapping("/create/leave-request")
-    public ResponseEntity<LeaveRequest> createLeaveRequest(@RequestBody LeaveRequest request) {
-        LeaveRequest created = leaveRequestService.createLeaveRequest(request);
-        return ResponseEntity.ok(created);
+    public ResponseEntity<LeaveRequestDTO> createLeaveRequest(@RequestBody LeaveRequestDTO dto) {
+        LeaveRequestDTO createdRequest = leaveRequestService.createLeaveRequest(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdRequest);
     }
+
+//    @PostMapping("/create/leave-request")
+//    public ResponseEntity<LeaveRequest> createLeaveRequest(@RequestBody LeaveRequestDTO request) {
+//        LeaveRequest created = leaveRequestService.createLeaveRequest(request);
+//        return ResponseEntity.ok(created);
+//    }
 }

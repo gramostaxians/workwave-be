@@ -19,6 +19,7 @@ public class LeaveRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private Long employeeId;
     private String leave_type;
     private LocalDate start_date;
     private LocalDate end_date;

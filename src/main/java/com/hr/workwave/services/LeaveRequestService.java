@@ -1,16 +1,14 @@
 package com.hr.workwave.services;
 
 import com.hr.workwave.dto.LeaveRequestApprovalSummaryDTO;
+import com.hr.workwave.dto.LeaveRequestDTO;
 import com.hr.workwave.dto.ManagerApprovalDTO;
 import com.hr.workwave.enums.LeaveRequestStatusEnum;
 import com.hr.workwave.model.LeaveApprovals;
 import com.hr.workwave.model.LeaveRequest;
 import com.hr.workwave.model.User;
 import com.hr.workwave.model.UserManagers;
-import com.hr.workwave.repo.LeaveApprovalsRepository;
-import com.hr.workwave.repo.LeaveRequestRepository;
-import com.hr.workwave.repo.UserManagerRepository;
-import com.hr.workwave.repo.UsersRepository;
+import com.hr.workwave.repo.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +20,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class LeaveRequestService {
 
     private final LeaveRequestRepository leaveRequestRepository;
@@ -99,14 +98,28 @@ public class LeaveRequestService {
 
     }
 
-    public LeaveRequest createLeaveRequest(LeaveRequest leaveRequest) {
+    public LeaveRequestDTO createLeaveRequest(LeaveRequestDTO dto) {
+
+        User user = usersRepository.findById(dto.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        LeaveRequest leaveRequest = new LeaveRequest();
+        leaveRequest.setEmployeeId(1L);
+        leaveRequest.setLeave_type(dto.getLeaveType());
+        leaveRequest.setReason(dto.getReason());
+        leaveRequest.setStart_date(dto.getStartDate());
+        leaveRequest.setEnd_date(dto.getEndDate());
+        leaveRequest.setUser(user);
+        leaveRequest.setEmployee_email(dto.getEmployeeEmail());
+
         LeaveRequest savedRequest = leaveRequestRepository.save(leaveRequest);
 
-        BigInteger userId = new BigInteger(savedRequest.getUser().getId().toString());
+        BigInteger userId = user.getId();
         List<UserManagers> managerLinks = userManagerRepository.findByUserId(userId);
 
         managerLinks.forEach(link -> {
             Long managerId = link.getManagerId().longValue();
+
             User manager = usersRepository.findById(managerId)
                     .orElseThrow(() -> new RuntimeException("Manager not found: " + managerId));
 
@@ -114,11 +127,12 @@ public class LeaveRequestService {
             approval.setLeaveRequest(savedRequest);
             approval.setManager(manager);
             approval.setApprovedStatus(LeaveRequestStatusEnum.PENDING);
+            leaveRequest.setStatus(LeaveRequestStatusEnum.PENDING);
 
             leaveApprovalsRepository.save(approval);
         });
 
-        return savedRequest;
+        return toDTO(savedRequest);
     }
     private void setLeaveRequestStatus(Long leaveRequestId, LeaveRequestStatusEnum status) {
         LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId)
@@ -162,5 +176,15 @@ public class LeaveRequestService {
                     return summaryDTO;
                 })
                 .collect(Collectors.toList());
+    }
+
+    private LeaveRequestDTO toDTO(LeaveRequest request) {
+        LeaveRequestDTO dto = new LeaveRequestDTO();
+        dto.setReason(request.getReason());
+        dto.setLeaveType(request.getLeave_type());
+        dto.setStartDate(request.getStart_date());
+        dto.setEndDate(request.getEnd_date());
+        dto.setUserId(request.getUser().getId().longValue());;
+        return dto;
     }
 }
