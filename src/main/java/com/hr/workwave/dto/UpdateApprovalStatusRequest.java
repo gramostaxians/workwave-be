@@ -14,4 +14,5 @@ public class UpdateApprovalStatusRequest {
     private Long leaveRequestId;
     private String status;
     private Long managerId;
+    private String rejectReason;
 }

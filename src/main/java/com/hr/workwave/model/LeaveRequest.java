@@ -24,6 +24,10 @@ public class LeaveRequest {
     private LocalDate start_date;
     private LocalDate end_date;
     private String reason;
+    @Column(name = "rejection_reason")
+    private String rejectReason;
+
+    private String calendar_event_id;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
