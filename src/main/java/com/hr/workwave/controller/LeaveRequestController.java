@@ -26,6 +26,11 @@ public class LeaveRequestController {
         return leaveRequestService.getAllLeaveRequests();
     }
 
+    @GetMapping("/users/{userId}/leave-request/approved")
+    public List<LeaveRequest> getAllLeaveRequestsApprovedById(@PathVariable Long userId) {
+        return leaveRequestService.getLeaveRequestsApprovedById(userId);
+    }
+
     @GetMapping("/leave-request/by-status")
     public List<LeaveRequest> getOrdersByStatus(@RequestParam(required = false) LeaveRequestStatusEnum status) {
         if (status != null) {
@@ -34,8 +39,8 @@ public class LeaveRequestController {
             return leaveRequestService.getAllLeaveRequests();
         }
     }
-
-    @GetMapping("/employee/{userId}/leave-request")
+//kthimi i leaveRequestsve ne baze te id veq approved
+    @GetMapping("/users/{userId}/leave-request/approvals")
     public List<LeaveRequest> getLeaveRequestsById(@PathVariable BigInteger userId) {
         return leaveRequestService.getLeaveRequestsById(userId);
     }
@@ -52,6 +57,8 @@ public class LeaveRequestController {
         return ResponseEntity.ok(dto);
     }
 
+    //Krijo nje endpoint te ri, i cili mer te gjith leave requesatat me status Pending, ku aj eshte admin
+
     @DeleteMapping("/leave-request/{id}/delete")
     public ResponseEntity<Void> deleteRequestById(@PathVariable Long id) {
         boolean deleted = leaveRequestService.deleteRequestById(id);
@@ -67,10 +74,4 @@ public class LeaveRequestController {
         LeaveRequestDTO createdRequest = leaveRequestService.createLeaveRequest(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdRequest);
     }
-
-//    @PostMapping("/create/leave-request")
-//    public ResponseEntity<LeaveRequest> createLeaveRequest(@RequestBody LeaveRequestDTO request) {
-//        LeaveRequest created = leaveRequestService.createLeaveRequest(request);
-//        return ResponseEntity.ok(created);
-//    }
 }
