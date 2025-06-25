@@ -9,6 +9,7 @@ import com.hr.workwave.services.LeaveRequestService;
 import com.hr.workwave.services.OutlookCalendarService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import java.time.LocalDate;
 
 
 @RestController
@@ -39,9 +40,11 @@ public class LeaveApprovalsController {
 
             String accessToken = authHeader.substring(7);
 
-            outlookCalendarService.createEvent(accessToken);
-        }
+            LocalDate startDateTime = leaveRequest.getStart_date();
+            LocalDate endDateTime = leaveRequest.getEnd_date();
 
+            outlookCalendarService.createEvent(accessToken, startDateTime, endDateTime);
+        }
         return updatedApproval;
     }
 }
