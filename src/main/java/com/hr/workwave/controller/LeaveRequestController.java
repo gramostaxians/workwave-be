@@ -57,7 +57,12 @@ public class LeaveRequestController {
         return ResponseEntity.ok(dto);
     }
 
-    //Krijo nje endpoint te ri, i cili mer te gjith leave requesatat me status Pending, ku aj eshte admin
+    //Duhet te rishikojm sepse nuk funksionon komplet
+    @GetMapping("/leave-requests/pending/manager")
+    public ResponseEntity<List<LeaveRequestApprovalSummaryDTO>> getPendingLeaveRequestsForManager(@PathVariable Long managerId) {
+        List<LeaveRequestApprovalSummaryDTO> dto = leaveRequestService.getPendingLeaveRequestsForManager(managerId);
+        return ResponseEntity.ok(dto);
+    }
 
     @DeleteMapping("/leave-request/{id}/delete")
     public ResponseEntity<Void> deleteRequestById(@PathVariable Long id) {

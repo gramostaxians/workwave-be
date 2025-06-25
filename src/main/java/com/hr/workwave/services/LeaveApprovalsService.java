@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 @Getter
 @Setter
+@Transactional
 @Service
 @RequiredArgsConstructor
 public class LeaveApprovalsService {
@@ -27,8 +28,7 @@ public class LeaveApprovalsService {
     private final EmailService emailService;
 
 
-    @Transactional
-    public LeaveApprovals updateStatus(Long leaveRequestId, Long managerId, String statusString) {
+    public LeaveApprovals updateStatus(Long leaveRequestId, Long managerId, String statusString, String rejectReason) {
         LeaveApprovals approval = leaveApprovalsRepository.findByLeaveRequestIdAndManagerId(leaveRequestId, managerId)
                 .orElseThrow(() -> new RuntimeException("LeaveApproval not found for leaveRequestId " + leaveRequestId + " and managerId " + managerId));
 
@@ -36,13 +36,28 @@ public class LeaveApprovalsService {
         approval.setApprovedStatus(newStatus);
         approval.setApprovedDate(LocalDate.now());
 
+        if (newStatus == LeaveRequestStatusEnum.REJECTED) {
+            if (rejectReason == null || rejectReason.isBlank()) {
+                throw new IllegalArgumentException("Reject reason must be provided when status is REJECTED");
+            }
+            LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId)
+                    .orElseThrow(() -> new RuntimeException("LeaveRequest not found with id: " + leaveRequestId));
+            leaveRequest.setRejectReason(rejectReason);
+            leaveRequestRepository.save(leaveRequest);
+        } else {
+            LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId)
+                    .orElse(null);
+            if (leaveRequest != null) {
+                leaveRequest.setRejectReason(null);
+                leaveRequestRepository.save(leaveRequest);
+            }
+        }
         LeaveApprovals updatedApproval = leaveApprovalsRepository.save(approval);
-
         updateLeaveRequestStatus(leaveRequestId);
 
         return updatedApproval;
     }
-    @Transactional
+
     public void updateLeaveRequestStatus(Long leaveRequestId) {
         List<LeaveApprovals> approvals = leaveApprovalsRepository.findByLeaveRequestId(leaveRequestId);
 

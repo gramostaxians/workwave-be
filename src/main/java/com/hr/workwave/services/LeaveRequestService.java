@@ -44,6 +44,10 @@ public class LeaveRequestService {
                 .toList();
     }
 
+    public Optional<LeaveRequest> findById(Long id) {
+        return leaveRequestRepository.findById(id);
+    }
+
     public List<LeaveRequest> getLeaveRequestsByStatus(LeaveRequestStatusEnum status) {
         System.out.println(status.getValue());
         return leaveRequestRepository.findByStatus(status);
@@ -85,6 +89,7 @@ public class LeaveRequestService {
                 ManagerApprovalDTO dto = new ManagerApprovalDTO();
                 dto.setManagerId(approval.getManager().getId().longValue());
                 dto.setManagerEmail(approval.getManager().getEmail());
+                dto.setName(approval.getManager().getName());
                 dto.setApprovedStatus(approval.getApprovedStatus());
                 dto.setApprovedDate(approval.getApprovedDate());
                 return dto;
@@ -148,6 +153,51 @@ public class LeaveRequestService {
         leaveRequest.setStatus(status);
         leaveRequestRepository.save(leaveRequest);
     }
+    public List<LeaveRequestApprovalSummaryDTO> getPendingLeaveRequestsForManager(Long managerId) {
+        List<LeaveRequest> leaveRequests = leaveApprovalsRepository.findPendingLeaveRequestsByManager(managerId, LeaveRequestStatusEnum.PENDING);
+
+        return leaveRequests.stream()
+                .filter(leaveRequest ->
+                        leaveRequest.getApprovals().stream()
+                                .anyMatch(approval -> approval.getManager().getId().equals(managerId))
+                )
+                .map(leaveRequest -> {
+                    LeaveRequestApprovalSummaryDTO dto = new LeaveRequestApprovalSummaryDTO();
+
+                    dto.setLeaveRequestId(leaveRequest.getId());
+                    dto.setEmployeeEmail(leaveRequest.getEmployee_email());
+                    dto.setLeaveType(leaveRequest.getLeave_type());
+                    dto.setStartDate(leaveRequest.getStart_date());
+                    dto.setEndDate(leaveRequest.getEnd_date());
+                    dto.setReason(leaveRequest.getReason());
+                    dto.setCreatedDate(leaveRequest.getCreatedDate());
+                    dto.setStatus(leaveRequest.getStatus());
+
+
+                    List<ManagerApprovalDTO> managerApprovals = leaveRequest.getApprovals().stream()
+                            .filter(approval -> approval.getManager().getId().equals(managerId))
+                            .map(approval -> {
+                                ManagerApprovalDTO mDto = new ManagerApprovalDTO();
+                                mDto.setManagerId(approval.getManager().getId().longValue());
+                                mDto.setName(approval.getManager().getName());
+                                mDto.setManagerEmail(approval.getManager().getEmail());
+                                mDto.setApprovedStatus(approval.getApprovedStatus());
+                                mDto.setApprovedDate(approval.getApprovedDate());
+                                return mDto;
+                            }).collect(Collectors.toList());
+
+                    dto.setApprovals(managerApprovals);
+
+                    if (leaveRequest.getUser() != null) {
+                        dto.setName(leaveRequest.getUser().getName());
+                        dto.setEmail(leaveRequest.getUser().getEmail());
+                        dto.setDepartment(leaveRequest.getUser().getDepartment());
+                    }
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
 
     public List<LeaveRequestApprovalSummaryDTO> getAllPendingLeaveRequests() {
 
@@ -158,6 +208,7 @@ public class LeaveRequestService {
                     List<ManagerApprovalDTO> managerApprovals = leaveRequest.getApprovals().stream().map(approval -> {
                         ManagerApprovalDTO dto = new ManagerApprovalDTO();
                         dto.setManagerId(approval.getManager().getId().longValue());
+                        dto.setName(approval.getManager().getName());
                         dto.setManagerEmail(approval.getManager().getEmail());
                         dto.setApprovedStatus(approval.getApprovedStatus());
                         dto.setApprovedDate(approval.getApprovedDate());
