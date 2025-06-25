@@ -33,8 +33,15 @@ public class LeaveRequestService {
         return leaveRequestRepository.findAll();
     }
 
+    public List<LeaveRequest> getLeaveRequestsApprovedById(Long userId) {
+        return leaveRequestRepository.getApprovedLeaveRequests(userId);
+    }
     public List<LeaveRequest> getLeaveRequestsById(BigInteger userId) {
-        return leaveRequestRepository.getLeaveRequestsById(userId);
+        List<LeaveRequest> allRequests = leaveRequestRepository.getLeaveRequestsById(userId);
+
+        return allRequests.stream()
+                .filter(request -> request.getStatus() == LeaveRequestStatusEnum.APPROVED)
+                .toList();
     }
 
     public List<LeaveRequest> getLeaveRequestsByStatus(LeaveRequestStatusEnum status) {
