@@ -26,6 +26,11 @@ public class LeaveRequestController {
         return leaveRequestService.getAllLeaveRequests();
     }
 
+//    @GetMapping("/users/{userId}/leave-request/approved")
+//    public List<LeaveRequest> getAllLeaveRequestsApprovedById(@PathVariable Long userId) {
+//        return leaveRequestService.getLeaveRequestsApprovedById(userId);
+//    }
+
     @GetMapping("/leave-request/by-status")
     public List<LeaveRequest> getOrdersByStatus(@RequestParam(required = false) LeaveRequestStatusEnum status) {
         if (status != null) {
@@ -52,8 +57,7 @@ public class LeaveRequestController {
         return ResponseEntity.ok(dto);
     }
 
-    //Duhet te rishikojm sepse nuk funksionon komplet
-    @GetMapping("/leave-requests/pending/manager")
+    @GetMapping("/leave-requests/pending/manager/{managerId}")
     public ResponseEntity<List<LeaveRequestApprovalSummaryDTO>> getPendingLeaveRequestsForManager(@PathVariable Long managerId) {
         List<LeaveRequestApprovalSummaryDTO> dto = leaveRequestService.getPendingLeaveRequestsForManager(managerId);
         return ResponseEntity.ok(dto);

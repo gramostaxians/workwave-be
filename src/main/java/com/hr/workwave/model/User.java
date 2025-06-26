@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigInteger;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -26,5 +27,6 @@ public class User {
     private String role;
     private String created_at;
     private String last_login;
+    private LocalDate start_of_work;
     private Boolean notifyManager;
 }
