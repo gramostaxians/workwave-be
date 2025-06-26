@@ -9,7 +9,7 @@ import com.hr.workwave.services.LeaveRequestService;
 import com.hr.workwave.services.OutlookCalendarService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 
 @RestController
@@ -40,8 +40,12 @@ public class LeaveApprovalsController {
 
             String accessToken = authHeader.substring(7);
 
-            LocalDate startDateTime = leaveRequest.getStart_date();
-            LocalDate endDateTime = leaveRequest.getEnd_date();
+            System.out.println("Authorization Header: " + authHeader);
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+
+            String startDateTime = leaveRequest.getStart_date().atStartOfDay().format(formatter);
+            String endDateTime = leaveRequest.getEnd_date().atTime(23, 59).format(formatter);
 
             outlookCalendarService.createEvent(accessToken, startDateTime, endDateTime);
         }

@@ -57,8 +57,7 @@ public class LeaveRequestController {
         return ResponseEntity.ok(dto);
     }
 
-    //Duhet te rishikojm sepse nuk funksionon komplet
-    @GetMapping("/leave-requests/pending/manager")
+    @GetMapping("/leave-requests/pending/manager/{managerId}")
     public ResponseEntity<List<LeaveRequestApprovalSummaryDTO>> getPendingLeaveRequestsForManager(@PathVariable Long managerId) {
         List<LeaveRequestApprovalSummaryDTO> dto = leaveRequestService.getPendingLeaveRequestsForManager(managerId);
         return ResponseEntity.ok(dto);

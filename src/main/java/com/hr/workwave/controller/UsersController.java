@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigInteger;
 import java.util.List;
 
 
@@ -28,4 +29,7 @@ public class UsersController {
         List<UserWithManagersDTO> data = usersService.getAllUsersWithManagers();
         return ResponseEntity.ok(data);
     }
+
+//    @PutMapping("/update/user/{userID}")
+//    Krijimi i logjikes e cila ben update te gjitha te dhenat e userit qe jan te, user managment.
 }

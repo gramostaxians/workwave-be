@@ -157,10 +157,6 @@ public class LeaveRequestService {
         List<LeaveRequest> leaveRequests = leaveApprovalsRepository.findPendingLeaveRequestsByManager(managerId, LeaveRequestStatusEnum.PENDING);
 
         return leaveRequests.stream()
-                .filter(leaveRequest ->
-                        leaveRequest.getApprovals().stream()
-                                .anyMatch(approval -> approval.getManager().getId().equals(managerId))
-                )
                 .map(leaveRequest -> {
                     LeaveRequestApprovalSummaryDTO dto = new LeaveRequestApprovalSummaryDTO();
 
