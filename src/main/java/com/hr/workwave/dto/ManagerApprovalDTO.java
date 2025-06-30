@@ -18,4 +18,5 @@ public class ManagerApprovalDTO {
     private String managerEmail;
     private LeaveRequestStatusEnum approvedStatus;
     private LocalDate approvedDate;
+    private String rejectedReason;
 }
