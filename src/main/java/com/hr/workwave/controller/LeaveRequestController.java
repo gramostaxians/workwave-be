@@ -39,7 +39,7 @@ public class LeaveRequestController {
             return leaveRequestService.getAllLeaveRequests();
         }
     }
-//kthimi i leaveRequestsve ne baze te id veq approved
+
     @GetMapping("/users/{userId}/leave-request/approvals")
     public List<LeaveRequest> getLeaveRequestsById(@PathVariable BigInteger userId) {
         return leaveRequestService.getLeaveRequestsById(userId);
