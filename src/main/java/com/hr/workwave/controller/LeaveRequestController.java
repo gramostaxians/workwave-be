@@ -39,8 +39,9 @@ public class LeaveRequestController {
             return leaveRequestService.getAllLeaveRequests();
         }
     }
+    // @GetMapping("/employee/{userId}/leave-request")
 
-    @GetMapping("/employee/{userId}/leave-request")
+    @GetMapping("/users/{userId}/leave-request/approvals")
     public List<LeaveRequest> getLeaveRequestsById(@PathVariable BigInteger userId) {
         return leaveRequestService.getLeaveRequestsById(userId);
     }

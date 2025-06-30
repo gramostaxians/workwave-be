@@ -85,6 +85,7 @@ public class LeaveRequestService {
                 dto.setName(approval.getManager().getName());
                 dto.setApprovedStatus(approval.getApprovedStatus());
                 dto.setApprovedDate(approval.getApprovedDate());
+                dto.setRejectedReason(approval.getLeaveRequest().getRejectReason());
                 return dto;
             }).collect(Collectors.toList());
 
@@ -164,7 +165,6 @@ public class LeaveRequestService {
 
 
                     List<ManagerApprovalDTO> managerApprovals = leaveRequest.getApprovals().stream()
-                            .filter(approval -> approval.getManager().getId().equals(managerId))
                             .map(approval -> {
                                 ManagerApprovalDTO mDto = new ManagerApprovalDTO();
                                 mDto.setManagerId(approval.getManager().getId().longValue());
