@@ -26,10 +26,10 @@ public class LeaveRequestController {
         return leaveRequestService.getAllLeaveRequests();
     }
 
-//    @GetMapping("/users/{userId}/leave-request/approved")
-//    public List<LeaveRequest> getAllLeaveRequestsApprovedById(@PathVariable Long userId) {
-//        return leaveRequestService.getLeaveRequestsApprovedById(userId);
-//    }
+    @GetMapping("/users/{userId}/leave-request/approved")
+    public List<LeaveRequest> getAllLeaveRequestsApprovedById(@PathVariable Long userId) {
+        return leaveRequestService.getLeaveRequestsApprovedById(userId);
+    }
 
     @GetMapping("/leave-request/by-status")
     public List<LeaveRequest> getOrdersByStatus(@RequestParam(required = false) LeaveRequestStatusEnum status) {

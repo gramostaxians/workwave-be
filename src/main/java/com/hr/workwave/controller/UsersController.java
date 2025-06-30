@@ -32,9 +32,6 @@ public class UsersController {
         return ResponseEntity.ok(data);
     }
 
-//    @PutMapping("/update/user/{userID}")
-//    Krijimi i logjikes e cila ben update te gjitha te dhenat e userit qe jan te, user managment.
-
     @PutMapping("/update/user/{userId}")
     public ResponseEntity<User> updateUserAndManagers(
             @PathVariable BigInteger userId,

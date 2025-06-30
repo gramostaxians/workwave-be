@@ -33,6 +33,10 @@ public class LeaveRequestService {
         return leaveRequestRepository.findAll();
     }
 
+    public List<LeaveRequest> getLeaveRequestsApprovedById(Long userId) {
+        return leaveRequestRepository.getApprovedLeaveRequests(userId);
+    }
+
     public List<LeaveRequest> getLeaveRequestsById(BigInteger userId) {
         return leaveRequestRepository.getLeaveRequestsById(userId);
     }

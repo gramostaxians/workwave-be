@@ -31,7 +31,7 @@ public class User {
     private LocalDateTime created_at;
     private LocalDateTime last_login;
 
-    @Column(name = "start_of_work")
+
     private LocalDate start_Of_Work;
 
     private Boolean notifyManager;

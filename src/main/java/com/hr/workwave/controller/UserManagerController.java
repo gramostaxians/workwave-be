@@ -32,14 +32,4 @@ public class UserManagerController {
 //        userManagerService.syncManagersForUser(userId, managerIds);
 //        return ResponseEntity.status(HttpStatus.CREATED).build();
 //    }
-
-//    @PutMapping("/{userId}")
-//    public ResponseEntity<Void> updateUserAndManagers(
-//            @PathVariable BigInteger userId,
-//            @RequestBody UpdateUsersDTO updateUsersDTO) {
-//
-//        usersService.updateUserAndManagers(userId, updateUsersDTO);
-//        return ResponseEntity.noContent().build();
-//    }
-
 }
