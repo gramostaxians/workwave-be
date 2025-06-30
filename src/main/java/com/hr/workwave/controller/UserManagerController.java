@@ -1,5 +1,6 @@
 package com.hr.workwave.controller;
 
+import com.hr.workwave.dto.UpdateUsersDTO;
 import com.hr.workwave.model.UserManagers;
 import com.hr.workwave.services.UserManagerService;
 import lombok.RequiredArgsConstructor;
@@ -23,12 +24,22 @@ public class UserManagerController {
         return ResponseEntity.ok(managers);
     }
 
-    @PostMapping("/{userId}/managers")
-    public ResponseEntity<Void> syncManagers(
-            @PathVariable BigInteger userId,
-            @RequestBody List<BigInteger> managerIds) {
+//    @PostMapping("/{userId}/managers")
+//    public ResponseEntity<Void> syncManagers(
+//            @PathVariable BigInteger userId,
+//            @RequestBody List<BigInteger> managerIds) {
+//
+//        userManagerService.syncManagersForUser(userId, managerIds);
+//        return ResponseEntity.status(HttpStatus.CREATED).build();
+//    }
 
-        userManagerService.syncManagersForUser(userId, managerIds);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
-    }
+//    @PutMapping("/{userId}")
+//    public ResponseEntity<Void> updateUserAndManagers(
+//            @PathVariable BigInteger userId,
+//            @RequestBody UpdateUsersDTO updateUsersDTO) {
+//
+//        usersService.updateUserAndManagers(userId, updateUsersDTO);
+//        return ResponseEntity.noContent().build();
+//    }
+
 }

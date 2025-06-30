@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import java.math.BigInteger;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -18,15 +19,20 @@ import java.time.LocalDate;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    BigInteger id;
+    private BigInteger id;
 
-    @Column(unique=true)
+    @Column(unique = true)
     private String email;
+
     private String name;
     private String department;
     private String role;
-    private String created_at;
-    private String last_login;
-    private LocalDate start_of_work;
+    @Column(name = "created_at")
+    private LocalDateTime created_at;
+    private LocalDateTime last_login;
+
+    @Column(name = "start_of_work")
+    private LocalDate start_Of_Work;
+
     private Boolean notifyManager;
 }

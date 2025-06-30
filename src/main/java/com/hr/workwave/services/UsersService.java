@@ -1,6 +1,7 @@
 package com.hr.workwave.services;
 
 import com.hr.workwave.dto.ManagerDTO;
+import com.hr.workwave.dto.UpdateUsersDTO;
 import com.hr.workwave.dto.UserWithManagersDTO;
 import com.hr.workwave.model.UserManagers;
 import com.hr.workwave.model.User;
@@ -19,6 +20,8 @@ public class UsersService {
 
     private final UsersRepository usersRepository;
     private final UserManagerRepository userManagerRepository;
+    private final UserManagerService userManagerService;
+
 
     public List<User> getAllUsers() {
         return usersRepository.findAll();
@@ -36,9 +39,9 @@ public class UsersService {
 
             List<ManagerDTO> managers = links.stream()
                     .map(link -> {
-                        // link.getManagerId()
+
                         String managerIdStr = link.getManagerId().toString();
-                        return usersRepository.findById(link.getManagerId().longValue()).orElse(null);
+                        return usersRepository.findById(BigInteger.valueOf(link.getManagerId().longValue())).orElse(null);
                     })
                     .filter(Objects::nonNull)
                     .map(manager -> new ManagerDTO(
@@ -63,6 +66,29 @@ public class UsersService {
 
         return result;
     }
-}
+    public User updateUserAndManagers(BigInteger userId, UpdateUsersDTO dto) {
+        // Gjej përdoruesin
+        User user = usersRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
+        user.setName(dto.getName());
+        user.setDepartment(dto.getDepartment());
+        user.setRole(dto.getRole());
+        user.setStart_Of_Work(dto.getStartOfWork());
+        user.setNotifyManager(dto.getNotifyManager());
+
+        // Ruaj përdoruesin
+        usersRepository.save(user);
+
+        // Përditëso menaxherët nëse ka
+        List<BigInteger> managerIds = dto.getManagerIds();
+        if (managerIds != null && !managerIds.isEmpty()) {
+            userManagerService.syncManagersForUser(userId, managerIds);
+        }
+
+        // Kthe përdoruesin pas përditësimit
+        return user;
+    }
+
+}
 

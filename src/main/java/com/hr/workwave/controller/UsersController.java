@@ -1,8 +1,10 @@
 package com.hr.workwave.controller;
 
+import com.hr.workwave.dto.UpdateUsersDTO;
 import com.hr.workwave.dto.UserWithManagersDTO;
 import com.hr.workwave.model.User;
 import com.hr.workwave.services.UsersService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,4 +34,14 @@ public class UsersController {
 
 //    @PutMapping("/update/user/{userID}")
 //    Krijimi i logjikes e cila ben update te gjitha te dhenat e userit qe jan te, user managment.
+
+    @PutMapping("/update/user/{userId}")
+    public ResponseEntity<User> updateUserAndManagers(
+            @PathVariable BigInteger userId,
+            @Valid @RequestBody UpdateUsersDTO dto) {
+
+        User updatedUser = usersService.updateUserAndManagers(userId, dto);
+
+        return ResponseEntity.ok(updatedUser);
+    }
 }
