@@ -105,7 +105,7 @@ public class LeaveRequestService {
 
     public LeaveRequestDTO createLeaveRequest(LeaveRequestDTO dto) {
 
-        User user = usersRepository.findById(dto.getUserId())
+        User user = usersRepository.findById(BigInteger.valueOf(dto.getUserId()))
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         LeaveRequest leaveRequest = new LeaveRequest();
@@ -125,7 +125,7 @@ public class LeaveRequestService {
         managerLinks.forEach(link -> {
             Long managerId = link.getManagerId().longValue();
 
-            User manager = usersRepository.findById(managerId)
+            User manager = usersRepository.findById(BigInteger.valueOf(managerId))
                     .orElseThrow(() -> new RuntimeException("Manager not found: " + managerId));
 
             LeaveApprovals approval = new LeaveApprovals();
