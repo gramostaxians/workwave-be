@@ -36,7 +36,6 @@ public class LeaveRequestService {
     public List<LeaveRequest> getLeaveRequestsApprovedById(Long userId) {
         return leaveRequestRepository.getApprovedLeaveRequests(userId);
     }
-
     public List<LeaveRequest> getLeaveRequestsById(BigInteger userId) {
         return leaveRequestRepository.getLeaveRequestsById(userId);
     }
@@ -89,7 +88,6 @@ public class LeaveRequestService {
                 dto.setName(approval.getManager().getName());
                 dto.setApprovedStatus(approval.getApprovedStatus());
                 dto.setApprovedDate(approval.getApprovedDate());
-                dto.setRejectedReason(approval.getLeaveRequest().getRejectReason());
                 return dto;
             }).collect(Collectors.toList());
 
@@ -128,10 +126,11 @@ public class LeaveRequestService {
         List<UserManagers> managerLinks = userManagerRepository.findByUserId(userId);
 
         managerLinks.forEach(link -> {
-            Long managerId = link.getManagerId().longValue();
+            BigInteger managerId = link.getManagerId(); // Pa konvertim në Long
 
-            User manager = usersRepository.findById(BigInteger.valueOf(managerId))
+            User manager = usersRepository.findById(managerId)
                     .orElseThrow(() -> new RuntimeException("Manager not found: " + managerId));
+
 
             LeaveApprovals approval = new LeaveApprovals();
             approval.setLeaveRequest(savedRequest);
@@ -167,7 +166,6 @@ public class LeaveRequestService {
                     dto.setCreatedDate(leaveRequest.getCreatedDate());
                     dto.setStatus(leaveRequest.getStatus());
 
-
                     List<ManagerApprovalDTO> managerApprovals = leaveRequest.getApprovals().stream()
                             .map(approval -> {
                                 ManagerApprovalDTO mDto = new ManagerApprovalDTO();
@@ -191,6 +189,7 @@ public class LeaveRequestService {
                 })
                 .collect(Collectors.toList());
     }
+
 
     public List<LeaveRequestApprovalSummaryDTO> getAllPendingLeaveRequests() {
 

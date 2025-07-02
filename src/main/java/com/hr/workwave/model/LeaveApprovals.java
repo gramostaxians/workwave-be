@@ -1,5 +1,6 @@
 package com.hr.workwave.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.hr.workwave.enums.LeaveRequestStatusEnum;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -29,6 +30,7 @@ public class LeaveApprovals {
 
     @ManyToOne
     @JoinColumn(name = "leave_request_id", nullable = false)
+    @JsonBackReference
     private LeaveRequest leaveRequest;
 
     private LocalDate approvedDate;

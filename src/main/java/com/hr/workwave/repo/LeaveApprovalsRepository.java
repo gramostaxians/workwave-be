@@ -16,5 +16,4 @@ public interface LeaveApprovalsRepository extends JpaRepository<LeaveApprovals, 
 
     @Query("SELECT la.leaveRequest FROM LeaveApprovals la WHERE la.manager.id = :managerId AND la.leaveRequest.status = :status")
     List<LeaveRequest> findPendingLeaveRequestsByManager(@Param("managerId") Long managerId, @Param("status") LeaveRequestStatusEnum status);
-
 }

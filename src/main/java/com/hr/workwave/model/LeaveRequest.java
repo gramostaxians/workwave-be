@@ -1,4 +1,5 @@
 package com.hr.workwave.model;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.hr.workwave.enums.LeaveRequestStatusEnum;
 import jakarta.persistence.*;
 import lombok.*;
@@ -39,6 +40,7 @@ public class LeaveRequest {
     private User user;
 
     @OneToMany(mappedBy = "leaveRequest", cascade = CascadeType.ALL)
+    @JsonBackReference
     private List<LeaveApprovals> approvals;
 
     @Column(name = "created_date", nullable = false)

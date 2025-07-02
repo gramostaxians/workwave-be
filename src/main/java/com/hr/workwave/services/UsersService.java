@@ -67,7 +67,7 @@ public class UsersService {
         return result;
     }
     public User updateUserAndManagers(BigInteger userId, UpdateUsersDTO dto) {
-        // Gjej përdoruesin
+
         User user = usersRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
@@ -77,16 +77,13 @@ public class UsersService {
         user.setStart_Of_Work(dto.getStartOfWork());
         user.setNotifyManager(dto.getNotifyManager());
 
-        // Ruaj përdoruesin
         usersRepository.save(user);
 
-        // Përditëso menaxherët nëse ka
         List<BigInteger> managerIds = dto.getManagerIds();
         if (managerIds != null && !managerIds.isEmpty()) {
             userManagerService.syncManagersForUser(userId, managerIds);
         }
 
-        // Kthe përdoruesin pas përditësimit
         return user;
     }
 
