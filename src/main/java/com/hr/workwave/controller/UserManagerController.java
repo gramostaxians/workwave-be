@@ -24,12 +24,12 @@ public class UserManagerController {
         return ResponseEntity.ok(managers);
     }
 
-//    @PostMapping("/{userId}/managers")
-//    public ResponseEntity<Void> syncManagers(
-//            @PathVariable BigInteger userId,
-//            @RequestBody List<BigInteger> managerIds) {
-//
-//        userManagerService.syncManagersForUser(userId, managerIds);
-//        return ResponseEntity.status(HttpStatus.CREATED).build();
-//    }
+    @PostMapping("/{userId}/managers")
+    public ResponseEntity<Void> syncManagers(
+            @PathVariable BigInteger userId,
+            @RequestBody List<BigInteger> managerIds) {
+
+        userManagerService.syncManagersForUser(userId, managerIds);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
 }
