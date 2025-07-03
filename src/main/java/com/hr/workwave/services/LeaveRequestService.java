@@ -10,6 +10,7 @@ import com.hr.workwave.model.User;
 import com.hr.workwave.model.UserManagers;
 import com.hr.workwave.repo.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -119,6 +121,7 @@ public class LeaveRequestService {
         leaveRequest.setEnd_date(dto.getEndDate());
         leaveRequest.setUser(user);
         leaveRequest.setEmployee_email(dto.getEmployeeEmail());
+        leaveRequest.setStatus(LeaveRequestStatusEnum.PENDING);
 
         LeaveRequest savedRequest = leaveRequestRepository.save(leaveRequest);
 
@@ -140,6 +143,7 @@ public class LeaveRequestService {
 
             leaveApprovalsRepository.save(approval);
 
+            log.info("Duke dërguar email te menaxheri {} për kërkesën e pushimit të userit {}", manager.getEmail(), user.getEmail());
             emailService.sendEmail(
                     manager.getEmail(),
                     "New Leave Request Pending Approval",
@@ -147,17 +151,20 @@ public class LeaveRequestService {
                             "Leave Type: " + dto.getLeaveType() + "\n" +
                             "Reason: " + dto.getReason() + "\n\n"
             );
-            emailService.sendEmail(
-                    user.getEmail(),
-                    "New Leave Request Pending Approval",
-                    "You have a new leave request from " + user.getName() + ".\n\n" +
-                            "Leave Type: " + dto.getLeaveType() + "\n" +
-                            "Reason: " + dto.getReason() + "\n\n"
-            );
         });
 
+            log.info("Duke dërguar konfirmim te useri {}", user.getEmail());
+            emailService.sendEmail(
+                    user.getEmail(),
+                    "Your Leave Request Has Been Submitted",
+                    "Dear " + user.getName() + ",\n\n" +
+                            "Your leave request has been submitted successfully and is pending manager approval.\n\n" +
+                            "Leave Type: " + dto.getLeaveType() + "\n" +
+                            "Reason: " + dto.getRejectionReason() + "\n\n"
+            );
         return toDTO(savedRequest);
     }
+
     private void setLeaveRequestStatus(Long leaveRequestId, LeaveRequestStatusEnum status) {
         LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId)
                 .orElseThrow(() -> new RuntimeException("LeaveRequest not found with id " + leaveRequestId));
@@ -165,6 +172,7 @@ public class LeaveRequestService {
         leaveRequest.setStatus(status);
         leaveRequestRepository.save(leaveRequest);
     }
+
     public List<LeaveRequestApprovalSummaryDTO> getPendingLeaveRequestsForManager(Long managerId) {
         List<LeaveRequest> leaveRequests = leaveApprovalsRepository.findPendingLeaveRequestsByManager(managerId, LeaveRequestStatusEnum.PENDING);
 
@@ -204,7 +212,6 @@ public class LeaveRequestService {
                 })
                 .collect(Collectors.toList());
     }
-
 
     public List<LeaveRequestApprovalSummaryDTO> getAllPendingLeaveRequests() {
 

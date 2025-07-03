@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Getter
 @Setter
@@ -62,12 +61,15 @@ public class LeaveApprovalsService {
     public void updateLeaveRequestStatus(Long leaveRequestId) {
         List<LeaveApprovals> approvals = leaveApprovalsRepository.findByLeaveRequestId(leaveRequestId);
 
+        LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId)
+                .orElseThrow(() -> new RuntimeException("LeaveRequest not found with id " + leaveRequestId));
         boolean hasRejected = approvals.stream()
                 .anyMatch(a -> a.getApprovedStatus() == LeaveRequestStatusEnum.REJECTED);
         if (hasRejected) {
             setLeaveRequestStatus(leaveRequestId, LeaveRequestStatusEnum.REJECTED);
-            Optional<LeaveRequest> leaveRequest = leaveRequestRepository.findById(leaveRequestId);
-            emailService.sendEmail(leaveRequest.get().getUser().getEmail(), "Rejected Leave Request", leaveRequest.get().getRejectReason());
+            if (leaveRequest.getUser() != null && leaveRequest.getUser().getEmail() != null) {
+                emailService.sendEmail(leaveRequest.getUser().getEmail(), "Rejected Leave Request", leaveRequest.getRejectReason());
+            }
             return;
         }
 
@@ -79,10 +81,10 @@ public class LeaveApprovalsService {
         }
 
         setLeaveRequestStatus(leaveRequestId, LeaveRequestStatusEnum.APPROVED);
-        Optional<LeaveRequest> leaveRequest = leaveRequestRepository.findById(leaveRequestId);
-        emailService.sendEmail(leaveRequest.get().getUser().getEmail(), "Approved Leave Request", leaveRequest.get().getReason());
+        if (leaveRequest.getUser() != null && leaveRequest.getUser().getEmail() != null) {
+            emailService.sendEmail(leaveRequest.getUser().getEmail(), "Approved Leave Request", leaveRequest.getReason());
+        }
     }
-
 
     private void setLeaveRequestStatus(Long leaveRequestId, LeaveRequestStatusEnum status) {
         LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId)

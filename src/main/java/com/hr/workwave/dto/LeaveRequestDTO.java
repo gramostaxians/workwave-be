@@ -20,4 +20,5 @@ public class LeaveRequestDTO {
     private String reason;
     private String employeeEmail;
     private Long userId;
+    private String RejectionReason;
 }
