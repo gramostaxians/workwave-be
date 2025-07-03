@@ -68,7 +68,16 @@ public class LeaveApprovalsService {
         if (hasRejected) {
             setLeaveRequestStatus(leaveRequestId, LeaveRequestStatusEnum.REJECTED);
             if (leaveRequest.getUser() != null && leaveRequest.getUser().getEmail() != null) {
-                emailService.sendEmail(leaveRequest.getUser().getEmail(), "Rejected Leave Request", leaveRequest.getRejectReason());
+                emailService.sendEmail(leaveRequest.getUser().getEmail(),
+                        "Leave Request Rejected",
+                        "Dear " + leaveRequest.getUser().getName() + ",\n\n" +
+                                "Your leave request has been rejected. \n\n" +
+                                "Leave Type: " + leaveRequest.getLeave_type() + "\n" +
+                                "Start Date: " + leaveRequest.getStart_date()+ "\n\n" +
+                                "End Date: " + leaveRequest.getEnd_date()+ "\n\n" +
+                                "Reason: " + leaveRequest.getReason()+ "\n\n"+
+                                "Status: " + leaveRequest.getStatus()+ "\n\n"+
+                                "You will receive another notification once your request has been reviewed. \n\n" );
             }
             return;
         }
@@ -82,7 +91,16 @@ public class LeaveApprovalsService {
 
         setLeaveRequestStatus(leaveRequestId, LeaveRequestStatusEnum.APPROVED);
         if (leaveRequest.getUser() != null && leaveRequest.getUser().getEmail() != null) {
-            emailService.sendEmail(leaveRequest.getUser().getEmail(), "Approved Leave Request", leaveRequest.getReason());
+            emailService.sendEmail(leaveRequest.getUser().getEmail(),
+                    "Leave Request Approved",
+                   "Dear " + leaveRequest.getUser().getName() + ",\n\n" +
+                    "Your leave request has been approved. \n\n" +
+                    "Leave Type: " + leaveRequest.getLeave_type() + "\n" +
+                    "Start Date: " + leaveRequest.getStart_date()+ "\n\n" +
+                    "End Date: " + leaveRequest.getEnd_date()+ "\n\n" +
+                    "Reason: " + leaveRequest.getReason()+ "\n\n"+
+                    "Status: " + leaveRequest.getStatus()+ "\n\n"+
+                    "Add to My Calendar  \n\n" );
         }
     }
 

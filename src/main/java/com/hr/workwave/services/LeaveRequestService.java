@@ -143,25 +143,28 @@ public class LeaveRequestService {
 
             leaveApprovalsRepository.save(approval);
 
-            log.info("Duke dërguar email te menaxheri {} për kërkesën e pushimit të userit {}", manager.getEmail(), user.getEmail());
-            emailService.sendEmail(
-                    manager.getEmail(),
-                    "New Leave Request Pending Approval",
-                    "You have a new leave request from " + user.getName() + ".\n\n" +
-                            "Leave Type: " + dto.getLeaveType() + "\n" +
-                            "Reason: " + dto.getReason() + "\n\n"
-            );
+            emailService.sendEmail(leaveRequest.getUser().getEmail(),
+                    "Leave Request Pending",
+                    "Dear " + leaveRequest.getUser().getName() + ",\n\n" +
+                            "Your leave request has been successfully submitted and is pending approval. \n\n" +
+                            "Leave Type: " + leaveRequest.getLeave_type() + "\n" +
+                            "Start Date: " + leaveRequest.getStart_date()+ "\n\n" +
+                            "End Date: " + leaveRequest.getEnd_date()+ "\n\n" +
+                            "Reason: " + leaveRequest.getReason()+ "\n\n"+
+                            "Status: " + leaveRequest.getStatus()+ "\n\n"+
+                            "You will receive another notification once your request has been reviewed. \n\n" );
         });
 
-            log.info("Duke dërguar konfirmim te useri {}", user.getEmail());
-            emailService.sendEmail(
-                    user.getEmail(),
-                    "Your Leave Request Has Been Submitted",
-                    "Dear " + user.getName() + ",\n\n" +
-                            "Your leave request has been submitted successfully and is pending manager approval.\n\n" +
-                            "Leave Type: " + dto.getLeaveType() + "\n" +
-                            "Reason: " + dto.getRejectionReason() + "\n\n"
-            );
+        emailService.sendEmail(leaveRequest.getUser().getEmail(),
+                "Leave Request Approved",
+                "Dear " + leaveRequest.getUser().getName() + ",\n\n" +
+                        "Your leave request has been successfully submitted and is pending approval. \n\n" +
+                        "Leave Type: " + leaveRequest.getLeave_type() + "\n" +
+                        "Start Date: " + leaveRequest.getStart_date()+ "\n\n" +
+                        "End Date: " + leaveRequest.getEnd_date()+ "\n\n" +
+                        "Reason: " + leaveRequest.getReason()+ "\n\n"+
+                        "Status: " + leaveRequest.getStatus()+ "\n\n"+
+                        "You will receive another notification once your request has been reviewed. \n\n" );
         return toDTO(savedRequest);
     }
 
