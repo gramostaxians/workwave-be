@@ -126,7 +126,7 @@ public class LeaveRequestService {
         List<UserManagers> managerLinks = userManagerRepository.findByUserId(userId);
 
         managerLinks.forEach(link -> {
-            BigInteger managerId = link.getManagerId(); // Pa konvertim në Long
+            BigInteger managerId = link.getManagerId();
 
             User manager = usersRepository.findById(managerId)
                     .orElseThrow(() -> new RuntimeException("Manager not found: " + managerId));
@@ -139,6 +139,21 @@ public class LeaveRequestService {
             leaveRequest.setStatus(LeaveRequestStatusEnum.PENDING);
 
             leaveApprovalsRepository.save(approval);
+
+            emailService.sendEmail(
+                    manager.getEmail(),
+                    "New Leave Request Pending Approval",
+                    "You have a new leave request from " + user.getName() + ".\n\n" +
+                            "Leave Type: " + dto.getLeaveType() + "\n" +
+                            "Reason: " + dto.getReason() + "\n\n"
+            );
+            emailService.sendEmail(
+                    user.getEmail(),
+                    "New Leave Request Pending Approval",
+                    "You have a new leave request from " + user.getName() + ".\n\n" +
+                            "Leave Type: " + dto.getLeaveType() + "\n" +
+                            "Reason: " + dto.getReason() + "\n\n"
+            );
         });
 
         return toDTO(savedRequest);

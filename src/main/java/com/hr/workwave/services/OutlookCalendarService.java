@@ -15,6 +15,15 @@ public class OutlookCalendarService {
 
     public boolean createEvent(String accessToken, String startDateTime, String endDateTime) {
         try {
+            if (accessToken == null || accessToken.isEmpty()) {
+                System.err.println("Access token is missing or empty");
+                return false;
+            }
+
+            System.out.println("Token: " + accessToken);
+            System.out.println("StartDateTime: " + startDateTime);
+            System.out.println("EndDateTime: " + endDateTime);
+
             HttpHeaders headers = new HttpHeaders();
             headers.setBearerAuth(accessToken);
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -35,11 +44,6 @@ public class OutlookCalendarService {
                     )
             );
 
-            if (accessToken == null || accessToken.isEmpty()) {
-                System.err.println("Access token is missing or empty");
-                return false;
-            }
-
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(event, headers);
 
             ResponseEntity<String> response = new RestTemplate().postForEntity(
@@ -48,14 +52,18 @@ public class OutlookCalendarService {
                     String.class
             );
 
-            System.out.println("Event created: " + response.getBody());
+            System.out.println("Response Status: " + response.getStatusCode());
+            System.out.println("Response Body: " + response.getBody());
 
             return response.getStatusCode().is2xxSuccessful();
+
         } catch (Exception e) {
             System.err.println("Failed to create calendar event: " + e.getMessage());
+            e.printStackTrace();  // Shto këtë për më shumë detaje
             return false;
         }
     }
+
 
 }
 

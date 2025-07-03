@@ -67,7 +67,7 @@ public class LeaveApprovalsService {
         if (hasRejected) {
             setLeaveRequestStatus(leaveRequestId, LeaveRequestStatusEnum.REJECTED);
             Optional<LeaveRequest> leaveRequest = leaveRequestRepository.findById(leaveRequestId);
-            emailService.sendEmail(leaveRequest.get().getUser().getEmail(), "Rejected Leave Request", leaveRequest.get().getReason());
+            emailService.sendEmail(leaveRequest.get().getUser().getEmail(), "Rejected Leave Request", leaveRequest.get().getRejectReason());
             return;
         }
 
@@ -79,6 +79,8 @@ public class LeaveApprovalsService {
         }
 
         setLeaveRequestStatus(leaveRequestId, LeaveRequestStatusEnum.APPROVED);
+        Optional<LeaveRequest> leaveRequest = leaveRequestRepository.findById(leaveRequestId);
+        emailService.sendEmail(leaveRequest.get().getUser().getEmail(), "Approved Leave Request", leaveRequest.get().getReason());
     }
 
 
