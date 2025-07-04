@@ -50,6 +50,7 @@ public class UsersService {
                             manager.getEmail()
                     ))
                     .toList();
+            Boolean notifyManager = Boolean.TRUE.equals(user.getNotifyManager());
 
             result.add(new UserWithManagersDTO(
                     user.getId().longValue(),
@@ -59,7 +60,7 @@ public class UsersService {
                     user.getRole(),
                     user.getCreated_at(),
                     user.getLast_login(),
-                    user.getNotifyManager(),
+                    notifyManager,
                     managers
             ));
         }
