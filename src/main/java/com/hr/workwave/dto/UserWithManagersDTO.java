@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -20,6 +21,7 @@ public class UserWithManagersDTO {
     private LocalDateTime created_at;
     private LocalDateTime last_login;
     private boolean notifyManager;
+    private LocalDate start_Of_Work;
     private List<ManagerDTO> managers;
 
 }

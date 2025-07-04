@@ -155,18 +155,18 @@ public class LeaveRequestService {
                             "You will receive another notification once your request has been reviewed. \n\n" );
         });
 
-        emailService.sendEmail(leaveRequest.getUser().getEmail(),
-                "Leave Request Approved",
-                "Dear " + leaveRequest.getUser().getName() + ",\n\n" +
-                        "Your leave request has been successfully submitted and is pending approval. \n\n" +
-                        "Leave Type: " + leaveRequest.getLeave_type() + "\n" +
-                        "Start Date: " + leaveRequest.getStart_date()+ "\n\n" +
-                        "End Date: " + leaveRequest.getEnd_date()+ "\n\n" +
-                        "Reason: " + leaveRequest.getReason()+ "\n\n"+
-                        "Status: " + leaveRequest.getStatus()+ "\n\n"+
-                        "You will receive another notification once your request has been reviewed. \n\n" );
-        return toDTO(savedRequest);
-    }
+            emailService.sendEmail(leaveRequest.getUser().getEmail(),
+                    "Leave Request Approved",
+                    "Dear " + leaveRequest.getUser().getName() + ",\n\n" +
+                            "Your leave request has been successfully submitted and is pending approval. \n\n" +
+                            "Leave Type: " + leaveRequest.getLeave_type() + "\n" +
+                            "Start Date: " + leaveRequest.getStart_date()+ "\n\n" +
+                            "End Date: " + leaveRequest.getEnd_date()+ "\n\n" +
+                            "Reason: " + leaveRequest.getReason()+ "\n\n"+
+                            "Status: " + leaveRequest.getStatus()+ "\n\n"+
+                            "You will receive another notification once your request has been reviewed. \n\n" );
+            return toDTO(savedRequest);
+        }
 
     private void setLeaveRequestStatus(Long leaveRequestId, LeaveRequestStatusEnum status) {
         LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId)

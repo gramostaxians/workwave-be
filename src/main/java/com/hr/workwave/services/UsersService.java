@@ -61,6 +61,7 @@ public class UsersService {
                     user.getCreated_at(),
                     user.getLast_login(),
                     notifyManager,
+                    user.getStart_Of_Work(),
                     managers
             ));
         }
