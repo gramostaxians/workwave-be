@@ -38,12 +38,9 @@ public class LeaveRequestService {
     public List<LeaveRequest> getLeaveRequestsApprovedById(Long userId) {
         return leaveRequestRepository.getApprovedLeaveRequests(userId);
     }
+
     public List<LeaveRequest> getLeaveRequestsById(BigInteger userId) {
         return leaveRequestRepository.getLeaveRequestsById(userId);
-    }
-
-    public Optional<LeaveRequest> findById(Long id) {
-        return leaveRequestRepository.findById(id);
     }
 
     public List<LeaveRequest> getLeaveRequestsByStatus(LeaveRequestStatusEnum status) {
@@ -53,32 +50,82 @@ public class LeaveRequestService {
 
     public boolean deleteRequestById(Long id) {
         Optional<LeaveRequest> requestOpt = leaveRequestRepository.findById(id);
-        if (requestOpt.isPresent()) {
-            LeaveRequest request = requestOpt.get();
 
-            LeaveRequestStatusEnum status = request.getStatus();
-            String userEmail = request.getEmployee_email();
+        LeaveRequest request = requestOpt.get();
+        LeaveRequestStatusEnum status = request.getStatus();
+        String userEmail = request.getEmployee_email();
+        User user = request.getUser();
+        User manager = null;
 
-            System.out.println("Deleting leave request with status: " + status);
-
-            leaveRequestRepository.delete(request);
-
-            if (LeaveRequestStatusEnum.APPROVED.equals(status)) {
-                emailService.sendEmail(
-                        userEmail,
-                        "Your approved leave request has been deleted.",
-                        "Has canceled the leave request."
-                );
-
-                System.out.println("Leave request approved, cancelled by user");
+        if (user != null) {
+            BigInteger managerId = user.getId();
+            if (managerId != null) {
+                Long managerIdLong = managerId.longValue();
+                manager = usersRepository.findById(managerId)
+                        .orElseThrow(() -> new RuntimeException("Manager not found: " + managerIdLong));
             }
-
-            return true;
         }
-        return false;
-    }
 
-    @Transactional
+        System.out.println("Deleting leave request with status: " + status);
+
+        leaveRequestRepository.delete(request);
+
+        if (userEmail != null && user != null) {
+            String htmlMessage = "<html>" +
+                    "<body style=\"font-family: Arial, sans-serif;\">" +
+                    "<div style=\"background-color: #f8f66f; padding: 20px;\">" +
+                    "<h2 style=\"color: #333;\">Leave Request Deleted</h2>" +
+                    "<p style=\"font-size: 16px;\">Dear " + user.getName() + ",</p>" +
+                    "<p style=\"font-size: 16px;\">A leave request has been CANCELED</p>" +
+                    "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
+                    "<p><strong>From: :</strong> " + user.getName() + "</p>" +
+                    "<p><strong>Leave Type:</strong> " + request.getLeave_type() + "</p>" +
+                    "<p><strong>Start Date:</strong> " + request.getStart_date() + "</p>" +
+                    "<p><strong>End Date:</strong> " + request.getEnd_date() + "</p>" +
+                    "<p><strong>Reason:</strong> " + request.getReason() + "</p>" +
+                    "<p><strong>Status:</strong> " + request.getStatus() + "</p>" +
+                    "</div>" +
+                    "<p style=\"font-size: 16px; margin-top: 20px;\">Thank you.</p>" +
+                    "</div>" +
+                    "</body>" +
+                    "</html>";
+
+            emailService.sendEmail(
+                    manager.getEmail(),
+                    "Leave Request Deleted from " + user.getName(),
+                    htmlMessage
+            );
+        }
+
+        if (manager != null && manager.getEmail() != null && user != null) {
+            String htmlMessage = "<html>" +
+                    "<body style=\"font-family: Arial, sans-serif;\">" +
+                    "<div style=\"background-color: #c9daeb; padding: 20px;\">" +
+                    "<h2 style=\"color: #333;\">Leave Request Deleted</h2>" +
+                    "<p style=\"font-size: 16px;\">Dear " + manager.getName() + ",</p>" +
+                    "<p style=\"font-size: 16px;\">A leave request has been CANCELED</p>" +
+                    "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
+                    "<p><strong>From: :</strong> " + user.getName() + "</p>" +
+                    "<p><strong>Leave Type:</strong> " + request.getLeave_type() + "</p>" +
+                    "<p><strong>Start Date:</strong> " + request.getStart_date() + "</p>" +
+                    "<p><strong>End Date:</strong> " + request.getEnd_date() + "</p>" +
+                    "<p><strong>Reason:</strong> " + request.getReason() + "</p>" +
+                    "<p><strong>Status:</strong> " + request.getStatus() + "</p>" +
+                    "</div>" +
+                    "<p style=\"font-size: 16px; margin-top: 20px;\">Thank you.</p>" +
+                    "</div>" +
+                    "</body>" +
+                    "</html>";
+
+            emailService.sendEmail(
+                    manager.getEmail(),
+                    "Leave Request Deleted from " + user.getName(),
+                    htmlMessage
+            );
+        }
+
+        return true;
+    }
     public List<LeaveRequestApprovalSummaryDTO> getLeaveRequestsWithApprovalsByUserId(Long userId) {
         List<LeaveRequest> leaveRequests = leaveRequestRepository.findByUserId(userId);
 
@@ -134,46 +181,78 @@ public class LeaveRequestService {
             User manager = usersRepository.findById(managerId)
                     .orElseThrow(() -> new RuntimeException("Manager not found: " + managerId));
 
-
             LeaveApprovals approval = new LeaveApprovals();
             approval.setLeaveRequest(savedRequest);
             approval.setManager(manager);
             approval.setApprovedStatus(LeaveRequestStatusEnum.PENDING);
-            leaveRequest.setStatus(LeaveRequestStatusEnum.PENDING);
-
             leaveApprovalsRepository.save(approval);
 
-            emailService.sendEmail(leaveRequest.getUser().getEmail(),
-                    "Leave Request Pending",
-                    "Dear " + leaveRequest.getUser().getName() + ",\n\n" +
-                            "Your leave request has been successfully submitted and is pending approval. \n\n" +
-                            "Leave Type: " + leaveRequest.getLeave_type() + "\n" +
-                            "Start Date: " + leaveRequest.getStart_date()+ "\n\n" +
-                            "End Date: " + leaveRequest.getEnd_date()+ "\n\n" +
-                            "Reason: " + leaveRequest.getReason()+ "\n\n"+
-                            "Status: " + leaveRequest.getStatus()+ "\n\n"+
-                            "You will receive another notification once your request has been reviewed. \n\n" );
+            String htmlMessage = "<html>" +
+                    "<body style=\"font-family: Arial, sans-serif;\">" +
+                    "<div style=\"background-color: #c9daeb; padding: 20px;\">" +
+                    "<h2 style=\"color: #333;\">New Leave Request</h2>" +
+                    "<p style=\"font-size: 16px;\">Dear " + manager.getName() + ",</p>" +
+                    "<p style=\"font-size: 16px;\">You have a new leave request awaiting your review and approval</p>" +
+                    "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
+                    "<p><strong>From: :</strong> " + user.getName() + "</p>" +
+                    "<p><strong>Leave Type:</strong> " + leaveRequest.getLeave_type() + "</p>" +
+                    "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date() + "</p>" +
+                    "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date() + "</p>" +
+                    "<p><strong>Reason:</strong> " + leaveRequest.getReason() + "</p>" +
+                    "<p><strong>Reason:</strong> " + leaveRequest.getStatus() + "</p>" +
+                    "</div>" +
+                    "<p style=\"font-size: 16px; margin-top: 20px;\">Please log in to te system to review and respond to the request at your earliest convenience.</p>" +
+                    "<p style=\"font-size: 16px; margin-top: 20px;\">Follow the link.</p>" +
+                    "<a href=\"https://s00-vecarbonapp/leave-approval\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\"> Link.</a>" +
+                    "<p style=\"font-size: 16px; margin-top: 20px;\">Thank you.</p>" +
+                    "</div>" +
+                    "</body>" +
+                    "</html>";
+
+            emailService.sendEmail(manager.getEmail(),
+                    "New Leave Request from " + user.getName(),
+                    htmlMessage
+            );
         });
 
-            emailService.sendEmail(leaveRequest.getUser().getEmail(),
-                    "Leave Request Approved",
-                    "Dear " + leaveRequest.getUser().getName() + ",\n\n" +
-                            "Your leave request has been successfully submitted and is pending approval. \n\n" +
-                            "Leave Type: " + leaveRequest.getLeave_type() + "\n" +
-                            "Start Date: " + leaveRequest.getStart_date()+ "\n\n" +
-                            "End Date: " + leaveRequest.getEnd_date()+ "\n\n" +
-                            "Reason: " + leaveRequest.getReason()+ "\n\n"+
-                            "Status: " + leaveRequest.getStatus()+ "\n\n"+
-                            "You will receive another notification once your request has been reviewed. \n\n" );
-            return toDTO(savedRequest);
-        }
+        String htmlMessage = "<html>" +
+                "<body style=\"font-family: Arial, sans-serif;\">" +
+                "<div style=\"background-color: #c9daeb; padding: 20px;\">" +
+                "<h2 style=\"color: #333;\">New Leave Request</h2>" +
+                "<p style=\"font-size: 16px;\">Dear " + user.getName() + ",</p>" +
+                "<p style=\"font-size: 16px;\">Your leave request has been successfully submitted and in pending status</p>" +
+                "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
+                "<p><strong>Leave Type:</strong> " + leaveRequest.getLeave_type() + "</p>" +
+                "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date() + "</p>" +
+                "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date() + "</p>" +
+                "<p><strong>Reason:</strong> " + leaveRequest.getReason() + "</p>" +
+                "<p><strong>Reason:</strong> " + leaveRequest.getStatus() + "</p>" +
+                "</div>" +
+                "<p style=\"font-size: 16px; margin-top: 20px;\">Follow the link to see your request.:</p>" +
+                "<a href=\"https://s00-vecarbonapp/my-leaves\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\">Link</a>" +
+                "<p style=\"font-size: 16px; margin-top: 20px;\">You will receive another notification once your request has been reviewed.</p>" +
+                "<p style=\"font-size: 16px; margin-top: 20px;\">Thank you.</p>" +
+                "</div>" +
+                "</body>" +
+                "</html>";
 
-    private void setLeaveRequestStatus(Long leaveRequestId, LeaveRequestStatusEnum status) {
-        LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId)
-                .orElseThrow(() -> new RuntimeException("LeaveRequest not found with id " + leaveRequestId));
+        emailService.sendEmail(user.getEmail(),
+                "New Leave Request from " + user.getName(),
+                htmlMessage
+        );
 
-        leaveRequest.setStatus(status);
-        leaveRequestRepository.save(leaveRequest);
+//        emailService.sendEmail(user.getEmail(),
+//                "Leave Request Submitted",
+//                "Dear " + user.getName() + ",\n\n" +
+//                        "Your leave request has been submitted and is currently pending manager approval.\n\n" +
+//                        "Leave Type: " + leaveRequest.getLeave_type() + "\n" +
+//                        "Start Date: " + leaveRequest.getStart_date() + "\n" +
+//                        "End Date: " + leaveRequest.getEnd_date() + "\n" +
+//                        "Reason: " + leaveRequest.getReason() + "\n" +
+//                        "Status: " + leaveRequest.getStatus() + "\n\n" +
+//                        "You will be notified once a decision has been made.\n");
+
+        return toDTO(savedRequest);
     }
 
     public List<LeaveRequestApprovalSummaryDTO> getPendingLeaveRequestsForManager(Long managerId) {
@@ -259,7 +338,8 @@ public class LeaveRequestService {
         dto.setLeaveType(request.getLeave_type());
         dto.setStartDate(request.getStart_date());
         dto.setEndDate(request.getEnd_date());
-        dto.setUserId(request.getUser().getId().longValue());;
+        dto.setUserId(request.getUser().getId().longValue());
+
         return dto;
     }
 }

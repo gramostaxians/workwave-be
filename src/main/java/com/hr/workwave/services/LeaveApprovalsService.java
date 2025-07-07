@@ -24,7 +24,6 @@ public class LeaveApprovalsService {
     private final LeaveApprovalsRepository leaveApprovalsRepository;
     private final UsersRepository usersRepository;
     private final LeaveRequestRepository leaveRequestRepository;
-    private final LeaveRequestService leaveRequestService;
     private final EmailService emailService;
 
 
@@ -68,18 +67,34 @@ public class LeaveApprovalsService {
         if (hasRejected) {
             setLeaveRequestStatus(leaveRequestId, LeaveRequestStatusEnum.REJECTED);
             if (leaveRequest.getUser() != null && leaveRequest.getUser().getEmail() != null) {
-                emailService.sendEmail(leaveRequest.getUser().getEmail(),
-                        "Leave Request Rejected",
-                        "Dear " + leaveRequest.getUser().getName() + ",\n\n" +
-                                "Your leave request has been rejected. \n\n" +
-                                "Leave Type: " + leaveRequest.getLeave_type() + "\n" +
-                                "Start Date: " + leaveRequest.getStart_date()+ "\n\n" +
-                                "End Date: " + leaveRequest.getEnd_date()+ "\n\n" +
-                                "Reason: " + leaveRequest.getReason()+ "\n\n"+
-                                "Status: " + leaveRequest.getStatus()+ "\n\n"+
-                                "You will receive another notification once your request has been reviewed. \n\n" );
+
+                String htmlMessage = "<html>" +
+                        "<body style=\"font-family: Arial, sans-serif;\">" +
+                        "<div style=\"background-color: #c9daeb; padding: 20px;\">" +
+                        "<p style=\"font-size: 16px;\">Dear " + leaveRequest.getUser().getName() + ",</p>" +
+                        "<p style=\"font-size: 16px;\">Your Leave request has been <Strong> REJECTED </strong></p>" +
+                        "<p><Strong> Rejection reason :</strong>"+ leaveRequest.getRejectReason() + "</p>" +
+                        "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
+                        "<p><strong>Leave Type:</strong> " + leaveRequest.getLeave_type() + "</p>" +
+                        "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date() + "</p>" +
+                        "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date() + "</p>" +
+                        "<p><strong>Reason:</strong> " + leaveRequest.getReason() + "</p>" +
+                        "<p><strong>Status:</strong> " + leaveRequest.getStatus() + "</p>" +
+                        "</div>" +
+                        "<p style=\"font-size: 16px; margin-top: 20px;\">Follow the link to see your request.:</p>" +
+                        "<a href=\"https://s00-vecarbonapp/my-leaves\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\">Link</a>" +
+                        "<p style=\"font-size: 16px; margin-top: 20px;\">Thank you.</p>" +
+                        "</div>" +
+                        "</body>" +
+                        "</html>";
+
+                emailService.sendEmail(
+                        leaveRequest.getUser().getEmail(),
+                        "New Leave Request from " + leaveRequest.getUser().getName(),
+                        htmlMessage
+                );
+                return;
             }
-            return;
         }
 
         boolean hasPending = approvals.stream()
@@ -91,16 +106,33 @@ public class LeaveApprovalsService {
 
         setLeaveRequestStatus(leaveRequestId, LeaveRequestStatusEnum.APPROVED);
         if (leaveRequest.getUser() != null && leaveRequest.getUser().getEmail() != null) {
-            emailService.sendEmail(leaveRequest.getUser().getEmail(),
-                    "Leave Request Approved",
-                   "Dear " + leaveRequest.getUser().getName() + ",\n\n" +
-                    "Your leave request has been approved. \n\n" +
-                    "Leave Type: " + leaveRequest.getLeave_type() + "\n" +
-                    "Start Date: " + leaveRequest.getStart_date()+ "\n\n" +
-                    "End Date: " + leaveRequest.getEnd_date()+ "\n\n" +
-                    "Reason: " + leaveRequest.getReason()+ "\n\n"+
-                    "Status: " + leaveRequest.getStatus()+ "\n\n"+
-                    "Add to My Calendar  \n\n" );
+
+            String htmlMessage = "<html>" +
+                    "<body style=\"font-family: Arial, sans-serif;\">" +
+                    "<div style=\"background-color: #c9daeb; padding: 20px;\">" +
+                    "<p style=\"font-size: 16px;\">Dear " + leaveRequest.getUser().getName() + ",</p>" +
+                    "<p style=\"font-size: 16px;\">Your Leave request has been <Strong> APPROVED </strong></p>" +
+                    "<p><Strong> Rejection reason :</strong>"+ leaveRequest.getRejectReason() + "</p>" +
+                    "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
+                    "<p><strong>Leave Type:</strong> " + leaveRequest.getLeave_type() + "</p>" +
+                    "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date() + "</p>" +
+                    "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date() + "</p>" +
+                    "<p><strong>Reason:</strong> " + leaveRequest.getReason() + "</p>" +
+                    "<p><strong>Status:</strong> " + leaveRequest.getStatus() + "</p>" +
+                    "</div>" +
+                    "<p style=\"font-size: 16px; margin-top: 20px;\">Follow the link to see your request.:</p>" +
+                    "<a href=\"https://s00-vecarbonapp/my-leaves\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\">Link</a>" +
+                    "<p style=\"font-size: 16px; margin-top: 20px;\">Thank you.</p>" +
+                    "</div>" +
+                    "</body>" +
+                    "</html>";
+
+            emailService.sendEmail(
+                    leaveRequest.getUser().getEmail(),
+                    "New Leave Request from " + leaveRequest.getUser().getName(),
+                    htmlMessage
+            );
+
         }
     }
 

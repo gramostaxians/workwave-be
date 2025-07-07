@@ -1,9 +1,13 @@
 package com.hr.workwave.services;
 
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.MailMessage;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -21,19 +25,27 @@ public class EmailService {
     }
 
     @Async
-    public void sendEmail(String to, String subject, String text) {
-        if(mailEnabled) {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setTo(to);
-            message.setFrom("noreply@workwave.net");
-            message.setSubject(subject);
-            message.setText(text);
-            mailSender.send(message);
-        }else{
+    public void sendEmail(String to, String subject, String htmlContent) {
+        if (mailEnabled) {
+            try {
+                MimeMessage message = mailSender.createMimeMessage();
+                MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+                helper.setTo(to);
+                helper.setFrom("noreply@workwave.net");
+                helper.setSubject(subject);
+                helper.setText(htmlContent, true);
+
+                mailSender.send(message);
+            } catch (MessagingException e) {
+                log.error("Failed to send email to " + to, e);
+            }
+        } else {
             log.info("Mail service is disabled!");
             log.info("Mail to: {}", to);
             log.info("Mail subject: {}", subject);
-            log.info("Mail body: {}", text);
+            log.info("Mail body: {}", htmlContent);
         }
     }
+
 }
