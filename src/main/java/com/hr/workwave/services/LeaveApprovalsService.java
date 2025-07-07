@@ -13,6 +13,7 @@ import lombok.Setter;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Getter
@@ -62,6 +63,9 @@ public class LeaveApprovalsService {
 
         LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId)
                 .orElseThrow(() -> new RuntimeException("LeaveRequest not found with id " + leaveRequestId));
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
         boolean hasRejected = approvals.stream()
                 .anyMatch(a -> a.getApprovedStatus() == LeaveRequestStatusEnum.REJECTED);
         if (hasRejected) {
@@ -76,8 +80,8 @@ public class LeaveApprovalsService {
                         "<p><Strong> Rejection reason :</strong>"+ leaveRequest.getRejectReason() + "</p>" +
                         "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
                         "<p><strong>Leave Type:</strong> " + leaveRequest.getLeave_type() + "</p>" +
-                        "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date() + "</p>" +
-                        "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date() + "</p>" +
+                        "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date().format(formatter) + "</p>" +
+                        "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date().format(formatter) + "</p>" +
                         "<p><strong>Reason:</strong> " + leaveRequest.getReason() + "</p>" +
                         "<p><strong>Status:</strong> " + leaveRequest.getStatus() + "</p>" +
                         "</div>" +
@@ -115,8 +119,8 @@ public class LeaveApprovalsService {
                     "<p><Strong> Rejection reason :</strong>"+ leaveRequest.getRejectReason() + "</p>" +
                     "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
                     "<p><strong>Leave Type:</strong> " + leaveRequest.getLeave_type() + "</p>" +
-                    "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date() + "</p>" +
-                    "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date() + "</p>" +
+                    "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date().format(formatter) + "</p>" +
+                    "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date().format(formatter) + "</p>" +
                     "<p><strong>Reason:</strong> " + leaveRequest.getReason() + "</p>" +
                     "<p><strong>Status:</strong> " + leaveRequest.getStatus() + "</p>" +
                     "</div>" +

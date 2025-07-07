@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -51,37 +52,39 @@ public class LeaveRequestService {
     public boolean deleteRequestById(Long id) {
         Optional<LeaveRequest> requestOpt = leaveRequestRepository.findById(id);
 
+        if (!requestOpt.isPresent()) {
+            throw new RuntimeException("Leave request not found with ID: " + id);
+        }
+
         LeaveRequest request = requestOpt.get();
         LeaveRequestStatusEnum status = request.getStatus();
         String userEmail = request.getEmployee_email();
         User user = request.getUser();
-        User manager = null;
 
-        if (user != null) {
-            BigInteger managerId = user.getId();
-            if (managerId != null) {
-                Long managerIdLong = managerId.longValue();
-                manager = usersRepository.findById(managerId)
-                        .orElseThrow(() -> new RuntimeException("Manager not found: " + managerIdLong));
-            }
+        if (user == null) {
+            throw new RuntimeException("Leave request has no associated user");
         }
 
-        System.out.println("Deleting leave request with status: " + status);
+        BigInteger userId = user.getId();
+        List<UserManagers> managerLinks = userManagerRepository.findByUserId(userId);
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
 
         leaveRequestRepository.delete(request);
 
-        if (userEmail != null && user != null) {
+        if (userEmail != null) {
             String htmlMessage = "<html>" +
                     "<body style=\"font-family: Arial, sans-serif;\">" +
-                    "<div style=\"background-color: #f8f66f; padding: 20px;\">" +
+                    "<div style=\"background-color: #c9daeb; padding: 20px;\">" +
                     "<h2 style=\"color: #333;\">Leave Request Deleted</h2>" +
                     "<p style=\"font-size: 16px;\">Dear " + user.getName() + ",</p>" +
                     "<p style=\"font-size: 16px;\">A leave request has been CANCELED</p>" +
                     "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
                     "<p><strong>From: :</strong> " + user.getName() + "</p>" +
                     "<p><strong>Leave Type:</strong> " + request.getLeave_type() + "</p>" +
-                    "<p><strong>Start Date:</strong> " + request.getStart_date() + "</p>" +
-                    "<p><strong>End Date:</strong> " + request.getEnd_date() + "</p>" +
+                    "<p><strong>Start Date:</strong> " + request.getStart_date().format(formatter) + "</p>" +
+                    "<p><strong>End Date:</strong> " + request.getEnd_date().format(formatter) + "</p>" +
                     "<p><strong>Reason:</strong> " + request.getReason() + "</p>" +
                     "<p><strong>Status:</strong> " + request.getStatus() + "</p>" +
                     "</div>" +
@@ -91,14 +94,19 @@ public class LeaveRequestService {
                     "</html>";
 
             emailService.sendEmail(
-                    manager.getEmail(),
+                    user.getEmail(),
                     "Leave Request Deleted from " + user.getName(),
                     htmlMessage
             );
         }
 
-        if (manager != null && manager.getEmail() != null && user != null) {
-            String htmlMessage = "<html>" +
+        for (UserManagers link : managerLinks) {
+            BigInteger managerId = link.getManagerId();
+            User manager = usersRepository.findById(managerId)
+                    .orElseThrow(() -> new RuntimeException("Manager not found: " + managerId));
+
+            if (manager.getEmail() != null) {
+                String htmlMessage = "<html>" +
                     "<body style=\"font-family: Arial, sans-serif;\">" +
                     "<div style=\"background-color: #c9daeb; padding: 20px;\">" +
                     "<h2 style=\"color: #333;\">Leave Request Deleted</h2>" +
@@ -107,8 +115,8 @@ public class LeaveRequestService {
                     "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
                     "<p><strong>From: :</strong> " + user.getName() + "</p>" +
                     "<p><strong>Leave Type:</strong> " + request.getLeave_type() + "</p>" +
-                    "<p><strong>Start Date:</strong> " + request.getStart_date() + "</p>" +
-                    "<p><strong>End Date:</strong> " + request.getEnd_date() + "</p>" +
+                    "<p><strong>Start Date:</strong> " + request.getStart_date().format(formatter) + "</p>" +
+                    "<p><strong>End Date:</strong> " + request.getEnd_date().format(formatter) + "</p>" +
                     "<p><strong>Reason:</strong> " + request.getReason() + "</p>" +
                     "<p><strong>Status:</strong> " + request.getStatus() + "</p>" +
                     "</div>" +
@@ -121,7 +129,8 @@ public class LeaveRequestService {
                     manager.getEmail(),
                     "Leave Request Deleted from " + user.getName(),
                     htmlMessage
-            );
+                );
+            }
         }
 
         return true;
@@ -160,6 +169,8 @@ public class LeaveRequestService {
         User user = usersRepository.findById(BigInteger.valueOf(dto.getUserId()))
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
         LeaveRequest leaveRequest = new LeaveRequest();
         leaveRequest.setEmployeeId(1L);
         leaveRequest.setLeave_type(dto.getLeaveType());
@@ -196,8 +207,8 @@ public class LeaveRequestService {
                     "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
                     "<p><strong>From: :</strong> " + user.getName() + "</p>" +
                     "<p><strong>Leave Type:</strong> " + leaveRequest.getLeave_type() + "</p>" +
-                    "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date() + "</p>" +
-                    "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date() + "</p>" +
+                    "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date().format(formatter) + "</p>" +
+                    "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date().format(formatter) + "</p>" +
                     "<p><strong>Reason:</strong> " + leaveRequest.getReason() + "</p>" +
                     "<p><strong>Reason:</strong> " + leaveRequest.getStatus() + "</p>" +
                     "</div>" +
@@ -212,8 +223,8 @@ public class LeaveRequestService {
             emailService.sendEmail(manager.getEmail(),
                     "New Leave Request from " + user.getName(),
                     htmlMessage
-            );
-        });
+                );
+            });
 
         String htmlMessage = "<html>" +
                 "<body style=\"font-family: Arial, sans-serif;\">" +
@@ -223,8 +234,8 @@ public class LeaveRequestService {
                 "<p style=\"font-size: 16px;\">Your leave request has been successfully submitted and in pending status</p>" +
                 "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
                 "<p><strong>Leave Type:</strong> " + leaveRequest.getLeave_type() + "</p>" +
-                "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date() + "</p>" +
-                "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date() + "</p>" +
+                "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date().format(formatter) + "</p>" +
+                "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date().format(formatter) + "</p>" +
                 "<p><strong>Reason:</strong> " + leaveRequest.getReason() + "</p>" +
                 "<p><strong>Reason:</strong> " + leaveRequest.getStatus() + "</p>" +
                 "</div>" +
@@ -240,17 +251,6 @@ public class LeaveRequestService {
                 "New Leave Request from " + user.getName(),
                 htmlMessage
         );
-
-//        emailService.sendEmail(user.getEmail(),
-//                "Leave Request Submitted",
-//                "Dear " + user.getName() + ",\n\n" +
-//                        "Your leave request has been submitted and is currently pending manager approval.\n\n" +
-//                        "Leave Type: " + leaveRequest.getLeave_type() + "\n" +
-//                        "Start Date: " + leaveRequest.getStart_date() + "\n" +
-//                        "End Date: " + leaveRequest.getEnd_date() + "\n" +
-//                        "Reason: " + leaveRequest.getReason() + "\n" +
-//                        "Status: " + leaveRequest.getStatus() + "\n\n" +
-//                        "You will be notified once a decision has been made.\n");
 
         return toDTO(savedRequest);
     }
