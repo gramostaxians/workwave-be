@@ -21,8 +21,10 @@ public class UpdateUsersDTO {
     private String name;
     private String department;
 
-    @Enumerated(EnumType.STRING)
-    private UserRoles role;
+//    @Enumerated(EnumType.STRING)
+//    private UserRoles role;
+
+    private String role;
 
     private LocalDate startOfWork;
     private Boolean notifyManager;

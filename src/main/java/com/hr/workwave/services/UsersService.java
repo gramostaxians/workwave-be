@@ -57,7 +57,7 @@ public class UsersService {
                     user.getEmail(),
                     user.getName(),
                     user.getDepartment(),
-                    user.getRole().getRole(),
+                    user.getRole(),
                     user.getCreated_at(),
                     user.getLast_login(),
                     notifyManager,
