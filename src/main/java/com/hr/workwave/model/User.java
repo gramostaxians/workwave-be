@@ -1,6 +1,5 @@
 package com.hr.workwave.model;
 
-import com.hr.workwave.enums.UserRoles;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,8 +9,6 @@ import lombok.Setter;
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -31,7 +28,7 @@ public class User {
     private String department;
 
 //    @Enumerated(EnumType.STRING)
-//    private UserRoles role;
+//    private UserRolesEnum role;
 
     private String role;
 

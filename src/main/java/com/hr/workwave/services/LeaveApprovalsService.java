@@ -146,8 +146,9 @@ public class LeaveApprovalsService {
                     "<body style=\"font-family: Arial, sans-serif;\">" +
                     "<div style=\"background-color: #c9daeb; padding: 20px;\">" +
                     "<p style=\"font-size: 16px;\">Dear " + superAdminEmail + ",</p>" +
-                    "<p style=\"font-size: 16px;\">Your Leave request has been <Strong> APPROVED </strong></p>" +
+                    "<p style=\"font-size: 16px;\">A new leave request has been <Strong> APPROVED </strong></p>" +
                     "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
+                    "<p><strong>From: :</strong> " + leaveRequest.getUser().getName() + "</p>" +
                     "<p><strong>Leave Type:</strong> " + leaveRequest.getLeave_type() + "</p>" +
                     "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date().format(formatter) + "</p>" +
                     "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date().format(formatter) + "</p>" +

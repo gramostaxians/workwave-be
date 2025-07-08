@@ -85,7 +85,7 @@ public class LeaveRequestController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdRequest);
     }
 
-    @PatchMapping("/{leaveRequestId}/calendar-event")
+    @PatchMapping("/leave-request/{leaveRequestId}/calendar-event")
     public ResponseEntity<String> updateCalendarEventId(
             @PathVariable Long leaveRequestId,
             @RequestBody Map<String, String> requestBody) {
