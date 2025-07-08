@@ -10,6 +10,7 @@ import jakarta.transaction.Transactional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -22,6 +23,11 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class LeaveApprovalsService {
+
+
+    @Value("${send.email.SuperAdmin}")
+    private String superAdminEmail;
+
     private final LeaveApprovalsRepository leaveApprovalsRepository;
     private final UsersRepository usersRepository;
     private final LeaveRequestRepository leaveRequestRepository;
@@ -116,7 +122,6 @@ public class LeaveApprovalsService {
                     "<div style=\"background-color: #c9daeb; padding: 20px;\">" +
                     "<p style=\"font-size: 16px;\">Dear " + leaveRequest.getUser().getName() + ",</p>" +
                     "<p style=\"font-size: 16px;\">Your Leave request has been <Strong> APPROVED </strong></p>" +
-                    "<p><Strong> Rejection reason :</strong>"+ leaveRequest.getRejectReason() + "</p>" +
                     "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
                     "<p><strong>Leave Type:</strong> " + leaveRequest.getLeave_type() + "</p>" +
                     "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date().format(formatter) + "</p>" +
@@ -135,6 +140,31 @@ public class LeaveApprovalsService {
                     leaveRequest.getUser().getEmail(),
                     "New Leave Request from " + leaveRequest.getUser().getName(),
                     htmlMessage
+            );
+
+            String htmlMessage1 = "<html>" +
+                    "<body style=\"font-family: Arial, sans-serif;\">" +
+                    "<div style=\"background-color: #c9daeb; padding: 20px;\">" +
+                    "<p style=\"font-size: 16px;\">Dear " + superAdminEmail + ",</p>" +
+                    "<p style=\"font-size: 16px;\">Your Leave request has been <Strong> APPROVED </strong></p>" +
+                    "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
+                    "<p><strong>Leave Type:</strong> " + leaveRequest.getLeave_type() + "</p>" +
+                    "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date().format(formatter) + "</p>" +
+                    "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date().format(formatter) + "</p>" +
+                    "<p><strong>Reason:</strong> " + leaveRequest.getReason() + "</p>" +
+                    "<p><strong>Status:</strong> " + leaveRequest.getStatus() + "</p>" +
+                    "</div>" +
+                    "<p style=\"font-size: 16px; margin-top: 20px;\">Follow the link to see your request.:</p>" +
+                    "<a href=\"https://s00-vecarbonapp/my-leaves\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\">Link</a>" +
+                    "<p style=\"font-size: 16px; margin-top: 20px;\">Thank you.</p>" +
+                    "</div>" +
+                    "</body>" +
+                    "</html>";
+
+            emailService.sendEmail(
+                    superAdminEmail,
+                    "New Leave Request from " + leaveRequest.getUser().getName(),
+                    htmlMessage1
             );
 
         }

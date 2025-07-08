@@ -26,12 +26,14 @@ public class UsersController {
         return usersService.getAllUsers();
     }
 
+//    @PreAuthorize("hasAuthority('Admin')")
     @GetMapping("/user-with-managers")
     public ResponseEntity<List<UserWithManagersDTO>> getAllUsersWithManagers() {
         List<UserWithManagersDTO> data = usersService.getAllUsersWithManagers();
         return ResponseEntity.ok(data);
     }
 
+//    @PreAuthorize("hasAuthority('Admin')")
     @PutMapping("/update/user/{userId}")
     public ResponseEntity<User> updateUserAndManagers(
             @PathVariable BigInteger userId,

@@ -9,15 +9,17 @@ import com.hr.workwave.model.LeaveRequest;
 import com.hr.workwave.model.User;
 import com.hr.workwave.model.UserManagers;
 import com.hr.workwave.repo.*;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Optional;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -330,6 +332,43 @@ public class LeaveRequestService {
                     return summaryDTO;
                 })
                 .collect(Collectors.toList());
+    }
+
+    public void updateCalendarEventId(Long leaveRequestId, String calendarEventId) {
+        LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId)
+                .orElseThrow(() -> new EntityNotFoundException("LeaveRequest not found with ID: " + leaveRequestId));
+
+        leaveRequest.setCalendar_event_id(calendarEventId);
+        leaveRequestRepository.save(leaveRequest);
+    }
+
+    public List<Map<String, Object>> getAnnualLeaveSummary(Long userId, List<Integer> years) {
+        if (years == null || years.isEmpty()) {
+            years = Collections.singletonList(LocalDate.now().getYear());
+        }
+        List<Map<String, Object>> summaries = new ArrayList<>();
+
+        for (Integer year : years) {
+            LocalDate start = LocalDate.of(year - 1, 7, 1);
+            LocalDate end = LocalDate.of(year, 6, 30);
+            List<LeaveRequest> leaves = leaveRequestRepository.findApprovedAnnualLeavesByPeriod(userId, start, end);
+            int spentDays = leaves.stream()
+                    .mapToInt(lr -> (int) ChronoUnit.DAYS.between(lr.getStart_date(), lr.getEnd_date()) + 1)
+                    .sum();
+
+            int totalAnnualLeave = 20;
+
+            int leftDays = totalAnnualLeave - spentDays;
+
+            Map<String, Object> summary = new LinkedHashMap<>();
+            summary.put("year", year);
+            summary.put("from", start);
+            summary.put("to", end);
+            summary.put("total", totalAnnualLeave);
+            summary.put("spent", spentDays);
+            summary.put("left", leftDays);
+            summaries.add(summary);    }
+        return summaries;
     }
 
     private LeaveRequestDTO toDTO(LeaveRequest request) {

@@ -15,6 +15,7 @@ public class LeaveApprovalsController {
 
     private final LeaveApprovalsService leaveApprovalsService;
 
+//    @PreAuthorize("hasAuthority('Admin')")
     @PutMapping("/status")
     public LeaveApprovals updateStatus(@RequestBody UpdateApprovalStatusRequest request){
 //                                       @RequestHeader(value = "Authorization", required = false) String authHeader) {

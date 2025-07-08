@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -24,20 +25,21 @@ public class UserManagerService {
     public void syncManagersForUser(BigInteger userId, List<BigInteger> managerIds) {
         List<UserManagers> existing = userManagerRepository.findByUserId(userId);
 
+        Set<BigInteger> newIds = managerIds != null ? new HashSet<>(managerIds) : Collections.emptySet();
+
         Set<BigInteger> existingIds = existing.stream()
-                    .map(UserManagers::getManagerId)
-                    .collect(Collectors.toSet());
-        Set<BigInteger> newIds = new HashSet<>(managerIds);
+                .map(UserManagers::getManagerId)
+                .collect(Collectors.toSet());
 
         for (BigInteger id : newIds) {
             if (!existingIds.contains(id)) {
-                    userManagerRepository.save(new UserManagers(userId, id));
+                userManagerRepository.save(new UserManagers(userId, id));
             }
         }
 
         for (UserManagers um : existing) {
             if (!newIds.contains(um.getManagerId())) {
-                    userManagerRepository.delete(um);
+                userManagerRepository.delete(um);
             }
         }
     }

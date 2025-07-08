@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigInteger;
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -21,5 +22,15 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
 
     @Query("SELECT lr FROM LeaveRequest lr WHERE lr.user.id = :userId AND lr.status = 'APPROVED'")
     List<LeaveRequest> getApprovedLeaveRequests(@Param("userId") Long userId);
+
+    @Query("SELECT lr FROM LeaveRequest lr " +
+            "WHERE lr.user.id = :userId " +
+            "AND lr.leave_type = 'Annual Leave' " +
+            "AND lr.status = 'APPROVED' " +
+            "AND lr.start_date >= :startDate " +
+            "AND lr.end_date <= :endDate")List<LeaveRequest> findApprovedAnnualLeavesByPeriod(
+                    @Param("userId") Long userId,
+                    @Param("startDate") LocalDate startDate,
+                    @Param("endDate") LocalDate endDate);
 
 }

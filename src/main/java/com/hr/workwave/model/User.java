@@ -1,5 +1,6 @@
 package com.hr.workwave.model;
 
+import com.hr.workwave.enums.UserRoles;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -28,7 +29,10 @@ public class User {
 
     private String name;
     private String department;
-    private String role;
+
+    @Enumerated(EnumType.STRING)
+    private UserRoles role;
+
     @Column(name = "created_at")
     private LocalDateTime created_at;
     private LocalDateTime last_login;

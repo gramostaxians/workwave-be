@@ -57,7 +57,7 @@ public class UsersService {
                     user.getEmail(),
                     user.getName(),
                     user.getDepartment(),
-                    user.getRole(),
+                    user.getRole().getRole(),
                     user.getCreated_at(),
                     user.getLast_login(),
                     notifyManager,
@@ -82,9 +82,7 @@ public class UsersService {
         usersRepository.save(user);
 
         List<BigInteger> managerIds = dto.getManagerIds();
-        if (managerIds != null && !managerIds.isEmpty()) {
-            userManagerService.syncManagersForUser(userId, managerIds);
-        }
+        userManagerService.syncManagersForUser(userId, managerIds != null ? managerIds : Collections.emptyList());
 
         return user;
     }
