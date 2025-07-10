@@ -86,6 +86,5 @@ public class UsersService {
 
         return user;
     }
-
 }
 

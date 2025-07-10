@@ -29,13 +29,11 @@ public class User {
 
 //    @Enumerated(EnumType.STRING)
 //    private UserRolesEnum role;
-
     private String role;
 
     @Column(name = "created_at")
     private LocalDateTime created_at;
     private LocalDateTime last_login;
-
 
     private LocalDate start_Of_Work;
 

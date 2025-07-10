@@ -1,6 +1,7 @@
 package com.hr.workwave.model;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.hr.workwave.enums.LeaveRequestStatusEnum;
+import com.hr.workwave.enums.LeaveRequestTypeEnum;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,18 +22,21 @@ public class LeaveRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long employeeId;
-    private String leave_type;
+
+    @Enumerated(EnumType.STRING)
+    private LeaveRequestTypeEnum leave_type;
     private LocalDate start_date;
     private LocalDate end_date;
     private String reason;
+    private String calendar_event_id;
+
     @Column(name = "rejection_reason")
     private String rejectReason;
-
-    private String calendar_event_id;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private LeaveRequestStatusEnum status;
+
     @Column(name = "employee_email")
     private String employee_email;
 

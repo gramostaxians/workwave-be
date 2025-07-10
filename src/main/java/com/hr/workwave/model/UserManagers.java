@@ -19,13 +19,11 @@ public class UserManagers {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
     private BigInteger managerId;
-
     private BigInteger userId;
 
-    public UserManagers(BigInteger userId, BigInteger managerId) {
-        this.userId = userId;
+    public UserManagers( BigInteger managerId, BigInteger userId) {
         this.managerId = managerId;
+        this.userId = userId;
     }
 }

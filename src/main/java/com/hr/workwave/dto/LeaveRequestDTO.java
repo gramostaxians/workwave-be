@@ -1,5 +1,6 @@
 package com.hr.workwave.dto;
 
+import com.hr.workwave.enums.LeaveRequestTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +14,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 
 public class LeaveRequestDTO {
-    private String leaveType;
+    private LeaveRequestTypeEnum leaveType;
     private Long employeeId;
     private LocalDate startDate;
     private LocalDate endDate;

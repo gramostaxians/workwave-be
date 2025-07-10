@@ -3,7 +3,10 @@ package com.hr.workwave.controller;
 import com.hr.workwave.dto.LeaveRequestApprovalSummaryDTO;
 import com.hr.workwave.dto.LeaveRequestDTO;
 import com.hr.workwave.enums.LeaveRequestStatusEnum;
+import com.hr.workwave.enums.LeaveRequestTypeEnum;
 import com.hr.workwave.model.LeaveRequest;
+import com.hr.workwave.model.User;
+import com.hr.workwave.repo.UsersRepository;
 import com.hr.workwave.services.LeaveRequestService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -12,8 +15,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigInteger;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
@@ -22,6 +27,7 @@ public class LeaveRequestController {
 
 
     private final LeaveRequestService leaveRequestService;
+    private final UsersRepository usersRepository;
 
     @GetMapping("/leave-request")
     public List<LeaveRequest> getAllLeaveRequests() {
@@ -50,7 +56,7 @@ public class LeaveRequestController {
 
 //    @PreAuthorize("hasAuthority('Admin')")
     @GetMapping("/users/{userId}/leave-requests/with-approvals")
-    public ResponseEntity<List<LeaveRequestApprovalSummaryDTO>> getLeaveRequestsWithApprovalsByUserId(@PathVariable("userId") Long userId) {
+    public ResponseEntity<List<LeaveRequestApprovalSummaryDTO>> getLeaveRequestsWithApprovalsByUserId(@PathVariable("userId") BigInteger userId) {
         List<LeaveRequestApprovalSummaryDTO> dtos = leaveRequestService.getLeaveRequestsWithApprovalsByUserId(userId);
         return ResponseEntity.ok(dtos);
     }
@@ -107,5 +113,34 @@ public class LeaveRequestController {
 
         List<Map<String, Object>> summary = leaveRequestService.getAnnualLeaveSummary(userId, years);
 
-        return ResponseEntity.ok(summary);}
+        return ResponseEntity.ok(summary);
+    }
+
+    @GetMapping("/{userId}/days")
+    public double getLeaveDays(@PathVariable BigInteger userId,
+                               @RequestParam(required = false) String date) {
+        User user = usersRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
+        LocalDate currentDate = (date == null || date.isEmpty()) ? LocalDate.now() : LocalDate.parse(date);
+
+        return leaveRequestService.calculateLeaveDays(user, currentDate);
+    }
+    @GetMapping("/dashboard/stats/{userId}")
+    public ResponseEntity<?> getLeaveStats(@PathVariable BigInteger userId, @RequestParam(required = false) LeaveRequestTypeEnum leaveType) {
+        Map<String, Object> stats = leaveRequestService.getLeaveStatsByUserId(userId, leaveType);
+        if (stats == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("User with id " + userId + " not found");
+        }
+        return ResponseEntity.ok(stats);
+    }
+    @GetMapping("/dashboard/stats/sickleave/{userId}")
+    public ResponseEntity<Map<String, Object>> getSickLeaveStats(
+            @PathVariable("userId") BigInteger userId)
+    {
+        Map<String, Object> stats = leaveRequestService.geSicktLeaveStatsByUserId(userId);
+
+        return ResponseEntity.ok(stats);
+    }
 }

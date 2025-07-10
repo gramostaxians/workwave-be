@@ -4,6 +4,7 @@ import com.hr.workwave.dto.LeaveRequestApprovalSummaryDTO;
 import com.hr.workwave.dto.LeaveRequestDTO;
 import com.hr.workwave.dto.ManagerApprovalDTO;
 import com.hr.workwave.enums.LeaveRequestStatusEnum;
+import com.hr.workwave.enums.LeaveRequestTypeEnum;
 import com.hr.workwave.model.LeaveApprovals;
 import com.hr.workwave.model.LeaveRequest;
 import com.hr.workwave.model.User;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -137,7 +139,7 @@ public class LeaveRequestService {
 
         return true;
     }
-    public List<LeaveRequestApprovalSummaryDTO> getLeaveRequestsWithApprovalsByUserId(Long userId) {
+    public List<LeaveRequestApprovalSummaryDTO> getLeaveRequestsWithApprovalsByUserId(BigInteger userId) {
         List<LeaveRequest> leaveRequests = leaveRequestRepository.findByUserId(userId);
 
         return leaveRequests.stream().map(leaveRequest -> {
@@ -154,7 +156,7 @@ public class LeaveRequestService {
             LeaveRequestApprovalSummaryDTO summaryDTO = new LeaveRequestApprovalSummaryDTO();
             summaryDTO.setLeaveRequestId(leaveRequest.getId());
             summaryDTO.setEmployeeEmail(leaveRequest.getEmployee_email());
-            summaryDTO.setLeaveType(leaveRequest.getLeave_type());
+            summaryDTO.setLeaveType(leaveRequest.getLeave_type().getValue());
             summaryDTO.setStartDate(leaveRequest.getStart_date());
             summaryDTO.setEndDate(leaveRequest.getEnd_date());
             summaryDTO.setReason(leaveRequest.getReason());
@@ -266,7 +268,7 @@ public class LeaveRequestService {
 
                     dto.setLeaveRequestId(leaveRequest.getId());
                     dto.setEmployeeEmail(leaveRequest.getEmployee_email());
-                    dto.setLeaveType(leaveRequest.getLeave_type());
+                    dto.setLeaveType(leaveRequest.getLeave_type().getValue());
                     dto.setStartDate(leaveRequest.getStart_date());
                     dto.setEndDate(leaveRequest.getEnd_date());
                     dto.setReason(leaveRequest.getReason());
@@ -316,7 +318,7 @@ public class LeaveRequestService {
                     LeaveRequestApprovalSummaryDTO summaryDTO = new LeaveRequestApprovalSummaryDTO();
                     summaryDTO.setLeaveRequestId(leaveRequest.getId());
                     summaryDTO.setEmployeeEmail(leaveRequest.getEmployee_email());
-                    summaryDTO.setLeaveType(leaveRequest.getLeave_type());
+                    summaryDTO.setLeaveType(leaveRequest.getLeave_type().getValue());
                     summaryDTO.setStartDate(leaveRequest.getStart_date());
                     summaryDTO.setEndDate(leaveRequest.getEnd_date());
                     summaryDTO.setReason(leaveRequest.getReason());
@@ -381,4 +383,195 @@ public class LeaveRequestService {
 
         return dto;
     }
+    public double calculateLeaveDays(User user, LocalDate currentDate) {
+        LocalDate startOfWork = user.getStart_Of_Work();
+        if (startOfWork == null || currentDate == null) {
+            return 0;
+        }
+        int year = currentDate.getMonthValue() >= 7 ? currentDate.getYear() : currentDate.getYear() - 1;
+        LocalDate leaveYearStart = LocalDate.of(year, 7, 1);
+        LocalDate leaveYearEnd = LocalDate.of(year + 1, 6, 30);
+
+        double leaveDays = 0;
+
+        long monthsWorkedBeforeJuly = ChronoUnit.MONTHS.between(startOfWork, leaveYearStart);
+        long totalMonthsWorked = ChronoUnit.MONTHS.between(startOfWork, currentDate);
+
+        int experienceYears = (int) (totalMonthsWorked / 12);
+        int increments = experienceYears / 5;
+
+        if (monthsWorkedBeforeJuly < 6) {
+
+            LocalDate sixMonthsAfterStart = startOfWork.plusMonths(6);
+
+            if (currentDate.isBefore(sixMonthsAfterStart)) {
+                leaveDays = 0;
+            } else {
+                leaveDays += 9;
+
+                LocalDate endDateForMonthlyAdd = currentDate.isBefore(leaveYearEnd) ? currentDate : leaveYearEnd;
+                long monthsAfter6 = ChronoUnit.MONTHS.between(sixMonthsAfterStart.withDayOfMonth(1), endDateForMonthlyAdd.withDayOfMonth(1));
+                leaveDays += monthsAfter6 * 1.5;
+            }
+        } else {
+            if (!currentDate.isBefore(leaveYearStart)) {
+                leaveDays = 20;
+
+                LocalDate sixMonthsAfterJuly = leaveYearStart.plusMonths(6);
+                if (!currentDate.isBefore(sixMonthsAfterJuly)) {
+                    leaveDays += 9;
+
+                    long monthsAfter6 = ChronoUnit.MONTHS.between(sixMonthsAfterJuly.withDayOfMonth(1), currentDate.withDayOfMonth(1));
+                    leaveDays += monthsAfter6 * 1.5;
+                }
+            } else {
+                leaveDays = 0;
+            }
+        }
+        leaveDays += increments;
+
+        if (leaveDays < 0) {
+            leaveDays = 0;
+        }
+        return leaveDays;
+    }
+    public Map<String, Object> getLeaveStatsByUserId(BigInteger userId, LeaveRequestTypeEnum leaveType) {
+        User user = usersRepository.findById(userId).orElse(null);
+        if (user == null) {
+            return null;
+        }
+
+        LocalDate today = LocalDate.now();
+
+        double totalAvailableDays = calculateLeaveDays(user, today);
+
+        List<LeaveRequest> leaveRequests;
+        if (leaveType != null) {
+            leaveRequests = leaveRequestRepository.findByUserIdAndLeaveType(userId, leaveType);
+        } else {
+            leaveRequests = leaveRequestRepository.findByUserId(userId);
+        }
+
+        long pendingCount = leaveRequests.stream()
+                .filter(lr -> lr.getStatus() == LeaveRequestStatusEnum.PENDING)
+                .count();
+
+        long approvedCount = leaveRequests.stream()
+                .filter(lr -> lr.getStatus() == LeaveRequestStatusEnum.APPROVED)
+                .count();
+        long rejectedCount = leaveRequests.stream()
+                .filter(lr -> lr.getStatus() == LeaveRequestStatusEnum.REJECTED)
+                .count();
+
+        double usedDays = leaveRequests.stream()
+                .filter(lr -> lr.getStatus() == LeaveRequestStatusEnum.APPROVED)
+                .mapToDouble(lr -> countBusinessDays(lr.getStart_date(), lr.getEnd_date()))
+                .sum();
+
+        double availableDays = Math.max(0, totalAvailableDays - usedDays);
+
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("available", availableDays);
+        stats.put("pending", pendingCount);
+        stats.put("approved", approvedCount);
+        stats.put("rejected", rejectedCount);
+        stats.put("total", leaveRequests.size());
+        stats.put("used", usedDays);
+        stats.put("totalAllowed", totalAvailableDays);
+
+        return stats;
+    }
+    public double countBusinessDays(LocalDate start, LocalDate end) {
+        if (start == null || end == null || start.isAfter(end)) {
+            return 0;
+        }
+        long days = ChronoUnit.DAYS.between(start, end) + 1;
+        double businessDays = 0;
+        for (int i = 0; i < days; i++) {
+            DayOfWeek day = start.plusDays(i).getDayOfWeek();
+            if (day != DayOfWeek.SATURDAY && day != DayOfWeek.SUNDAY) {
+                businessDays++;
+            }
+        }
+        return businessDays;
+    }
+
+    public double calculateSickLeaveDays(User user, LocalDate today) {
+        LocalDate startOfWork = user.getStart_Of_Work();
+        if (startOfWork == null) {
+            return 0;
+        }
+
+        if (today.isBefore(startOfWork)) {
+            return 0;
+        }
+
+        LocalDate refreshDate = LocalDate.of(today.getYear(), 7, 1);
+        if (today.isBefore(refreshDate)) {
+            refreshDate = refreshDate.minusYears(1);
+        }
+
+        if (startOfWork.isAfter(refreshDate)) {
+            return 20;
+        }
+
+        return 20;
+    }
+
+
+    public Map<String, Object> geSicktLeaveStatsByUserId(BigInteger userId) {
+        User user = usersRepository.findById(userId).orElse(null);
+        if (user == null) {
+            return null;
+        }
+
+        LocalDate today = LocalDate.now();
+
+        double totalAvailableDays = calculateSickLeaveDays(user, today);
+
+        List<LeaveRequest> leaveRequests = leaveRequestRepository.findSickLeaveByUserId(userId);
+
+
+        LocalDate refreshDate = LocalDate.of(today.getYear(), 7, 1);
+        if (today.isBefore(refreshDate)) {
+            refreshDate = refreshDate.minusYears(1);
+        }
+        LocalDate periodStart = refreshDate;
+        LocalDate periodEnd = refreshDate.plusYears(1).minusDays(1);
+
+        List<LeaveRequest> validLeaveRequests = leaveRequests.stream()
+                .filter(lr -> !lr.getEnd_date().isBefore(periodStart) && !lr.getStart_date().isAfter(periodEnd))
+                .collect(Collectors.toList());
+
+        long pendingCount = validLeaveRequests.stream()
+                .filter(lr -> lr.getStatus() == LeaveRequestStatusEnum.PENDING)
+                .count();
+
+        long approvedCount = validLeaveRequests.stream()
+                .filter(lr -> lr.getStatus() == LeaveRequestStatusEnum.APPROVED)
+                .count();
+
+        long rejectedCount = validLeaveRequests.stream()
+                .filter(lr -> lr.getStatus() == LeaveRequestStatusEnum.REJECTED)
+                .count();
+
+        double usedDays = validLeaveRequests.stream()
+                .filter(lr -> lr.getStatus() == LeaveRequestStatusEnum.APPROVED)
+                .mapToDouble(lr -> countBusinessDays(lr.getStart_date(), lr.getEnd_date()))
+                .sum();
+
+        double availableDays = Math.max(0, totalAvailableDays - usedDays);
+
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("available", availableDays);
+        stats.put("pending", pendingCount);
+        stats.put("approved", approvedCount);
+        stats.put("rejected", rejectedCount);
+        stats.put("total", validLeaveRequests.size());
+        stats.put("used", usedDays);
+        stats.put("totalAllowed", totalAvailableDays);
+
+        return stats;
+    }
+
 }
