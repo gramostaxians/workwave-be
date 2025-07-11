@@ -9,5 +9,6 @@ http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
     <include file="001-create-table-manager-users.xml" relativeToChangelogFile="true"/>
     <include file="004-create-table-LeaveApprovals.xml" relativeToChangelogFile="true"/>
     <include file="005-add-startofwork-column-to-table-users.xml" relativeToChangelogFile="true"/>
+    <include file="006-create-table-LeaveTypeApprover.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

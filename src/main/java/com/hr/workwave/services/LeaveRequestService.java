@@ -5,10 +5,7 @@ import com.hr.workwave.dto.LeaveRequestDTO;
 import com.hr.workwave.dto.ManagerApprovalDTO;
 import com.hr.workwave.enums.LeaveRequestStatusEnum;
 import com.hr.workwave.enums.LeaveRequestTypeEnum;
-import com.hr.workwave.model.LeaveApprovals;
-import com.hr.workwave.model.LeaveRequest;
-import com.hr.workwave.model.User;
-import com.hr.workwave.model.UserManagers;
+import com.hr.workwave.model.*;
 import com.hr.workwave.repo.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +32,7 @@ public class LeaveRequestService {
     private final LeaveApprovalsRepository leaveApprovalsRepository;
     private final UsersRepository usersRepository;
     private final UserManagerRepository userManagerRepository;
+    private final LeaveTypeApproverRepository leaveTypeApproverRepository;
 
     public List<LeaveRequest> getAllLeaveRequests() {
         return leaveRequestRepository.findAll();
@@ -169,7 +167,6 @@ public class LeaveRequestService {
     }
 
     public LeaveRequestDTO createLeaveRequest(LeaveRequestDTO dto) {
-
         User user = usersRepository.findById(BigInteger.valueOf(dto.getUserId()))
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -187,15 +184,29 @@ public class LeaveRequestService {
 
         LeaveRequest savedRequest = leaveRequestRepository.save(leaveRequest);
 
-        BigInteger userId = user.getId();
-        List<UserManagers> managerLinks = userManagerRepository.findByUserId(userId);
+        List<User> managersToNotify = new ArrayList<>();
 
-        managerLinks.forEach(link -> {
-            BigInteger managerId = link.getManagerId();
 
-            User manager = usersRepository.findById(managerId)
-                    .orElseThrow(() -> new RuntimeException("Manager not found: " + managerId));
+        if (dto.getLeaveType() == LeaveRequestTypeEnum.MATERNITY_LEAVE) {
+            List<LeaveTypeApprover> approvers = leaveTypeApproverRepository.findByLeaveType(dto.getLeaveType());
 
+            for (LeaveTypeApprover approver : approvers) {
+                User manager = approver.getApprover();
+                managersToNotify.add(manager);
+            }
+        } else {
+
+            BigInteger userId = user.getId();
+            List<UserManagers> managerLinks = userManagerRepository.findByUserId(userId);
+
+            for (UserManagers link : managerLinks) {
+                User manager = usersRepository.findById(link.getManagerId())
+                        .orElseThrow(() -> new RuntimeException("Manager not found: " + link.getManagerId()));
+                managersToNotify.add(manager);
+            }
+        }
+
+        for (User manager : managersToNotify) {
             LeaveApprovals approval = new LeaveApprovals();
             approval.setLeaveRequest(savedRequest);
             approval.setManager(manager);
@@ -227,8 +238,8 @@ public class LeaveRequestService {
             emailService.sendEmail(manager.getEmail(),
                     "New Leave Request from " + user.getName(),
                     htmlMessage
-                );
-            });
+            );
+        }
 
         String htmlMessage = "<html>" +
                 "<body style=\"font-family: Arial, sans-serif;\">" +

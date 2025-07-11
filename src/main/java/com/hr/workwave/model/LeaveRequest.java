@@ -25,6 +25,7 @@ public class LeaveRequest {
 
     @Enumerated(EnumType.STRING)
     private LeaveRequestTypeEnum leave_type;
+
     private LocalDate start_date;
     private LocalDate end_date;
     private String reason;
