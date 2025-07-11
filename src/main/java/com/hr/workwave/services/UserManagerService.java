@@ -2,7 +2,9 @@ package com.hr.workwave.services;
 
 import com.hr.workwave.model.UserManagers;
 import com.hr.workwave.repo.UserManagerRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
@@ -14,6 +16,7 @@ import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
+@Transactional
 public class UserManagerService {
 
     private final UserManagerRepository userManagerRepository;
@@ -22,6 +25,7 @@ public class UserManagerService {
         return userManagerRepository.findByUserId(userId);
     }
 
+    @Transactional
     public void syncManagersForUser(BigInteger userId, List<BigInteger> managerIds) {
         List<UserManagers> existing = userManagerRepository.findByUserId(userId);
 
@@ -32,9 +36,7 @@ public class UserManagerService {
                 .collect(Collectors.toSet());
 
         for (BigInteger id : newIds) {
-            if (!existingIds.contains(id)) {
-                userManagerRepository.save(new UserManagers(userId, id));
-            }
+            userManagerRepository.insertIgnoreConflict(userId, id);
         }
 
         for (UserManagers um : existing) {

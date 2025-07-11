@@ -186,7 +186,6 @@ public class LeaveRequestService {
 
         List<User> managersToNotify = new ArrayList<>();
 
-
         if (dto.getLeaveType() == LeaveRequestTypeEnum.MATERNITY_LEAVE) {
             List<LeaveTypeApprover> approvers = leaveTypeApproverRepository.findByLeaveType(dto.getLeaveType());
 
