@@ -25,7 +25,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class LeaveRequestController {
 
-
     private final LeaveRequestService leaveRequestService;
     private final UsersRepository usersRepository;
 
