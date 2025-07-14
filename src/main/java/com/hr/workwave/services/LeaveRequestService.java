@@ -38,6 +38,10 @@ public class LeaveRequestService {
         return leaveRequestRepository.findAll();
     }
 
+    public List<LeaveRequest> getRecentLeaveRequestsByUser(Long userId) {
+        return leaveRequestRepository.findTop5RecentLeaveRequestsByUserId(userId);
+    }
+
     public Optional<LeaveRequest> getLeaveRequestById(Long id) {
         return leaveRequestRepository.findById(id);
     }

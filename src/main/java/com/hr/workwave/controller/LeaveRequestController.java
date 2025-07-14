@@ -6,10 +6,14 @@ import com.hr.workwave.enums.LeaveRequestStatusEnum;
 import com.hr.workwave.enums.LeaveRequestTypeEnum;
 import com.hr.workwave.model.LeaveRequest;
 import com.hr.workwave.model.User;
+import com.hr.workwave.repo.LeaveRequestRepository;
 import com.hr.workwave.repo.UsersRepository;
 import com.hr.workwave.services.LeaveRequestService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,6 +35,11 @@ public class LeaveRequestController {
     @GetMapping("/leave-request")
     public List<LeaveRequest> getAllLeaveRequests() {
         return leaveRequestService.getAllLeaveRequests();
+    }
+
+    @GetMapping("/dashboard/recent/userId/{userId}")
+    public List<LeaveRequest> getRecentLeaveRequests(@PathVariable  Long userId) {
+        return leaveRequestService.getRecentLeaveRequestsByUser(userId);
     }
 
     @GetMapping("/leave-request/{id}")

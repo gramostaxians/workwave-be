@@ -3,6 +3,7 @@ package com.hr.workwave.repo;
 import com.hr.workwave.enums.LeaveRequestStatusEnum;
 import com.hr.workwave.enums.LeaveRequestTypeEnum;
 import com.hr.workwave.model.LeaveRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,6 +18,9 @@ import java.util.Optional;
 public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long> {
 
     List<LeaveRequest> findByUserId(BigInteger userId);
+
+    @Query(value = "SELECT lr FROM LeaveRequest lr WHERE lr.user.id = :userId ORDER BY lr.createdDate DESC LIMIT 5")
+    List<LeaveRequest> findTop5RecentLeaveRequestsByUserId(@Param("userId") Long userId);
 
     @Query("SELECT lr FROM LeaveRequest lr WHERE lr.user.id = :userId AND lr.leave_type = :leaveType")
     List<LeaveRequest> findByUserIdAndLeaveType(@Param("userId") BigInteger userId, @Param("leaveType") LeaveRequestTypeEnum leaveType);
