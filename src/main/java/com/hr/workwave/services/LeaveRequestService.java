@@ -163,6 +163,7 @@ public class LeaveRequestService {
             summaryDTO.setEndDate(leaveRequest.getEnd_date());
             summaryDTO.setReason(leaveRequest.getReason());
             summaryDTO.setStatus(leaveRequest.getStatus());
+            summaryDTO.setCalendar_event_id(leaveRequest.getCalendar_event_id());
             summaryDTO.setApprovals(managerApprovals);
 
             return summaryDTO;

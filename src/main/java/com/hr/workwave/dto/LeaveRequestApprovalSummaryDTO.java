@@ -23,6 +23,7 @@ public class LeaveRequestApprovalSummaryDTO {
     private String leaveType;
     private LocalDate startDate;
     private LocalDate endDate;
+    private String calendar_event_id;
     private String reason;
     private LocalDateTime createdDate;
     private LeaveRequestStatusEnum status;
