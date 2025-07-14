@@ -34,6 +34,14 @@ public class LeaveRequestController {
         return leaveRequestService.getAllLeaveRequests();
     }
 
+    @GetMapping("/leave-request/{id}")
+    public ResponseEntity<LeaveRequest> getLeaveRequestById(@PathVariable Long id) {
+        Optional<LeaveRequest> leaveRequest = leaveRequestService.getLeaveRequestById(id);
+        return leaveRequest
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     @GetMapping("/users/{userId}/leave-request/approved")
     public List<LeaveRequest> getAllLeaveRequestsApprovedById(@PathVariable Long userId) {
         return leaveRequestService.getLeaveRequestsApprovedById(userId);

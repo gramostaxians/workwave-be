@@ -24,8 +24,6 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     @Query("SELECT lr FROM LeaveRequest lr WHERE lr.user.id = :userId AND lr.leave_type = 'SICK_LEAVE'")
     List<LeaveRequest> findSickLeaveByUserId(@Param("userId") BigInteger userId);
 
-
-
     List<LeaveRequest> findByStatus(LeaveRequestStatusEnum status);
 
     @Query("SELECT lr FROM LeaveRequest lr WHERE lr.id = :userId")

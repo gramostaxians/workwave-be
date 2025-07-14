@@ -38,6 +38,10 @@ public class LeaveRequestService {
         return leaveRequestRepository.findAll();
     }
 
+    public Optional<LeaveRequest> getLeaveRequestById(Long id) {
+        return leaveRequestRepository.findById(id);
+    }
+
     public List<LeaveRequest> getLeaveRequestsApprovedById(Long userId) {
         return leaveRequestRepository.getApprovedLeaveRequests(userId);
     }
@@ -193,8 +197,78 @@ public class LeaveRequestService {
                 User manager = approver.getApprover();
                 managersToNotify.add(manager);
             }
-        } else {
 
+        } else if(dto.getLeaveType() == LeaveRequestTypeEnum.BEREAVEMENT_LEAVE) {
+            List<LeaveTypeApprover> approvers = leaveTypeApproverRepository.findByLeaveType(dto.getLeaveType());
+            leaveRequest.setStatus(LeaveRequestStatusEnum.APPROVED);
+            leaveRequestRepository.save(leaveRequest);
+
+            for (LeaveTypeApprover approver : approvers) {
+                User manager = approver.getApprover();
+                managersToNotify.add(manager);
+            }
+
+            for (User manager : managersToNotify) {
+                LeaveApprovals approval = new LeaveApprovals();
+                approval.setLeaveRequest(savedRequest);
+                approval.setManager(manager);
+                approval.setApprovedStatus(LeaveRequestStatusEnum.APPROVED);
+                leaveApprovalsRepository.save(approval);
+
+                String htmlMessage = "<html>" +
+                        "<body style=\"font-family: Arial, sans-serif;\">" +
+                        "<div style=\"background-color: #c9daeb; padding: 20px;\">" +
+                        "<h2 style=\"color: #333;\">New Leave Request</h2>" +
+                        "<p style=\"font-size: 16px;\">Dear " + manager.getName() + ",</p>" +
+                        "<p style=\"font-size: 16px;\">You have a new leave request awaiting your review and approval</p>" +
+                        "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
+                        "<p><strong>From: :</strong> " + user.getName() + "</p>" +
+                        "<p><strong>Leave Type:</strong> " + leaveRequest.getLeave_type() + "</p>" +
+                        "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date().format(formatter) + "</p>" +
+                        "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date().format(formatter) + "</p>" +
+                        "<p><strong>Reason:</strong> " + leaveRequest.getReason() + "</p>" +
+                        "<p><strong>Status:</strong> " + leaveRequest.getStatus() + "</p>" +
+                        "</div>" +
+                        "<p style=\"font-size: 16px; margin-top: 20px;\">Please log in to te system to review and respond to the request at your earliest convenience.</p>" +
+                        "<p style=\"font-size: 16px; margin-top: 20px;\">Follow the link.</p>" +
+                        "<a href=\"https://s00-vecarbonapp/leave-approval\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\"> Link.</a>" +
+                        "<p style=\"font-size: 16px; margin-top: 20px;\">Thank you.</p>" +
+                        "</div>" +
+                        "</body>" +
+                        "</html>";
+
+                emailService.sendEmail(manager.getEmail(),
+                        "New Leave Request from " + user.getName(),
+                        htmlMessage
+                );
+            }
+
+            String htmlMessage = "<html>" +
+                    "<body style=\"font-family: Arial, sans-serif;\">" +
+                    "<div style=\"background-color: #c9daeb; padding: 20px;\">" +
+                    "<h2 style=\"color: #333;\">New Leave Request</h2>" +
+                    "<p style=\"font-size: 16px;\">Dear " + user.getName() + ",</p>" +
+                    "<p style=\"font-size: 16px;\">Your leave request has been successfully submitted and in pending status</p>" +
+                    "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
+                    "<p><strong>Leave Type:</strong> " + leaveRequest.getLeave_type() + "</p>" +
+                    "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date().format(formatter) + "</p>" +
+                    "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date().format(formatter) + "</p>" +
+                    "<p><strong>Reason:</strong> " + leaveRequest.getReason() + "</p>" +
+                    "<p><strong>Status:</strong> " + leaveRequest.getStatus() + "</p>" +
+                    "</div>" +
+                    "<p style=\"font-size: 16px; margin-top: 20px;\">Follow the link to see your request.:</p>" +
+                    "<a href=\"https://s00-vecarbonapp/my-leaves\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\">Link</a>" +
+                    "<p style=\"font-size: 16px; margin-top: 20px;\">You will receive another notification once your request has been reviewed.</p>" +
+                    "<p style=\"font-size: 16px; margin-top: 20px;\">Thank you.</p>" +
+                    "</div>" +
+                    "</body>" +
+                    "</html>";
+
+            emailService.sendEmail(user.getEmail(),
+                    "New Leave Request from " + user.getName(),
+                    htmlMessage
+            );
+        } else {
             BigInteger userId = user.getId();
             List<UserManagers> managerLinks = userManagerRepository.findByUserId(userId);
 
@@ -203,6 +277,7 @@ public class LeaveRequestService {
                         .orElseThrow(() -> new RuntimeException("Manager not found: " + link.getManagerId()));
                 managersToNotify.add(manager);
             }
+
         }
 
         for (User manager : managersToNotify) {
@@ -224,7 +299,7 @@ public class LeaveRequestService {
                     "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date().format(formatter) + "</p>" +
                     "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date().format(formatter) + "</p>" +
                     "<p><strong>Reason:</strong> " + leaveRequest.getReason() + "</p>" +
-                    "<p><strong>Reason:</strong> " + leaveRequest.getStatus() + "</p>" +
+                    "<p><strong>Status:</strong> " + leaveRequest.getStatus() + "</p>" +
                     "</div>" +
                     "<p style=\"font-size: 16px; margin-top: 20px;\">Please log in to te system to review and respond to the request at your earliest convenience.</p>" +
                     "<p style=\"font-size: 16px; margin-top: 20px;\">Follow the link.</p>" +
@@ -251,7 +326,7 @@ public class LeaveRequestService {
                 "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date().format(formatter) + "</p>" +
                 "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date().format(formatter) + "</p>" +
                 "<p><strong>Reason:</strong> " + leaveRequest.getReason() + "</p>" +
-                "<p><strong>Reason:</strong> " + leaveRequest.getStatus() + "</p>" +
+                "<p><strong>Status:</strong> " + leaveRequest.getStatus() + "</p>" +
                 "</div>" +
                 "<p style=\"font-size: 16px; margin-top: 20px;\">Follow the link to see your request.:</p>" +
                 "<a href=\"https://s00-vecarbonapp/my-leaves\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\">Link</a>" +
@@ -583,5 +658,4 @@ public class LeaveRequestService {
 
         return stats;
     }
-
 }

@@ -19,6 +19,7 @@ public class LeaveTypeApprover {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "leave_type", nullable = false)
     private LeaveRequestTypeEnum leaveType;
 
