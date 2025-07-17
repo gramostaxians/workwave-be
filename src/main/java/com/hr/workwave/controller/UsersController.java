@@ -21,19 +21,39 @@ public class UsersController {
 
     private final UsersService usersService;
 
+
+    /**
+     * Retrieves a list of all users in the system.
+     * Note: Access is currently unrestricted, but it is recommended to
+     * secure this endpoint by limiting access to users with the 'ADMIN' role.
+     * This can be achieved by uncommenting and configuring the @PreAuthorize annotation.
+     **/
+
+    //    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/users")
     public List<User> getAllUser() {
         return usersService.getAllUsers();
     }
 
-//    @PreAuthorize("hasAuthority('Admin')")
+    /**
+     * Returns all users with their associated managers.
+     * Access can be restricted to ADMIN via @PreAuthorize.
+     */
+
+    //    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/user-with-managers")
     public ResponseEntity<List<UserWithManagersDTO>> getAllUsersWithManagers() {
         List<UserWithManagersDTO> data = usersService.getAllUsersWithManagers();
         return ResponseEntity.ok(data);
     }
 
-//    @PreAuthorize("hasAuthority('Admin')")
+    /**
+     * Updates user details along with their managers.
+     * Validation applied on input DTO.
+     * Access can be restricted to ADMIN via @PreAuthorize.
+     */
+
+    //    @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/update/user/{userId}")
     public ResponseEntity<User> updateUserAndManagers(
             @PathVariable BigInteger userId,

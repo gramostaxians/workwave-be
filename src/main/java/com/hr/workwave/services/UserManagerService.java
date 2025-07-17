@@ -4,7 +4,6 @@ import com.hr.workwave.model.UserManagers;
 import com.hr.workwave.repo.UserManagerRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
@@ -21,9 +20,26 @@ public class UserManagerService {
 
     private final UserManagerRepository userManagerRepository;
 
+    /**
+     * Retrieves the list of manager relationships for a given user.
+     *
+     * @param userId the ID of the user whose managers are to be fetched
+     * @return a list of UserManagers representing the user's managers
+     */
+
     public List<UserManagers> getManagersForUser(BigInteger userId) {
         return userManagerRepository.findByUserId(userId);
     }
+
+    /**
+     * Synchronizes the list of managers assigned to a user.
+     *
+     * Adds new manager associations that do not already exist,
+     * and removes any existing associations that are not in the provided list.
+     *
+     * @param userId the ID of the user whose managers are being synchronized
+     * @param managerIds the list of manager IDs to associate with the user
+     */
 
     @Transactional
     public void syncManagersForUser(BigInteger userId, List<BigInteger> managerIds) {

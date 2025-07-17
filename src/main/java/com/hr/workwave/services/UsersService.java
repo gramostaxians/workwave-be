@@ -23,9 +23,24 @@ public class UsersService {
     private final UserManagerService userManagerService;
 
 
+    /**
+     * Retrieves all users from the repository.
+     *
+     * @return a list of all User entities
+     */
+
     public List<User> getAllUsers() {
         return usersRepository.findAll();
     }
+
+    /**
+     * Retrieves all users along with their associated managers.
+     *
+     * For each user, fetches their manager links and maps them into DTOs,
+     * then returns a list of UserWithManagersDTO containing user details and their managers.
+     *
+     * @return list of UserWithManagersDTO representing users and their managers
+     */
 
     public List<UserWithManagersDTO> getAllUsersWithManagers() {
         List<User> users = usersRepository.findAll();
@@ -57,7 +72,7 @@ public class UsersService {
                     user.getEmail(),
                     user.getName(),
                     user.getDepartment(),
-                    user.getRole(),
+                    user.getRole().getRole(),
                     user.getCreated_at(),
                     user.getLast_login(),
                     notifyManager,
@@ -68,6 +83,19 @@ public class UsersService {
 
         return result;
     }
+
+    /**
+     * Updates user details and synchronizes the user's managers.
+     *
+     * Fetches the user by ID, updates their attributes based on the provided DTO,
+     * saves the updated user, and updates the manager relationships accordingly.
+     *
+     * @param userId the ID of the user to update
+     * @param dto data transfer object containing updated user information and manager IDs
+     * @return the updated User entity
+     * @throws RuntimeException if the user with the specified ID does not exist
+     */
+
     public User updateUserAndManagers(BigInteger userId, UpdateUsersDTO dto) {
 
         User user = usersRepository.findById(userId)

@@ -1,10 +1,10 @@
 package com.hr.workwave.model;
+
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.hr.workwave.enums.LeaveRequestStatusEnum;
 import com.hr.workwave.enums.LeaveRequestTypeEnum;
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;

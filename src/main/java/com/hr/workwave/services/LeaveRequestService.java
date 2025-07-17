@@ -5,6 +5,7 @@ import com.hr.workwave.dto.LeaveRequestDTO;
 import com.hr.workwave.dto.ManagerApprovalDTO;
 import com.hr.workwave.enums.LeaveRequestStatusEnum;
 import com.hr.workwave.enums.LeaveRequestTypeEnum;
+import com.hr.workwave.enums.UserRolesEnum;
 import com.hr.workwave.model.*;
 import com.hr.workwave.repo.*;
 import jakarta.persistence.EntityNotFoundException;
@@ -32,32 +33,87 @@ public class LeaveRequestService {
     private final LeaveApprovalsRepository leaveApprovalsRepository;
     private final UsersRepository usersRepository;
     private final UserManagerRepository userManagerRepository;
-    private final LeaveTypeApproverRepository leaveTypeApproverRepository;
+
+    /**
+     * Retrieves all leave requests from the repository.
+     *
+     * @return a list of all LeaveRequest entities
+     */
 
     public List<LeaveRequest> getAllLeaveRequests() {
         return leaveRequestRepository.findAll();
     }
 
+    /**
+     * Retrieves the 5 most recent leave requests for a specific user.
+     *
+     * @param userId the ID of the user whose leave requests are to be retrieved
+     * @return a list of up to 5 most recent LeaveRequest entities for the user
+     */
+
     public List<LeaveRequest> getRecentLeaveRequestsByUser(Long userId) {
         return leaveRequestRepository.findTop5RecentLeaveRequestsByUserId(userId);
     }
+
+    /**
+     * Retrieves a leave request by its unique identifier.
+     *
+     * @param id the ID of the leave request to retrieve
+     * @return an Optional containing the LeaveRequest if found, or empty if not found
+     */
 
     public Optional<LeaveRequest> getLeaveRequestById(Long id) {
         return leaveRequestRepository.findById(id);
     }
 
+    /**
+     * Retrieves all approved leave requests for a specific user.
+     *
+     * @param userId the ID of the user whose approved leave requests are to be retrieved
+     * @return a list of LeaveRequest entities that have been approved for the given user
+     */
+
     public List<LeaveRequest> getLeaveRequestsApprovedById(Long userId) {
         return leaveRequestRepository.getApprovedLeaveRequests(userId);
     }
+
+    /**
+     * Retrieves all leave requests associated with a specific user ID.
+     *
+     * @param userId the BigInteger ID of the user whose leave requests are to be retrieved
+     * @return a list of LeaveRequest entities belonging to the specified user
+     */
 
     public List<LeaveRequest> getLeaveRequestsById(BigInteger userId) {
         return leaveRequestRepository.getLeaveRequestsById(userId);
     }
 
+    /**
+     * Retrieves all leave requests filtered by their status.
+     *
+     * @param status the status of the leave requests to be retrieved
+     * @return a list of LeaveRequest entities matching the specified status
+     */
+
     public List<LeaveRequest> getLeaveRequestsByStatus(LeaveRequestStatusEnum status) {
         System.out.println(status.getValue());
         return leaveRequestRepository.findByStatus(status);
     }
+
+    /**
+     * Deletes a leave request by its ID and notifies the associated user and their managers via email.
+     *
+     * The method performs the following steps:
+     * 1. Retrieves the leave request by ID, throws an exception if not found.
+     * 2. Validates that the leave request is linked to a user.
+     * 3. Deletes the leave request from the repository.
+     * 4. Sends a cancellation notification email to the user.
+     * 5. Retrieves all managers linked to the user and sends them cancellation emails.
+     *
+     * @param id the ID of the leave request to be deleted
+     * @return true if the deletion and notifications were successfully processed
+     * @throws RuntimeException if the leave request or associated user or managers are not found
+     */
 
     public boolean deleteRequestById(Long id) {
         Optional<LeaveRequest> requestOpt = leaveRequestRepository.findById(id);
@@ -145,6 +201,20 @@ public class LeaveRequestService {
 
         return true;
     }
+
+    /**
+     * Retrieves all leave requests for a given user along with their respective manager approval details.
+     *
+     * This method performs the following:
+     * - Fetches leave requests associated with the specified user ID.
+     * - Maps each leave request to a summary DTO that includes leave request details.
+     * - For each leave request, it also maps the associated approvals to manager approval DTOs,
+     *   containing manager information and approval status.
+     *
+     * @param userId the ID of the user whose leave requests and approvals are to be retrieved
+     * @return a list of LeaveRequestApprovalSummaryDTO objects representing leave requests and their approvals
+     */
+
     public List<LeaveRequestApprovalSummaryDTO> getLeaveRequestsWithApprovalsByUserId(BigInteger userId) {
         List<LeaveRequest> leaveRequests = leaveRequestRepository.findByUserId(userId);
 
@@ -175,6 +245,28 @@ public class LeaveRequestService {
 
     }
 
+    /**
+     * Creates a new leave request based on the provided LeaveRequestDTO.
+     *
+     * The method performs the following:
+     * - Retrieves the user by ID, throws exception if not found.
+     * - Creates and populates a new LeaveRequest entity with data from the DTO.
+     * - Sets the initial status of the leave request (usually PENDING).
+     * - Saves the leave request to the repository.
+     * - Determines which managers or admins should be notified based on the leave type.
+     * - For each relevant manager, creates a LeaveApprovals entry with initial approval status.
+     * - Sends notification emails to the relevant managers about the new leave request.
+     * - Sends a confirmation email to the requesting user with details of their leave request.
+     *
+     * Special cases:
+     * - Certain leave types (e.g. BEREAVEMENT_LEAVE, BLOOD_DONATION_LEAVE) are auto-approved,
+     *   and notification is sent to admins instead of managers.
+     *
+     * @param dto the data transfer object containing leave request details
+     * @return a LeaveRequestDTO representing the newly created leave request
+     * @throws RuntimeException if the user or any required manager is not found
+     */
+
     public LeaveRequestDTO createLeaveRequest(LeaveRequestDTO dto) {
         User user = usersRepository.findById(BigInteger.valueOf(dto.getUserId()))
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -194,57 +286,37 @@ public class LeaveRequestService {
         LeaveRequest savedRequest = leaveRequestRepository.save(leaveRequest);
 
         List<User> managersToNotify = new ArrayList<>();
+        boolean autoApprove = false;
 
-        if (dto.getLeaveType() == LeaveRequestTypeEnum.MATERNITY_LEAVE) {
-            List<LeaveTypeApprover> approvers = leaveTypeApproverRepository.findByLeaveType(dto.getLeaveType());
+        switch (dto.getLeaveType()) {
+            case MATERNITY_LEAVE:
+            case PATERNITY_LEAVE:
+                managersToNotify.addAll(usersRepository.findByRole(UserRolesEnum.MANAGER));
+                break;
 
-            for (LeaveTypeApprover approver : approvers) {
-                User manager = approver.getApprover();
-                managersToNotify.add(manager);
-            }
+            case BEREAVEMENT_LEAVE:
+            case BLOOD_DONATION_LEAVE:
+                leaveRequest.setStatus(LeaveRequestStatusEnum.APPROVED);
+                leaveRequestRepository.save(leaveRequest);
 
-        } else if (dto.getLeaveType() == LeaveRequestTypeEnum.PATERNITY_LEAVE) {
-            List<LeaveTypeApprover> approvers = leaveTypeApproverRepository.findByLeaveType(dto.getLeaveType());
+                managersToNotify.addAll(usersRepository.findByRole(UserRolesEnum.ADMIN));
+                autoApprove = true;
+                break;
 
-            for (LeaveTypeApprover approver : approvers) {
-                User manager = approver.getApprover();
-                managersToNotify.add(manager);
-            }
-
-        } else if(dto.getLeaveType() == LeaveRequestTypeEnum.BEREAVEMENT_LEAVE) {
-            List<LeaveTypeApprover> approvers = leaveTypeApproverRepository.findByLeaveType(dto.getLeaveType());
-            leaveRequest.setStatus(LeaveRequestStatusEnum.APPROVED);
-            leaveRequestRepository.save(leaveRequest);
-
-            for (LeaveTypeApprover approver : approvers) {
-                User manager = approver.getApprover();
-                managersToNotify.add(manager);
-            }
-
-            for (User manager : managersToNotify) {
-                LeaveApprovals approval = new LeaveApprovals();
-                approval.setLeaveRequest(savedRequest);
-                approval.setManager(manager);
-                approval.setApprovedStatus(LeaveRequestStatusEnum.APPROVED);
-                leaveApprovalsRepository.save(approval);
-            }
-        } else {
-            BigInteger userId = user.getId();
-            List<UserManagers> managerLinks = userManagerRepository.findByUserId(userId);
-
-            for (UserManagers link : managerLinks) {
-                User manager = usersRepository.findById(link.getManagerId())
-                        .orElseThrow(() -> new RuntimeException("Manager not found: " + link.getManagerId()));
-                managersToNotify.add(manager);
-            }
-
+            default:
+                List<UserManagers> managerLinks = userManagerRepository.findByUserId(user.getId());
+                for (UserManagers link : managerLinks) {
+                    User manager = usersRepository.findById(link.getManagerId())
+                            .orElseThrow(() -> new RuntimeException("Manager not found: " + link.getManagerId()));
+                    managersToNotify.add(manager);
+                }
         }
 
         for (User manager : managersToNotify) {
             LeaveApprovals approval = new LeaveApprovals();
             approval.setLeaveRequest(savedRequest);
             approval.setManager(manager);
-            approval.setApprovedStatus(LeaveRequestStatusEnum.PENDING);
+            approval.setApprovedStatus(autoApprove ? LeaveRequestStatusEnum.APPROVED : LeaveRequestStatusEnum.PENDING);
             leaveApprovalsRepository.save(approval);
 
             String htmlMessage = "<html>" +
@@ -254,16 +326,16 @@ public class LeaveRequestService {
                     "<p style=\"font-size: 16px;\">Dear " + manager.getName() + ",</p>" +
                     "<p style=\"font-size: 16px;\">You have a new leave request awaiting your review and approval</p>" +
                     "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
-                    "<p><strong>From: :</strong> " + user.getName() + "</p>" +
+                    "<p><strong>From:</strong> " + user.getName() + "</p>" +
                     "<p><strong>Leave Type:</strong> " + leaveRequest.getLeave_type() + "</p>" +
                     "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date().format(formatter) + "</p>" +
                     "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date().format(formatter) + "</p>" +
                     "<p><strong>Reason:</strong> " + leaveRequest.getReason() + "</p>" +
                     "<p><strong>Status:</strong> " + leaveRequest.getStatus() + "</p>" +
                     "</div>" +
-                    "<p style=\"font-size: 16px; margin-top: 20px;\">Please log in to te system to review and respond to the request at your earliest convenience.</p>" +
-                    "<p style=\"font-size: 16px; margin-top: 20px;\">Follow the link.</p>" +
-                    "<a href=\"https://s00-vecarbonapp/leave-approval\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\"> Link.</a>" +
+                    "<p style=\"font-size: 16px; margin-top: 20px;\">Please log in to the system to review and respond to the request at your earliest convenience.</p>" +
+                    "<p style=\"font-size: 16px;\">Follow the link:</p>" +
+                    "<a href=\"https://s00-vecarbonapp/leave-approval\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\">Link</a>" +
                     "<p style=\"font-size: 16px; margin-top: 20px;\">Thank you.</p>" +
                     "</div>" +
                     "</body>" +
@@ -275,12 +347,13 @@ public class LeaveRequestService {
             );
         }
 
-        String htmlMessage = "<html>" +
+        String userEmailMessage = "<html>" +
                 "<body style=\"font-family: Arial, sans-serif;\">" +
                 "<div style=\"background-color: #c9daeb; padding: 20px;\">" +
-                "<h2 style=\"color: #333;\">New Leave Request</h2>" +
+                "<h2 style=\"color: #333;\">Leave Request Submitted</h2>" +
                 "<p style=\"font-size: 16px;\">Dear " + user.getName() + ",</p>" +
-                "<p style=\"font-size: 16px;\">Your leave request has been successfully submitted and in pending status</p>" +
+                "<p style=\"font-size: 16px;\">Your leave request has been successfully submitted and is currently in <strong>" +
+                leaveRequest.getStatus() + "</strong> status.</p>" +
                 "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
                 "<p><strong>Leave Type:</strong> " + leaveRequest.getLeave_type() + "</p>" +
                 "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date().format(formatter) + "</p>" +
@@ -288,21 +361,36 @@ public class LeaveRequestService {
                 "<p><strong>Reason:</strong> " + leaveRequest.getReason() + "</p>" +
                 "<p><strong>Status:</strong> " + leaveRequest.getStatus() + "</p>" +
                 "</div>" +
-                "<p style=\"font-size: 16px; margin-top: 20px;\">Follow the link to see your request.:</p>" +
+                "<p style=\"font-size: 16px; margin-top: 20px;\">You can view your request using the link below:</p>" +
                 "<a href=\"https://s00-vecarbonapp/my-leaves\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\">Link</a>" +
-                "<p style=\"font-size: 16px; margin-top: 20px;\">You will receive another notification once your request has been reviewed.</p>" +
-                "<p style=\"font-size: 16px; margin-top: 20px;\">Thank you.</p>" +
+                "<p style=\"font-size: 16px; margin-top: 20px;\">You will be notified once it is reviewed.</p>" +
+                "<p style=\"font-size: 16px;\">Thank you.</p>" +
                 "</div>" +
                 "</body>" +
                 "</html>";
 
         emailService.sendEmail(user.getEmail(),
-                "New Leave Request from " + user.getName(),
-                htmlMessage
+                "Leave Request Submitted",
+                userEmailMessage
         );
 
         return toDTO(savedRequest);
     }
+
+    /**
+     * Retrieves all pending leave requests that require approval from a specific manager.
+     *
+     * This method fetches leave requests associated with the given manager ID
+     * which currently have a status of PENDING approval. For each leave request,
+     * it constructs a LeaveRequestApprovalSummaryDTO containing details about
+     * the leave request itself as well as the approval statuses from all managers.
+     *
+     * Additional user details (name, email, department) related to the leave request
+     * are also included if available.
+     *
+     * @param managerId the ID of the manager for whom pending leave requests are to be fetched
+     * @return a list of LeaveRequestApprovalSummaryDTO representing the pending leave requests with their approval details
+     */
 
     public List<LeaveRequestApprovalSummaryDTO> getPendingLeaveRequestsForManager(Long managerId) {
         List<LeaveRequest> leaveRequests = leaveApprovalsRepository.findPendingLeaveRequestsByManager(managerId, LeaveRequestStatusEnum.PENDING);
@@ -344,6 +432,22 @@ public class LeaveRequestService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Retrieves all leave requests currently in the PENDING status.
+     *
+     * For each pending leave request, this method constructs a
+     * LeaveRequestApprovalSummaryDTO that includes details about the request,
+     * such as leave type, dates, reason, status, and creation date. It also
+     * aggregates the approval statuses from all associated managers in the form
+     * of ManagerApprovalDTO objects.
+     *
+     * Additionally, if the leave request has an associated user, their name,
+     * email, and department information are included in the summary.
+     *
+     * @return a list of LeaveRequestApprovalSummaryDTO representing all leave requests
+     *         with PENDING status along with their approval details.
+     */
+
     public List<LeaveRequestApprovalSummaryDTO> getAllPendingLeaveRequests() {
 
         List<LeaveRequest> leaveRequests = leaveRequestRepository.findByStatus(LeaveRequestStatusEnum.PENDING);
@@ -381,6 +485,13 @@ public class LeaveRequestService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Updates the calendar event ID associated with a specific leave request.
+     *
+     * @param leaveRequestId the ID of the leave request to update
+     * @param calendarEventId the new calendar event ID to be set
+     * @throws EntityNotFoundException if no leave request is found with the given ID
+     */
     public void updateCalendarEventId(Long leaveRequestId, String calendarEventId) {
         LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId)
                 .orElseThrow(() -> new EntityNotFoundException("LeaveRequest not found with ID: " + leaveRequestId));
@@ -388,6 +499,24 @@ public class LeaveRequestService {
         leaveRequest.setCalendar_event_id(calendarEventId);
         leaveRequestRepository.save(leaveRequest);
     }
+
+    /**
+     * Retrieves an annual leave summary for a given user over specified years.
+     *
+     * The summary period runs from July 1 of the previous year to June 30 of the given year.
+     * For each year, it calculates the total approved annual leave days taken,
+     * the total annual leave entitlement (defaulted to 20 days), and the remaining leave days.
+     *
+     * @param userId the ID of the user for whom the summary is generated
+     * @param years a list of years to generate summaries for; if null or empty, the current year is used
+     * @return a list of maps containing leave summary data per year, with keys:
+     *         "year" - the year of the summary
+     *         "from" - start date of the leave period (July 1 of previous year)
+     *         "to" - end date of the leave period (June 30 of the given year)
+     *         "total" - total annual leave entitlement
+     *         "spent" - total leave days taken during the period
+     *         "left" - remaining leave days
+     */
 
     public List<Map<String, Object>> getAnnualLeaveSummary(Long userId, List<Integer> years) {
         if (years == null || years.isEmpty()) {
@@ -418,6 +547,13 @@ public class LeaveRequestService {
         return summaries;
     }
 
+    /**
+     * Converts a LeaveRequest entity to a LeaveRequestDTO.
+     *
+     * @param request the LeaveRequest entity to convert
+     * @return the corresponding LeaveRequestDTO
+     */
+
     private LeaveRequestDTO toDTO(LeaveRequest request) {
         LeaveRequestDTO dto = new LeaveRequestDTO();
         dto.setReason(request.getReason());
@@ -428,6 +564,30 @@ public class LeaveRequestService {
 
         return dto;
     }
+
+    /**
+     * Calculates the total leave days an employee is entitled to as of the given date.
+     *
+     * The calculation considers:
+     * - The employee's start date of work.
+     * - The current leave year period (from July 1st to June 30th).
+     * - Different rules depending on whether the employee has worked less than or more than 6 months before July 1st.
+     * - Incremental leave days added for every 5 years of experience.
+     *
+     * Rules summary:
+     * - If the employee started less than 6 months before July 1st of the leave year:
+     *     - No leave if current date is within the first 6 months of starting.
+     *     - After 6 months of work, 9 base days plus 1.5 days per month worked after that.
+     * - If the employee started more than 6 months before July 1st:
+     *     - Base 20 days from July 1st.
+     *     - Additional 9 days after 6 months from July 1st plus 1.5 days per month worked after that.
+     * - Adds 1 extra leave day for every 5 years of experience.
+     *
+     * @param user the employee whose leave days are being calculated
+     * @param currentDate the date on which the leave days calculation is based
+     * @return the total leave days the employee is entitled to as of currentDate
+     */
+
     public double calculateLeaveDays(User user, LocalDate currentDate) {
         LocalDate startOfWork = user.getStart_Of_Work();
         if (startOfWork == null || currentDate == null) {
@@ -480,6 +640,22 @@ public class LeaveRequestService {
         }
         return leaveDays;
     }
+
+    /**
+     * Retrieves leave statistics for a user filtered by leave type (optional).
+     *
+     * The stats include:
+     * - Total leave days available to the user as of today (calculated by `calculateLeaveDays`)
+     * - Count of leave requests in pending, approved, and rejected statuses
+     * - Total leave days used (sum of approved leave days calculated as business days)
+     * - Total number of leave requests submitted
+     *
+     * @param userId the ID of the user for whom stats are fetched
+     * @param leaveType (optional) the type of leave to filter by; if null, includes all leave types
+     * @return a map with keys: "available", "pending", "approved", "rejected", "total", "used", "totalAllowed"
+     *         or null if user not found
+     */
+
     public Map<String, Object> getLeaveStatsByUserId(BigInteger userId, LeaveRequestTypeEnum leaveType) {
         User user = usersRepository.findById(userId).orElse(null);
         if (user == null) {
@@ -526,6 +702,15 @@ public class LeaveRequestService {
 
         return stats;
     }
+
+    /**
+     * Counts the number of business days (Monday to Friday) between two dates inclusive.
+     *
+     * @param start the start date (inclusive)
+     * @param end the end date (inclusive)
+     * @return the count of business days between start and end, excluding Saturdays and Sundays
+     *         Returns 0 if either date is null or if start is after end.
+     */
     public double countBusinessDays(LocalDate start, LocalDate end) {
         if (start == null || end == null || start.isAfter(end)) {
             return 0;
@@ -541,6 +726,16 @@ public class LeaveRequestService {
         return businessDays;
     }
 
+    /**
+     * Calculates the number of sick leave days available to the user as of the given date.
+     *
+     * Sick leave entitlement is fixed at 20 days annually. If the user's start date is
+     * after the current leave year refresh date (July 1st), they are granted the full 20 days.
+     *
+     * @param user the user whose sick leave is being calculated
+     * @param today the current date for the calculation context
+     * @return the number of sick leave days available
+     */
     public double calculateSickLeaveDays(User user, LocalDate today) {
         LocalDate startOfWork = user.getStart_Of_Work();
         if (startOfWork == null) {
@@ -563,6 +758,17 @@ public class LeaveRequestService {
         return 20;
     }
 
+    /**
+     * Retrieves sick leave statistics for a specific user within the current sick leave year.
+     *
+     * The sick leave year is defined from July 1st of the previous year to June 30th of the current year.
+     * This method calculates the total available sick leave days, counts leave requests by their status
+     * (pending, approved, rejected), and sums the used sick leave days within the valid period.
+     *
+     * @param userId the ID of the user for whom the sick leave stats are fetched
+     * @return a map containing counts of available, pending, approved, rejected, total, used, and total allowed sick leave days;
+     *         returns null if the user is not found
+     */
 
     public Map<String, Object> geSicktLeaveStatsByUserId(BigInteger userId) {
         User user = usersRepository.findById(userId).orElse(null);

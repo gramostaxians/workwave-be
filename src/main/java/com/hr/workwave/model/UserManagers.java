@@ -21,9 +21,4 @@ public class UserManagers {
 
     private BigInteger managerId;
     private BigInteger userId;
-
-    public UserManagers( BigInteger managerId, BigInteger userId) {
-        this.managerId = managerId;
-        this.userId = userId;
-    }
 }

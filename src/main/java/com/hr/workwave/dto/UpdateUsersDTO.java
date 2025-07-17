@@ -1,5 +1,8 @@
 package com.hr.workwave.dto;
 
+import com.hr.workwave.enums.UserRolesEnum;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,10 +21,10 @@ public class UpdateUsersDTO {
     private String name;
     private String department;
 
-//    @Enumerated(EnumType.STRING)
-//    private UserRolesEnum role;
+    @Enumerated(EnumType.STRING)
+    private UserRolesEnum role;
 
-    private String role;
+//    private String role;
 
     private LocalDate startOfWork;
     private Boolean notifyManager;

@@ -4,8 +4,6 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.MailMessage;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -14,6 +12,16 @@ import org.springframework.stereotype.Service;
 @Service
 @Log4j2
 public class EmailService {
+
+    /**
+     * Sends an email asynchronously using HTML content.
+     * If email sending is disabled via configuration (workwave.service.mail.enabled = false),
+     * the email content is logged for debugging purposes instead.
+     *
+     * @param to           Recipient's email address
+     * @param subject      Email subject
+     * @param htmlContent  Email body in HTML format
+     */
 
     @Value("${workwave.service.mail.enabled}")
     private boolean mailEnabled;

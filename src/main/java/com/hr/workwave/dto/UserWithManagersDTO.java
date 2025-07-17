@@ -1,6 +1,5 @@
 package com.hr.workwave.dto;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
