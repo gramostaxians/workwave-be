@@ -22,5 +22,4 @@ public class UserWithManagersDTO {
     private boolean notifyManager;
     private LocalDate start_Of_Work;
     private List<ManagerDTO> managers;
-
 }

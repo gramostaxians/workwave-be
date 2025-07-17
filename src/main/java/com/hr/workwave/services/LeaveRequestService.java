@@ -291,7 +291,14 @@ public class LeaveRequestService {
         switch (dto.getLeaveType()) {
             case MATERNITY_LEAVE:
             case PATERNITY_LEAVE:
-                managersToNotify.addAll(usersRepository.findByRole(UserRolesEnum.MANAGER));
+                managersToNotify.addAll(usersRepository.findByRole(UserRolesEnum.ADMIN));
+
+                List<UserManagers> maternityPaternityManagers = userManagerRepository.findByUserId(user.getId());
+                for (UserManagers link : maternityPaternityManagers) {
+                    User manager = usersRepository.findById(link.getManagerId())
+                            .orElseThrow(() -> new RuntimeException("Manager not found: " + link.getManagerId()));
+                    managersToNotify.add(manager);
+                }
                 break;
 
             case BEREAVEMENT_LEAVE:
@@ -300,6 +307,14 @@ public class LeaveRequestService {
                 leaveRequestRepository.save(leaveRequest);
 
                 managersToNotify.addAll(usersRepository.findByRole(UserRolesEnum.ADMIN));
+
+                List<UserManagers> specialLeaveManagers = userManagerRepository.findByUserId(user.getId());
+                for (UserManagers link : specialLeaveManagers) {
+                    User manager = usersRepository.findById(link.getManagerId())
+                            .orElseThrow(() -> new RuntimeException("Manager not found: " + link.getManagerId()));
+                    managersToNotify.add(manager);
+                }
+
                 autoApprove = true;
                 break;
 
