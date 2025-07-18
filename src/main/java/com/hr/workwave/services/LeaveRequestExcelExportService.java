@@ -142,7 +142,7 @@ public class LeaveRequestExcelExportService {
             cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MMM-yyyy", Locale.ENGLISH);
-            int rowIdx = 6;
+            int rowIdx = 7;
 
             for (LeaveRequest lr : userRequests) {
                 Row row = sheet.createRow(rowIdx++);
