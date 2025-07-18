@@ -294,11 +294,6 @@ public class LeaveRequestService {
                 managersToNotify.addAll(usersRepository.findByRole(UserRolesEnum.ADMIN));
 
                 List<UserManagers> maternityPaternityManagers = userManagerRepository.findByUserId(user.getId());
-                for (UserManagers link : maternityPaternityManagers) {
-                    User manager = usersRepository.findById(link.getManagerId())
-                            .orElseThrow(() -> new RuntimeException("Manager not found: " + link.getManagerId()));
-                    managersToNotify.add(manager);
-                }
                 break;
 
             case BEREAVEMENT_LEAVE:

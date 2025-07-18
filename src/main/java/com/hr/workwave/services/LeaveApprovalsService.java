@@ -5,8 +5,10 @@ import com.hr.workwave.enums.UserRolesEnum;
 import com.hr.workwave.model.LeaveApprovals;
 import com.hr.workwave.model.LeaveRequest;
 import com.hr.workwave.model.User;
+import com.hr.workwave.model.UserManagers;
 import com.hr.workwave.repo.LeaveApprovalsRepository;
 import com.hr.workwave.repo.LeaveRequestRepository;
+import com.hr.workwave.repo.UserManagerRepository;
 import com.hr.workwave.repo.UsersRepository;
 import jakarta.transaction.Transactional;
 import lombok.Getter;
@@ -14,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.springframework.stereotype.Service;
 
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -29,6 +32,7 @@ public class LeaveApprovalsService {
     private final UsersRepository usersRepository;
     private final LeaveRequestRepository leaveRequestRepository;
     private final EmailService emailService;
+    private final UserManagerRepository userManagerRepository;
 
     /**
      * Updates the approval status of a leave request based on the manager's decision.
@@ -202,6 +206,41 @@ public class LeaveApprovalsService {
                         htmlMessage1
                 );
             }
+            List<UserManagers> managerLinks = userManagerRepository.findByUserId(leaveRequest.getUser().getId());
+
+            for (UserManagers link : managerLinks) {
+                BigInteger managerId = link.getManagerId();
+                User manager = usersRepository.findById(managerId)
+                        .orElseThrow(() -> new RuntimeException("Manager not found: " + managerId));
+
+                if (manager.getEmail() != null) {
+                    String htmlMessageManager = "<html>" +
+                            "<body style=\"font-family: Arial, sans-serif;\">" +
+                            "<div style=\"background-color: #c9daeb; padding: 20px;\">" +
+                            "<p style=\"font-size: 16px;\">Dear " + manager.getName() + ",</p>" +
+                            "<p style=\"font-size: 16px;\">A leave request has been <strong>APPROVED</strong> for " + leaveRequest.getUser().getName() + ".</p>" +
+                            "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
+                            "<p><strong>Leave Type:</strong> " + leaveRequest.getLeave_type() + "</p>" +
+                            "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date().format(formatter) + "</p>" +
+                            "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date().format(formatter) + "</p>" +
+                            "<p><strong>Reason:</strong> " + leaveRequest.getReason() + "</p>" +
+                            "<p><strong>Status:</strong> " + leaveRequest.getStatus() + "</p>" +
+                            "</div>" +
+                            "<p style=\"font-size: 16px; margin-top: 20px;\">Follow the link to see the request:</p>" +
+                            "<a href=\"https://s00-vecarbonapp/my-leaves\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\">Link</a>" +
+                            "<p style=\"font-size: 16px; margin-top: 20px;\">Thank you.</p>" +
+                            "</div>" +
+                            "</body>" +
+                            "</html>";
+
+                    emailService.sendEmail(
+                            manager.getEmail(),
+                            "Leave Request Approved for " + leaveRequest.getUser().getName(),
+                            htmlMessageManager
+                    );
+                }
+            }
+
         }
     }
 
