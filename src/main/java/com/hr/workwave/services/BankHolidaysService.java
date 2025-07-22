@@ -1,0 +1,49 @@
+package com.hr.workwave.services;
+
+
+
+import com.hr.workwave.model.BankHolidays;
+import com.hr.workwave.repo.BankHolidaysRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class BankHolidaysService {
+
+    @Autowired
+    private BankHolidaysRepository bankHolidayRepository;
+
+    public List<BankHolidays> getAllHolidays() {
+        return bankHolidayRepository.findAll();
+    }
+
+    public BankHolidays createHoliday(BankHolidays holiday) {
+        return bankHolidayRepository.save(holiday);
+    }
+
+    public BankHolidays updateHoliday(Long id, BankHolidays updatedHoliday) {
+        Optional<BankHolidays> optional = bankHolidayRepository.findById(id);
+        if (optional.isPresent()) {
+            BankHolidays existing = optional.get();
+            existing.setName(updatedHoliday.getName());
+            existing.setDay(updatedHoliday.getDay());
+            existing.setMonth(updatedHoliday.getMonth());
+            existing.setYear(updatedHoliday.getYear());
+            existing.setRecurring(updatedHoliday.isRecurring());
+            return bankHolidayRepository.save(existing);
+        } else {
+            return null;
+        }
+    }
+
+    public boolean deleteHoliday(Long id) {
+        if (bankHolidayRepository.existsById(id)) {
+            bankHolidayRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
+}
