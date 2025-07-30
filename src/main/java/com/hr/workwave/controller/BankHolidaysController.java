@@ -5,9 +5,11 @@ package com.hr.workwave.controller;
 import com.hr.workwave.model.BankHolidays;
 import com.hr.workwave.services.BankHolidaysService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -51,4 +53,13 @@ public class BankHolidaysController {
             return ResponseEntity.notFound().build();
         }
     }
+    @GetMapping("/leave-days")
+    public ResponseEntity<Long> getEffectiveLeaveDays(
+            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+
+        long effectiveDays = bankHolidayService.calculateEffectiveLeaveDays(start, end);
+        return ResponseEntity.ok(effectiveDays);
+    }
+
 }

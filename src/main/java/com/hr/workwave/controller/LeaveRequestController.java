@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigInteger;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -199,7 +200,7 @@ public class LeaveRequestController {
      */
 
     @PatchMapping("/leave-request/{leaveRequestId}/calendar-event")
-    public ResponseEntity<String> updateCalendarEventId(
+    public ResponseEntity<Map<String, String>> updateCalendarEventId(
             @PathVariable Long leaveRequestId,
             @RequestBody Map<String, String> requestBody) {
 
@@ -207,9 +208,11 @@ public class LeaveRequestController {
 
         try {
             leaveRequestService.updateCalendarEventId(leaveRequestId, calendarEventId);
-            return ResponseEntity.ok("calendar_event_id was successfully updated");
+
+            return ResponseEntity.ok(Collections.singletonMap("message", "calendar_event_id was successfully updated"));
         } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Collections.singletonMap("error", e.getMessage()));
         }
     }
 
@@ -259,7 +262,7 @@ public class LeaveRequestController {
      * @param leaveType (optional) the type of leave to filter statistics by
      * @return a response entity containing leave statistics or a 404 if the user is not found
      */
-
+//
     @GetMapping("/dashboard/stats/{userId}")
     public ResponseEntity<?> getLeaveStats(@PathVariable BigInteger userId, @RequestParam(required = false) LeaveRequestTypeEnum leaveType) {
         Map<String, Object> stats = leaveRequestService.getLeaveStatsByUserId(userId, leaveType);

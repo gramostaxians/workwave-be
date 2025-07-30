@@ -7,6 +7,8 @@ import com.hr.workwave.repo.BankHolidaysRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,10 +19,12 @@ public class BankHolidaysService {
     private BankHolidaysRepository bankHolidayRepository;
 
     public List<BankHolidays> getAllHolidays() {
+
         return bankHolidayRepository.findAll();
     }
 
     public BankHolidays createHoliday(BankHolidays holiday) {
+
         return bankHolidayRepository.save(holiday);
     }
 
@@ -46,4 +50,18 @@ public class BankHolidaysService {
         }
         return false;
     }
+    public long calculateEffectiveLeaveDays(LocalDate start, LocalDate end) {
+        List<BankHolidays> holidays = bankHolidayRepository.findAll();
+
+        long holidaysInRange = holidays.stream()
+                .map(h -> LocalDate.of(
+                        h.getYear() != null ? h.getYear() : start.getYear(),
+                        h.getMonth() + 1,
+                        h.getDay()))
+                .filter(date -> !date.isBefore(start) && !date.isAfter(end))
+                .count();
+
+        return ChronoUnit.DAYS.between(start, end) + 1 - holidaysInRange;
+    }
+
 }
