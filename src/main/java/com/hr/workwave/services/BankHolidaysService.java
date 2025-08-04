@@ -7,6 +7,7 @@ import com.hr.workwave.repo.BankHolidaysRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -53,15 +54,24 @@ public class BankHolidaysService {
     public long calculateEffectiveLeaveDays(LocalDate start, LocalDate end) {
         List<BankHolidays> holidays = bankHolidayRepository.findAll();
 
-        long holidaysInRange = holidays.stream()
+
+        List<LocalDate> holidayDates = holidays.stream()
                 .map(h -> LocalDate.of(
                         h.getYear() != null ? h.getYear() : start.getYear(),
                         h.getMonth() + 1,
                         h.getDay()))
-                .filter(date -> !date.isBefore(start) && !date.isAfter(end))
+                .toList();
+
+        long effectiveDays = start.datesUntil(end.plusDays(1)) // inclusive range
+                .filter(date ->
+                        date.getDayOfWeek() != DayOfWeek.SATURDAY &&
+                                date.getDayOfWeek() != DayOfWeek.SUNDAY &&
+                                !holidayDates.contains(date)
+                )
                 .count();
 
-        return ChronoUnit.DAYS.between(start, end) + 1 - holidaysInRange;
+        return effectiveDays;
     }
+
 
 }

@@ -22,7 +22,7 @@ public class BankHolidaysController {
     @GetMapping("/bank-holidays")
     public ResponseEntity<List<BankHolidays>> getAllHolidays() {
         return ResponseEntity.ok(bankHolidayService.getAllHolidays());
-   }
+    }
 
 
     @PostMapping("/bank-holidays")
@@ -53,6 +53,7 @@ public class BankHolidaysController {
             return ResponseEntity.notFound().build();
         }
     }
+
     @GetMapping("/leave-days")
     public ResponseEntity<Long> getEffectiveLeaveDays(
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
@@ -61,5 +62,4 @@ public class BankHolidaysController {
         long effectiveDays = bankHolidayService.calculateEffectiveLeaveDays(start, end);
         return ResponseEntity.ok(effectiveDays);
     }
-
 }
