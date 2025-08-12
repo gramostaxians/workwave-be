@@ -24,7 +24,6 @@ public class BankHolidaysController {
         return ResponseEntity.ok(bankHolidayService.getAllHolidays());
     }
 
-
     @PostMapping("/bank-holidays")
     public ResponseEntity<BankHolidays> createHoliday(@RequestBody BankHolidays holiday) {
         BankHolidays created = bankHolidayService.createHoliday(holiday);
