@@ -13,7 +13,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Locale;
 
@@ -21,9 +20,12 @@ import java.util.Locale;
 public class LeaveRequestExcelExportService {
 
     private final LeaveRequestRepository leaveRequestRepository;
+    private final LeaveRequestService leaveRequestService;
 
-    public LeaveRequestExcelExportService(LeaveRequestRepository leaveRequestRepository) {
+    public LeaveRequestExcelExportService(LeaveRequestRepository leaveRequestRepository,
+                                          LeaveRequestService leaveRequestService) {
         this.leaveRequestRepository = leaveRequestRepository;
+        this.leaveRequestService = leaveRequestService;
     }
 
     public String getExportFileName(Long userId) {
@@ -93,7 +95,6 @@ public class LeaveRequestExcelExportService {
             trackerTitleCell.setCellStyle(greenBoxStyle);
             sheet.addMergedRegion(new CellRangeAddress(3, 3, 0, 1));
 
-
             Row companyNameRow = sheet.getRow(1);
             Cell companyNameRowCell = companyNameRow.createCell(2);
             companyNameRowCell.setCellValue("Company Name: ");
@@ -151,7 +152,8 @@ public class LeaveRequestExcelExportService {
                 LocalDate start = lr.getStart_date();
                 LocalDate end = lr.getEnd_date();
                 LocalDate backToWork = end.plusDays(1);
-                long days = ChronoUnit.DAYS.between(start, end) + 1;
+
+                long days = leaveRequestService.calculateEffectiveLeaveDays(start, end);
 
                 Cell c0 = row.createCell(0);
                 c0.setCellValue(fullName);
