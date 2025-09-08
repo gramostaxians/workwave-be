@@ -51,27 +51,25 @@ public class BankHolidaysService {
         }
         return false;
     }
+
     public long calculateEffectiveLeaveDays(LocalDate start, LocalDate end) {
-        List<BankHolidays> holidays = bankHolidayRepository.findAll();
+        if (start == null || end == null || start.isAfter(end)) {
+            return 0;
+        }
 
-
-        List<LocalDate> holidayDates = holidays.stream()
+        List<LocalDate> holidayDates = getAllHolidays().stream()
                 .map(h -> LocalDate.of(
                         h.getYear() != null ? h.getYear() : start.getYear(),
                         h.getMonth() + 1,
                         h.getDay()))
                 .toList();
 
-        long effectiveDays = start.datesUntil(end.plusDays(1)) // inclusive range
+        return start.datesUntil(end.plusDays(1))
                 .filter(date ->
                         date.getDayOfWeek() != DayOfWeek.SATURDAY &&
                                 date.getDayOfWeek() != DayOfWeek.SUNDAY &&
                                 !holidayDates.contains(date)
                 )
                 .count();
-
-        return effectiveDays;
     }
-
-
 }

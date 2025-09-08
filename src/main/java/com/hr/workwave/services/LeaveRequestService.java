@@ -11,6 +11,7 @@ import com.hr.workwave.repo.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,7 +34,8 @@ public class LeaveRequestService {
     private final LeaveApprovalsRepository leaveApprovalsRepository;
     private final UsersRepository usersRepository;
     private final UserManagerRepository userManagerRepository;
-
+    //private BankHolidaysService bankHolidaysService;
+    private final BankHolidaysService bankHolidaysService;
     /**
      * Retrieves all leave requests from the repository.
      *
@@ -282,6 +284,7 @@ public class LeaveRequestService {
         leaveRequest.setUser(user);
         leaveRequest.setEmployee_email(dto.getEmployeeEmail());
         leaveRequest.setStatus(LeaveRequestStatusEnum.PENDING);
+        double effectiveDays = calculateEffectiveLeaveDays(leaveRequest.getStart_date(), leaveRequest.getEnd_date());
 
         LeaveRequest savedRequest = leaveRequestRepository.save(leaveRequest);
 
@@ -696,7 +699,7 @@ public class LeaveRequestService {
 
         double usedDays = leaveRequests.stream()
                 .filter(lr -> lr.getStatus() == LeaveRequestStatusEnum.APPROVED)
-                .mapToDouble(lr -> countBusinessDays(lr.getStart_date(), lr.getEnd_date()))
+                .mapToDouble(lr -> calculateEffectiveLeaveDays(lr.getStart_date(), lr.getEnd_date()))
                 .sum();
 
         double availableDays = Math.max(0, totalAvailableDays - usedDays);
@@ -816,9 +819,9 @@ public class LeaveRequestService {
                 .filter(lr -> lr.getStatus() == LeaveRequestStatusEnum.REJECTED)
                 .count();
 
-        double usedDays = validLeaveRequests.stream()
+        double usedDays = leaveRequests.stream()
                 .filter(lr -> lr.getStatus() == LeaveRequestStatusEnum.APPROVED)
-                .mapToDouble(lr -> countBusinessDays(lr.getStart_date(), lr.getEnd_date()))
+                .mapToDouble(lr -> calculateEffectiveLeaveDays(lr.getStart_date(), lr.getEnd_date()))
                 .sum();
 
         double availableDays = Math.max(0, totalAvailableDays - usedDays);
@@ -833,6 +836,9 @@ public class LeaveRequestService {
         stats.put("totalAllowed", totalAvailableDays);
 
         return stats;
+    }
+    public long calculateEffectiveLeaveDays(LocalDate start, LocalDate end) {
+        return bankHolidaysService.calculateEffectiveLeaveDays(start, end);
     }
 
 }

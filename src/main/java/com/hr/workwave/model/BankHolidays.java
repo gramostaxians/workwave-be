@@ -24,7 +24,7 @@ public class BankHolidays {
 
     private int day;
 
-    private int month;
+    private Integer month;
 
     private Integer year;
 
