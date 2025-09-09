@@ -216,6 +216,20 @@ public class LeaveRequestController {
         }
     }
 
+    @DeleteMapping("/leave-request/{leaveRequestId}/calendar-event")
+    public ResponseEntity<Map<String, String>> deleteCalendarEvent(
+            @PathVariable Long leaveRequestId) {
+
+        try {
+            leaveRequestService.deleteCalendarEvent(leaveRequestId);
+
+            return ResponseEntity.ok(Collections.singletonMap("message", "calendar_event_id was successfully deleted"));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Collections.singletonMap("error", e.getMessage()));
+        }
+    }
+
     /**
      * Retrieves the annual leave summary for a user across specified fiscal years.
      * If no years are provided, the current fiscal year is used by default.

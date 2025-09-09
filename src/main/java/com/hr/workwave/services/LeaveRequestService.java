@@ -513,6 +513,15 @@ public class LeaveRequestService {
         leaveRequestRepository.save(leaveRequest);
     }
 
+    public void deleteCalendarEvent(Long leaveRequestId) {
+        LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId)
+                .orElseThrow(() -> new EntityNotFoundException("LeaveRequest not found with ID: " + leaveRequestId));
+
+        leaveRequest.setCalendar_event_id(null);
+        leaveRequestRepository.save(leaveRequest);
+    }
+
+
     /**
      * Retrieves an annual leave summary for a given user over specified years.
      *
