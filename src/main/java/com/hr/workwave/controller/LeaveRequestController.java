@@ -51,7 +51,6 @@ public class LeaveRequestController {
     public List<LeaveRequest> getRecentLeaveRequests(@PathVariable  Long userId) {
         return leaveRequestService.getRecentLeaveRequestsByUser(userId);
     }
-
     /**
      * Retrieves a leave request by its ID.
      *

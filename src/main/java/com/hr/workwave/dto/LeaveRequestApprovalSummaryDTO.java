@@ -21,6 +21,7 @@ public class LeaveRequestApprovalSummaryDTO {
     private Long leaveRequestId;
     private String employeeEmail;
     private String leaveType;
+    private Number days;
     private LocalDate startDate;
     private LocalDate endDate;
     private String calendar_event_id;

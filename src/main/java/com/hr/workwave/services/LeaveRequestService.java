@@ -36,6 +36,7 @@ public class LeaveRequestService {
     private final UserManagerRepository userManagerRepository;
     //private BankHolidaysService bankHolidaysService;
     private final BankHolidaysService bankHolidaysService;
+
     /**
      * Retrieves all leave requests from the repository.
      *
@@ -226,15 +227,19 @@ public class LeaveRequestService {
                 dto.setManagerId(approval.getManager().getId().longValue());
                 dto.setManagerEmail(approval.getManager().getEmail());
                 dto.setName(approval.getManager().getName());
+                dto.setRejectionReason(approval.getLeaveRequest().getReason());
                 dto.setApprovedStatus(approval.getApprovedStatus());
                 dto.setApprovedDate(approval.getApprovedDate());
                 return dto;
             }).collect(Collectors.toList());
 
+            long effectiveDays = bankHolidaysService.calculateEffectiveLeaveDays(leaveRequest.getStart_date(), leaveRequest.getEnd_date());
+
             LeaveRequestApprovalSummaryDTO summaryDTO = new LeaveRequestApprovalSummaryDTO();
             summaryDTO.setLeaveRequestId(leaveRequest.getId());
             summaryDTO.setEmployeeEmail(leaveRequest.getEmployee_email());
             summaryDTO.setLeaveType(leaveRequest.getLeave_type().getValue());
+            summaryDTO.setDays(effectiveDays);
             summaryDTO.setStartDate(leaveRequest.getStart_date());
             summaryDTO.setEndDate(leaveRequest.getEnd_date());
             summaryDTO.setReason(leaveRequest.getReason());
@@ -348,7 +353,7 @@ public class LeaveRequestService {
                     "</div>" +
                     "<p style=\"font-size: 16px; margin-top: 20px;\">Please log in to the system to review and respond to the request at your earliest convenience.</p>" +
                     "<p style=\"font-size: 16px;\">Follow the link:</p>" +
-                    "<a href=\"https://s00-vecarbonapp/leave-approval\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\">Link</a>" +
+                    "<a href=\"https://s-1564-workwave/leave-approval\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\">Link</a>" +
                     "<p style=\"font-size: 16px; margin-top: 20px;\">Thank you.</p>" +
                     "</div>" +
                     "</body>" +
@@ -375,7 +380,7 @@ public class LeaveRequestService {
                 "<p><strong>Status:</strong> " + leaveRequest.getStatus() + "</p>" +
                 "</div>" +
                 "<p style=\"font-size: 16px; margin-top: 20px;\">You can view your request using the link below:</p>" +
-                "<a href=\"https://s00-vecarbonapp/my-leaves\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\">Link</a>" +
+                "<a href=\"https://s-1564-workwave/my-leaves\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\">Link</a>" +
                 "<p style=\"font-size: 16px; margin-top: 20px;\">You will be notified once it is reviewed.</p>" +
                 "<p style=\"font-size: 16px;\">Thank you.</p>" +
                 "</div>" +
@@ -512,14 +517,12 @@ public class LeaveRequestService {
         leaveRequest.setCalendar_event_id(calendarEventId);
         leaveRequestRepository.save(leaveRequest);
     }
-
     public void deleteCalendarEvent(Long leaveRequestId) {
         LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId)
                 .orElseThrow(() -> new EntityNotFoundException("LeaveRequest not found with ID: " + leaveRequestId));
-
-        leaveRequest.setCalendar_event_id(null);
-        leaveRequestRepository.save(leaveRequest);
+        leaveRequestRepository.delete(leaveRequest);
     }
+
 
 
     /**
