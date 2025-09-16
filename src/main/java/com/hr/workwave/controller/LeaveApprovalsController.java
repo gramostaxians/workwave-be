@@ -1,5 +1,6 @@
 package com.hr.workwave.controller;
 
+import com.hr.workwave.dto.LeaveApprovalsDto;
 import com.hr.workwave.dto.UpdateApprovalStatusRequest;
 import com.hr.workwave.model.LeaveApprovals;
 import com.hr.workwave.services.LeaveApprovalsService;
@@ -24,9 +25,9 @@ public class LeaveApprovalsController {
      */
 //  @PreAuthorize("hasAnyAuthority('MANAGER', 'ADMIN')")
     @PutMapping("/status")
-    public LeaveApprovals updateStatus(@RequestBody UpdateApprovalStatusRequest request){
+    public LeaveApprovalsDto updateStatus(@RequestBody UpdateApprovalStatusRequest request){
 
-        LeaveApprovals updatedApproval = leaveApprovalsService.updateStatus(
+        LeaveApprovalsDto updatedApproval = leaveApprovalsService.updateStatus(
                 request.getLeaveRequestId(),
                 request.getManagerId(),
                 request.getStatus(),

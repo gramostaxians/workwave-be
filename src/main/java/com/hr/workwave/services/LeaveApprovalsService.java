@@ -1,5 +1,6 @@
 package com.hr.workwave.services;
 
+import com.hr.workwave.dto.LeaveApprovalsDto;
 import com.hr.workwave.enums.LeaveRequestStatusEnum;
 import com.hr.workwave.enums.UserRolesEnum;
 import com.hr.workwave.model.LeaveApprovals;
@@ -50,14 +51,26 @@ public class LeaveApprovalsService {
      * @throws IllegalArgumentException if rejection reason is missing when status is REJECTED
      */
 
+    public LeaveApprovalsDto toDto(LeaveApprovals approval, String mainStatus) {
+        if (approval == null) return null;
 
-    public LeaveApprovals updateStatus(Long leaveRequestId, Long managerId, String statusString, String rejectReason) {
+        LeaveApprovalsDto dto = new LeaveApprovalsDto();
+        dto.setManager(approval.getManager() != null ? approval.getManager() : null);
+        dto.setApprovedDate(approval.getApprovedDate());
+        dto.setApprovedStatus(approval.getApprovedStatus() != null ? approval.getApprovedStatus().name() : null);
+        dto.setMainStatus(mainStatus);
+        return dto;
+    }
+
+
+    public LeaveApprovalsDto  updateStatus(Long leaveRequestId, Long managerId, String statusString, String rejectReason) {
         LeaveApprovals approval = leaveApprovalsRepository.findByLeaveRequestIdAndManagerId(leaveRequestId, managerId)
                 .orElseThrow(() -> new RuntimeException("LeaveApproval not found for leaveRequestId " + leaveRequestId + " and managerId " + managerId));
 
         LeaveRequestStatusEnum newStatus = LeaveRequestStatusEnum.fromValue(statusString);
         approval.setApprovedStatus(newStatus);
         approval.setApprovedDate(LocalDate.now());
+        String mainStatus = ""; // or custom logic here
 
         if (newStatus == LeaveRequestStatusEnum.REJECTED) {
             if (rejectReason == null || rejectReason.isBlank()) {
@@ -66,19 +79,21 @@ public class LeaveApprovalsService {
             LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId)
                     .orElseThrow(() -> new RuntimeException("LeaveRequest not found with id: " + leaveRequestId));
             leaveRequest.setRejectReason(rejectReason);
+            mainStatus = String.valueOf(leaveRequest.getStatus());
             leaveRequestRepository.save(leaveRequest);
         } else {
             LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId)
                     .orElse(null);
             if (leaveRequest != null) {
                 leaveRequest.setRejectReason(null);
+                mainStatus = String.valueOf(leaveRequest.getStatus());
                 leaveRequestRepository.save(leaveRequest);
             }
         }
         LeaveApprovals updatedApproval = leaveApprovalsRepository.save(approval);
         updateLeaveRequestStatus(leaveRequestId);
 
-        return updatedApproval;
+        return toDto(updatedApproval, mainStatus);
     }
 
     /**
