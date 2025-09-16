@@ -581,6 +581,7 @@ public class LeaveRequestService {
 
     private LeaveRequestDTO toDTO(LeaveRequest request) {
         LeaveRequestDTO dto = new LeaveRequestDTO();
+        dto.setId(request.getId());
         dto.setReason(request.getReason());
         dto.setLeaveType(request.getLeave_type());
         dto.setStartDate(request.getStart_date());

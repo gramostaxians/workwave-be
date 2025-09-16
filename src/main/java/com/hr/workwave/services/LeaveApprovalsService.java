@@ -55,6 +55,7 @@ public class LeaveApprovalsService {
         if (approval == null) return null;
 
         LeaveApprovalsDto dto = new LeaveApprovalsDto();
+        dto.setId(approval.getId());
         dto.setManager(approval.getManager() != null ? approval.getManager() : null);
         dto.setApprovedDate(approval.getApprovedDate());
         dto.setApprovedStatus(approval.getApprovedStatus() != null ? approval.getApprovedStatus().name() : null);

@@ -16,6 +16,7 @@ import java.time.LocalDate;
 public class LeaveRequestDTO {
     private LeaveRequestTypeEnum leaveType;
     private Long employeeId;
+    private Long id;
     private LocalDate startDate;
     private LocalDate endDate;
     private String reason;
