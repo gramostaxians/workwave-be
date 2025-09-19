@@ -9,7 +9,7 @@ http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
     <include file="001-create-table-manager-users.xml" relativeToChangelogFile="true"/>
     <include file="004-create-table-LeaveApprovals.xml" relativeToChangelogFile="true"/>
     <include file="005-add-startofwork-column-to-table-users.xml" relativeToChangelogFile="true"/>
-    <include file="007-create-table-Project.xml" relativeToChangelogFile="true"/>
-    <include file="008-add-project-id-to-users.xml" relativeToChangelogFile="true" />
+<!--    <include file="007-create-table-Project.xml" relativeToChangelogFile="true"/>-->
+<!--    <include file="008-add-project-id-to-users.xml" relativeToChangelogFile="true" />-->
 
 </databaseChangeLog>

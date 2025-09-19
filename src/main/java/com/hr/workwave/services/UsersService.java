@@ -79,6 +79,7 @@ public class UsersService {
                     user.getLast_login(),
                     notifyManager,
                     user.getStart_Of_Work(),
+                    user.getProjectId(),
                     managers
             ));
         }

@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,5 +22,6 @@ public class UserWithManagersDTO {
     private LocalDateTime last_login;
     private boolean notifyManager;
     private LocalDate start_Of_Work;
+    private BigInteger projectId;
     private List<ManagerDTO> managers;
 }
