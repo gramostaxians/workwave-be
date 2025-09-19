@@ -5,10 +5,13 @@ import com.hr.workwave.services.ProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
 import java.util.List;
 
 @RequiredArgsConstructor
-@Controller("/api")
+@Controller()
+@RequestMapping("/api")
 public class ProjectController {
 
     private final ProjectService projectService;
