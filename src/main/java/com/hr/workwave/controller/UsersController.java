@@ -1,5 +1,6 @@
 package com.hr.workwave.controller;
 
+import com.hr.workwave.dto.ProjectIdRequest;
 import com.hr.workwave.dto.UpdateUsersDTO;
 import com.hr.workwave.dto.UserWithManagersDTO;
 import com.hr.workwave.model.User;
@@ -11,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigInteger;
 import java.util.List;
-
 
 @RestController
 @RequestMapping("/api")
@@ -61,6 +61,15 @@ public class UsersController {
 
         User updatedUser = usersService.updateUserAndManagers(userId, dto);
 
+        return ResponseEntity.ok(updatedUser);
+    }
+
+    @PutMapping("/setProjectId/{userId}")
+    public ResponseEntity<User> setProjectId(
+            @PathVariable BigInteger userId,
+            @Valid @RequestBody ProjectIdRequest request
+    ) {
+        User updatedUser = usersService.setProjectID(userId, request.getProjectId());
         return ResponseEntity.ok(updatedUser);
     }
 }

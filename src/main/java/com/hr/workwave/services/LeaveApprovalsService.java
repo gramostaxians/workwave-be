@@ -37,12 +37,11 @@ public class LeaveApprovalsService {
 
     /**
      * Updates the approval status of a leave request based on the manager's decision.
-     *
      * - If the new status is "REJECTED", a rejection reason is mandatory and stored in the LeaveRequest.
      * - If the status is not "REJECTED", any existing rejection reason is cleared.
      * - Also triggers an update of the overall leave request status based on manager approvals.
      *
-     * @param leaveRequestId ID of the leave request
+     * @param leaveRequestID ID of the leave request
      * @param managerId ID of the manager updating the status
      * @param statusString New status as a string (e.g., "APPROVED", "REJECTED")
      * @param rejectReason Reason for rejection, required if status is "REJECTED"
@@ -106,7 +105,6 @@ public class LeaveApprovalsService {
      * - Otherwise, the leave request is marked APPROVED.
      *   An approval notification email is sent to the user.
      *   Additionally, all Admin users receive a notification email about the approval.
-     *
      * Emails contain detailed information about the leave request, including type,
      * dates, reason, and current status.
      *

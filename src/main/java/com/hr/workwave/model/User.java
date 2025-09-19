@@ -37,4 +37,7 @@ public class User {
     private LocalDate start_Of_Work;
 
     private Boolean notifyManager;
+
+    @JoinColumn(name = "project_id")
+    private BigInteger projectId;
 }

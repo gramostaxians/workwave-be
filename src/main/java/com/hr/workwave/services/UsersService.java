@@ -3,8 +3,10 @@ package com.hr.workwave.services;
 import com.hr.workwave.dto.ManagerDTO;
 import com.hr.workwave.dto.UpdateUsersDTO;
 import com.hr.workwave.dto.UserWithManagersDTO;
+import com.hr.workwave.model.Project;
 import com.hr.workwave.model.UserManagers;
 import com.hr.workwave.model.User;
+import com.hr.workwave.repo.ProjectRepository;
 import com.hr.workwave.repo.UserManagerRepository;
 import com.hr.workwave.repo.UsersRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,10 +19,10 @@ import java.util.*;
 @Service
 public class UsersService {
 
-
     private final UsersRepository usersRepository;
     private final UserManagerRepository userManagerRepository;
     private final UserManagerService userManagerService;
+    private final ProjectRepository projectRepository;
 
 
     /**
@@ -86,7 +88,6 @@ public class UsersService {
 
     /**
      * Updates user details and synchronizes the user's managers.
-     *
      * Fetches the user by ID, updates their attributes based on the provided DTO,
      * saves the updated user, and updates the manager relationships accordingly.
      *
@@ -106,6 +107,7 @@ public class UsersService {
         user.setRole(dto.getRole());
         user.setStart_Of_Work(dto.getStartOfWork());
         user.setNotifyManager(dto.getNotifyManager());
+        user.setProjectId(dto.getProjectId());
 
         usersRepository.save(user);
 
@@ -113,6 +115,15 @@ public class UsersService {
         userManagerService.syncManagersForUser(userId, managerIds != null ? managerIds : Collections.emptyList());
 
         return user;
+    }
+
+    public User setProjectID(BigInteger userId, BigInteger projectId) {
+        User user = usersRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+
+        user.setProjectId(projectId);
+
+        return usersRepository.save(user);
     }
 }
 

@@ -20,6 +20,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -34,7 +35,6 @@ public class LeaveRequestService {
     private final LeaveApprovalsRepository leaveApprovalsRepository;
     private final UsersRepository usersRepository;
     private final UserManagerRepository userManagerRepository;
-    //private BankHolidaysService bankHolidaysService;
     private final BankHolidaysService bankHolidaysService;
 
     /**
@@ -280,6 +280,10 @@ public class LeaveRequestService {
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
+        if (dto.getLeaveType() == LeaveRequestTypeEnum.HOME_OFFICE) {
+            validateHomeOfficeLeave(user, dto);
+        }
+
         LeaveRequest leaveRequest = new LeaveRequest();
         leaveRequest.setEmployeeId(1L);
         leaveRequest.setLeave_type(dto.getLeaveType());
@@ -321,6 +325,11 @@ public class LeaveRequestService {
                 autoApprove = true;
                 break;
 
+            case HOME_OFFICE:
+                leaveRequest.setStatus(LeaveRequestStatusEnum.APPROVED);
+                leaveRequestRepository.save(leaveRequest);
+
+                break;
             default:
                 List<UserManagers> managerLinks = userManagerRepository.findByUserId(user.getId());
                 for (UserManagers link : managerLinks) {
@@ -393,6 +402,52 @@ public class LeaveRequestService {
         );
 
         return toDTO(savedRequest);
+    }
+
+    private void validateHomeOfficeLeave(User user, LeaveRequestDTO dto) {
+
+        if (user.getProjectId() == null) {
+            throw new RuntimeException("User does not have a project assigned. Cannot request HOME_OFFICE leave.");
+        }
+
+        BigInteger projectId = user.getProjectId();
+
+        List<User> teamMembers = usersRepository.findByProjectId(projectId);
+        int teamSize = teamMembers.size();
+
+
+        LocalDate startDate = dto.getStartDate();
+        LocalDate endDate = dto.getEndDate();
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+        for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+            int countRequestsOnDate = leaveRequestRepository.countHomeOfficeRequestsOnDate(date);
+            double percentage = teamSize == 0 ? 0 : (double) countRequestsOnDate / teamSize;
+
+            if (percentage >= 0.5) {
+//                throw new RuntimeException("More than 50% of team members have already requested HOME_OFFICE on " + date.format(formatter) + ". Request denied.");
+                throw new IllegalArgumentException("More than 50% of team members have already requested HOME_OFFICE on " + date.format(formatter) + ". Request denied.");
+            }
+        }
+
+        LocalDate weekStart = startDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate weekEnd = startDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+
+        boolean hasRequestInWeek = leaveRequestRepository.existsByUserIdAndDateRange(
+                user.getId(),
+                LeaveRequestTypeEnum.HOME_OFFICE,
+                weekStart,
+                weekEnd
+        );
+        System.out.println("Checking leave for user ID: " + user.getId());
+        System.out.println("Week start: " + weekStart + ", week end: " + weekEnd);
+
+        System.out.println("Existing HOME_OFFICE requests in the week: " + hasRequestInWeek);
+
+        if (hasRequestInWeek) {
+            throw new IllegalArgumentException("User has already made a leave request in the same week. Only one request allowed per week.");
+        }
     }
 
     /**

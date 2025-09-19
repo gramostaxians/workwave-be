@@ -48,4 +48,17 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
                     @Param("startDate") LocalDate startDate,
                     @Param("endDate") LocalDate endDate);
 
+
+    @Query("SELECT COUNT(lr) FROM LeaveRequest lr WHERE lr.leave_type = 'HOME_OFFICE' AND lr.start_date <= :date AND lr.end_date >= :date")
+    int countHomeOfficeRequestsOnDate(@Param("date") LocalDate date);
+
+    @Query("SELECT CASE WHEN COUNT(lr) > 0 THEN true ELSE false END FROM LeaveRequest lr " +
+            "WHERE lr.user.id = :userId AND lr.start_date <= :weekEnd AND lr.end_date >= :weekStart " +
+            "AND lr.leave_type = :leaveType")
+    boolean existsByUserIdAndDateRange(@Param("userId") BigInteger userId,
+                                       @Param("leaveType") LeaveRequestTypeEnum leaveType,
+                                       @Param("weekStart") LocalDate weekStart,
+                                       @Param("weekEnd") LocalDate weekEnd);
+
+
 }

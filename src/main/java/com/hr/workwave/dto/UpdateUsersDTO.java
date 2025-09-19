@@ -23,11 +23,9 @@ public class UpdateUsersDTO {
 
     @Enumerated(EnumType.STRING)
     private UserRolesEnum role;
-
-//    private String role;
-
     private LocalDate startOfWork;
     private Boolean notifyManager;
     private List<BigInteger> managerIds;
 
+    private BigInteger projectId;
 }

@@ -15,12 +15,12 @@ import java.time.LocalDate;
 public class LeaveApprovalsDto {
     private Long id;
 
-    private User manager;          // only the manager's id, or you can create a nested DTO if needed
+    private User manager;
 
     private LocalDate approvedDate;
 
-    private String approvedStatus;   // assuming string representation of LeaveRequestStatusEnum
+    private String approvedStatus;
 
-    private String mainStatus;       // new additional property
+    private String mainStatus;
 
 }

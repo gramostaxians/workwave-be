@@ -9,7 +9,7 @@ import java.math.BigInteger;
 import java.util.List;
 
 public interface UsersRepository extends JpaRepository<User, BigInteger> {
-    User findByEmail(String email);
+    List<User> findByProjectId(BigInteger projectId);
 
     @Query("SELECT u FROM User u WHERE u.role = :role")
     List<User> findByRole(@Param("role") UserRolesEnum role);
