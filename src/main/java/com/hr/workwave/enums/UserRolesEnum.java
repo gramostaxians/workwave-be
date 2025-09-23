@@ -11,7 +11,7 @@ public enum UserRolesEnum {
     MANAGER("MANAGER"),
     EMPLOYEE("EMPLOYEE");
 
-    private String role;
+    private final String role;
 
     /**
      * Returns the enum constant matching the given string value (case-insensitive)

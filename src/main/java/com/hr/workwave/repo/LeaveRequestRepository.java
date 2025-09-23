@@ -61,4 +61,11 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
                                        @Param("weekEnd") LocalDate weekEnd);
 
 
+    @Query("SELECT lr FROM LeaveRequest lr WHERE " +
+            "(EXTRACT(MONTH FROM lr.start_date) = :month OR EXTRACT(MONTH FROM lr.end_date) = :month) " +
+            "AND (EXTRACT(YEAR FROM lr.start_date) = :year OR EXTRACT(YEAR FROM lr.end_date) = :year) " +
+            "AND lr.leave_type = 'HOME_OFFICE'")
+
+    List<LeaveRequest> findByMonthAndYear(@Param("month") int month, @Param("year") int year);
+
 }

@@ -1,6 +1,7 @@
 package com.hr.workwave.controller;
 
 import com.hr.workwave.dto.ProjectIdRequest;
+import com.hr.workwave.dto.ProjectNameResponseDTO;
 import com.hr.workwave.dto.UpdateUsersDTO;
 import com.hr.workwave.dto.UserWithManagersDTO;
 import com.hr.workwave.model.User;
@@ -71,5 +72,11 @@ public class UsersController {
     ) {
         User updatedUser = usersService.setProjectID(userId, request.getProjectId());
         return ResponseEntity.ok(updatedUser);
+    }
+
+    @GetMapping("/user/{userId}/project-name")
+    public ProjectNameResponseDTO getProjectNameByUserId(@PathVariable BigInteger userId) {
+        String projectName = usersService.getProjectNameByUserId(userId);
+        return new ProjectNameResponseDTO(projectName);
     }
 }

@@ -14,13 +14,9 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class LeaveApprovalsDto {
     private Long id;
-
     private User manager;
-
     private LocalDate approvedDate;
-
     private String approvedStatus;
-
     private String mainStatus;
 
 }
