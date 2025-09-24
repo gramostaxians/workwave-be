@@ -214,7 +214,9 @@ public class LeaveRequestService {
      */
 
     public List<LeaveRequestApprovalSummaryDTO> getLeaveRequestsWithApprovalsByUserId(BigInteger userId) {
-        List<LeaveRequest> leaveRequests = leaveRequestRepository.findByUserId(userId);
+        List<LeaveRequest> leaveRequests = leaveRequestRepository.findAllByUserIdOrderByCreatedDateDesc(userId);
+
+
 
         return leaveRequests.stream().map(leaveRequest -> {
             List<ManagerApprovalDTO> managerApprovals = leaveRequest.getApprovals().stream().map(approval -> {
