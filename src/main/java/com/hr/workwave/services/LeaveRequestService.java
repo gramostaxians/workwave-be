@@ -11,10 +11,8 @@ import com.hr.workwave.repo.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.math.BigInteger;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -104,7 +102,6 @@ public class LeaveRequestService {
 
     /**
      * Deletes a leave request by its ID and notifies the associated user and their managers via email.
-     *
      * The method performs the following steps:
      * 1. Retrieves the leave request by ID, throws an exception if not found.
      * 2. Validates that the leave request is linked to a user.
@@ -206,7 +203,6 @@ public class LeaveRequestService {
 
     /**
      * Retrieves all leave requests for a given user along with their respective manager approval details.
-     *
      * This method performs the following:
      * - Fetches leave requests associated with the specified user ID.
      * - Maps each leave request to a summary DTO that includes leave request details.
@@ -253,7 +249,6 @@ public class LeaveRequestService {
 
     /**
      * Creates a new leave request based on the provided LeaveRequestDTO.
-     *
      * The method performs the following:
      * - Retrieves the user by ID, throws exception if not found.
      * - Creates and populates a new LeaveRequest entity with data from the DTO.
@@ -263,7 +258,6 @@ public class LeaveRequestService {
      * - For each relevant manager, creates a LeaveApprovals entry with initial approval status.
      * - Sends notification emails to the relevant managers about the new leave request.
      * - Sends a confirmation email to the requesting user with details of their leave request.
-     *
      * Special cases:
      * - Certain leave types (e.g. BEREAVEMENT_LEAVE, BLOOD_DONATION_LEAVE) are auto-approved,
      *   and notification is sent to admins instead of managers.
@@ -405,11 +399,11 @@ public class LeaveRequestService {
 
     private void validateHomeOfficeLeave(User user, LeaveRequestDTO dto) {
 
-        if (user.getProjectId() == null) {
+        if (user.getProject().getId() == null) {
             throw new RuntimeException("User does not have a project assigned. Cannot request HOME_OFFICE leave.");
         }
 
-        BigInteger projectId = user.getProjectId();
+        BigInteger projectId = BigInteger.valueOf(user.getProject().getId());
 
         List<User> teamMembers = usersRepository.findByProjectId(projectId);
         int teamSize = teamMembers.size();
@@ -451,12 +445,10 @@ public class LeaveRequestService {
 
     /**
      * Retrieves all pending leave requests that require approval from a specific manager.
-     *
      * This method fetches leave requests associated with the given manager ID
      * which currently have a status of PENDING approval. For each leave request,
      * it constructs a LeaveRequestApprovalSummaryDTO containing details about
      * the leave request itself as well as the approval statuses from all managers.
-     *
      * Additional user details (name, email, department) related to the leave request
      * are also included if available.
      *
@@ -507,13 +499,11 @@ public class LeaveRequestService {
 
     /**
      * Retrieves all leave requests currently in the PENDING status.
-     *
      * For each pending leave request, this method constructs a
      * LeaveRequestApprovalSummaryDTO that includes details about the request,
      * such as leave type, dates, reason, status, and creation date. It also
      * aggregates the approval statuses from all associated managers in the form
      * of ManagerApprovalDTO objects.
-     *
      * Additionally, if the leave request has an associated user, their name,
      * email, and department information are included in the summary.
      *
@@ -584,7 +574,7 @@ public class LeaveRequestService {
 
     /**
      * Retrieves an annual leave summary for a given user over specified years.
-     *
+
      * The summary period runs from July 1 of the previous year to June 30 of the given year.
      * For each year, it calculates the total approved annual leave days taken,
      * the total annual leave entitlement (defaulted to 20 days), and the remaining leave days.
@@ -650,13 +640,11 @@ public class LeaveRequestService {
 
     /**
      * Calculates the total leave days an employee is entitled to as of the given date.
-     *
      * The calculation considers:
      * - The employee's start date of work.
      * - The current leave year period (from July 1st to June 30th).
      * - Different rules depending on whether the employee has worked less than or more than 6 months before July 1st.
      * - Incremental leave days added for every 5 years of experience.
-     *
      * Rules summary:
      * - If the employee started less than 6 months before July 1st of the leave year:
      *     - No leave if current date is within the first 6 months of starting.
@@ -726,7 +714,6 @@ public class LeaveRequestService {
 
     /**
      * Retrieves leave statistics for a user filtered by leave type (optional).
-     *
      * The stats include:
      * - Total leave days available to the user as of today (calculated by `calculateLeaveDays`)
      * - Count of leave requests in pending, approved, and rejected statuses
@@ -811,7 +798,6 @@ public class LeaveRequestService {
 
     /**
      * Calculates the number of sick leave days available to the user as of the given date.
-     *
      * Sick leave entitlement is fixed at 20 days annually. If the user's start date is
      * after the current leave year refresh date (July 1st), they are granted the full 20 days.
      *
@@ -843,7 +829,6 @@ public class LeaveRequestService {
 
     /**
      * Retrieves sick leave statistics for a specific user within the current sick leave year.
-     *
      * The sick leave year is defined from July 1st of the previous year to June 30th of the current year.
      * This method calculates the total available sick leave days, counts leave requests by their status
      * (pending, approved, rejected), and sums the used sick leave days within the valid period.

@@ -33,7 +33,6 @@ public class UserManagerService {
 
     /**
      * Synchronizes the list of managers assigned to a user.
-     *
      * Adds new manager associations that do not already exist,
      * and removes any existing associations that are not in the provided list.
      *

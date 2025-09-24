@@ -38,6 +38,7 @@ public class User {
 
     private Boolean notifyManager;
 
+    @ManyToOne
     @JoinColumn(name = "project_id")
-    private BigInteger projectId;
+    private Project project;
 }

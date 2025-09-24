@@ -2,11 +2,9 @@ package com.hr.workwave.controller;
 
 import com.hr.workwave.dto.LeaveApprovalsDto;
 import com.hr.workwave.dto.UpdateApprovalStatusRequest;
-import com.hr.workwave.model.LeaveApprovals;
 import com.hr.workwave.services.LeaveApprovalsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
 
 @RestController
 @RequestMapping("/leave-approval")

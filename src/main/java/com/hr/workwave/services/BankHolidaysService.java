@@ -59,19 +59,22 @@ public class BankHolidaysService {
             return 0;
         }
 
-        List<LocalDate> holidayDates = getAllHolidays().stream()
-                .map(h -> LocalDate.of(
-                        h.getYear() != null ? h.getYear() : start.getYear(),
-                        h.getMonth() + 1,
-                        h.getDay()))
-                .toList();
+        List<BankHolidays> holidays = getAllHolidays();
 
         return start.datesUntil(end.plusDays(1))
-                .filter(date ->
-                        date.getDayOfWeek() != DayOfWeek.SATURDAY &&
-                                date.getDayOfWeek() != DayOfWeek.SUNDAY &&
-                                !holidayDates.contains(date)
-                )
+                .filter(date -> {
+
+                    if (date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY) {
+                        return false;
+                    }
+
+                    boolean isHoliday = holidays.stream()
+                            .anyMatch(h ->
+                                    h.getDay() == date.getDayOfMonth() &&
+                                    (h.getMonth() + 1) == date.getMonthValue()
+                            );
+                    return !isHoliday;
+                })
                 .count();
     }
 }

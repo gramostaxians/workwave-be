@@ -37,7 +37,6 @@ public class UsersService {
 
     /**
      * Retrieves all users along with their associated managers.
-     *
      * For each user, fetches their manager links and maps them into DTOs,
      * then returns a list of UserWithManagersDTO containing user details and their managers.
      *
@@ -79,7 +78,7 @@ public class UsersService {
                     user.getLast_login(),
                     notifyManager,
                     user.getStart_Of_Work(),
-                    user.getProjectId(),
+                    user.getProject() != null ? BigInteger.valueOf(user.getProject().getId()) : null,
                     managers
             ));
         }
@@ -93,7 +92,7 @@ public class UsersService {
      * saves the updated user, and updates the manager relationships accordingly.
      *
      * @param userId the ID of the user to update
-     * @param dto data transfer object containing updated user information and manager IDs
+     * @param dto    data transfer object containing updated user information and manager IDs
      * @return the updated User entity
      * @throws RuntimeException if the user with the specified ID does not exist
      */
@@ -108,7 +107,8 @@ public class UsersService {
         user.setRole(dto.getRole());
         user.setStart_Of_Work(dto.getStartOfWork());
         user.setNotifyManager(dto.getNotifyManager());
-        user.setProjectId(dto.getProjectId());
+        Project project = projectRepository.findById(dto.getProjectId()).orElseThrow();
+        user.setProject(project);
 
         usersRepository.save(user);
 
@@ -122,9 +122,16 @@ public class UsersService {
         User user = usersRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
-        user.setProjectId(projectId);
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found with ID: " + projectId));
+
+        user.setProject(project);
 
         return usersRepository.save(user);
+    }
+
+    public String getProjectNameByUserId(BigInteger userId) {
+        return usersRepository.findProjectNameByUserId(userId);
     }
 }
 

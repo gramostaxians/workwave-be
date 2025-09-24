@@ -14,4 +14,8 @@ public interface UsersRepository extends JpaRepository<User, BigInteger> {
     @Query("SELECT u FROM User u WHERE u.role = :role")
     List<User> findByRole(@Param("role") UserRolesEnum role);
 
+
+    @Query("SELECT u.project.projectName FROM User u WHERE u.id = :userId")
+    String findProjectNameByUserId(@Param("userId") BigInteger userId);
+
 }

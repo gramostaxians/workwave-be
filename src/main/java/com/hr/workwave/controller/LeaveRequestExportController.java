@@ -1,18 +1,13 @@
 package com.hr.workwave.controller;
 
-import com.hr.workwave.enums.LeaveRequestStatusEnum;
-import com.hr.workwave.model.LeaveRequest;
-import com.hr.workwave.repo.LeaveRequestRepository;
+import com.hr.workwave.services.ExportExcelAllUsers;
 import com.hr.workwave.services.LeaveRequestExcelExportService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
@@ -22,6 +17,7 @@ import java.io.IOException;
 public class LeaveRequestExportController {
 
     private final LeaveRequestExcelExportService leaveRequestExcelExportService;
+    private final ExportExcelAllUsers exportExcelAllUsers;
 
     @GetMapping("/approved-leaves/{userId}")
     public ResponseEntity<InputStreamResource> exportLeaves(@PathVariable Long userId) throws IOException {
@@ -36,5 +32,13 @@ public class LeaveRequestExportController {
                 .ok()
                 .headers(headers)
                 .body(new InputStreamResource(excel));
+    }
+
+    @GetMapping("/leave-tracker")
+    public void exportLeaveTracker(
+            @RequestParam int month,
+            @RequestParam int year,
+            HttpServletResponse response) throws IOException {
+        exportExcelAllUsers.export(month, year, response);
     }
 }

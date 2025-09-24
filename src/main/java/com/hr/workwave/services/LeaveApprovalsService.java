@@ -35,20 +35,6 @@ public class LeaveApprovalsService {
     private final EmailService emailService;
     private final UserManagerRepository userManagerRepository;
 
-    /**
-     * Updates the approval status of a leave request based on the manager's decision.
-     * - If the new status is "REJECTED", a rejection reason is mandatory and stored in the LeaveRequest.
-     * - If the status is not "REJECTED", any existing rejection reason is cleared.
-     * - Also triggers an update of the overall leave request status based on manager approvals.
-     *
-     * @param leaveRequestID ID of the leave request
-     * @param managerId ID of the manager updating the status
-     * @param statusString New status as a string (e.g., "APPROVED", "REJECTED")
-     * @param rejectReason Reason for rejection, required if status is "REJECTED"
-     * @return The updated LeaveApprovals object
-     * @throws RuntimeException if the leave request or approval is not found
-     * @throws IllegalArgumentException if rejection reason is missing when status is REJECTED
-     */
 
     public LeaveApprovalsDto toDto(LeaveApprovals approval, String mainStatus) {
         if (approval == null) return null;
