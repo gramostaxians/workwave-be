@@ -26,6 +26,6 @@ public class UpdateUsersDTO {
     private LocalDate startOfWork;
     private Boolean notifyManager;
     private List<BigInteger> managerIds;
-
     private BigInteger projectId;
+    private BigInteger availableLeaveDays;
 }

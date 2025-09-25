@@ -23,5 +23,6 @@ public class UserWithManagersDTO {
     private boolean notifyManager;
     private LocalDate start_Of_Work;
     private BigInteger projectId;
+    private BigInteger availableLeaveDays;
     private List<ManagerDTO> managers;
 }

@@ -41,4 +41,7 @@ public class User {
     @ManyToOne
     @JoinColumn(name = "project_id")
     private Project project;
+
+    @JoinColumn(name = "available_leave_days")
+    private BigInteger availableLeaveDays;
 }

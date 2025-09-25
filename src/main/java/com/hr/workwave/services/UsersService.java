@@ -79,6 +79,7 @@ public class UsersService {
                     notifyManager,
                     user.getStart_Of_Work(),
                     user.getProject() != null ? BigInteger.valueOf(user.getProject().getId()) : null,
+                    user.getAvailableLeaveDays(),
                     managers
             ));
         }
@@ -107,6 +108,7 @@ public class UsersService {
         user.setRole(dto.getRole());
         user.setStart_Of_Work(dto.getStartOfWork());
         user.setNotifyManager(dto.getNotifyManager());
+        user.setAvailableLeaveDays(dto.getAvailableLeaveDays());
         Project project = projectRepository.findById(dto.getProjectId()).orElseThrow();
         user.setProject(project);
 
