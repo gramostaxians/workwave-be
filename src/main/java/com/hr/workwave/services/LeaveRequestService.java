@@ -51,7 +51,6 @@ public class LeaveRequestService {
      * @param userId the ID of the user whose leave requests are to be retrieved
      * @return a list of up to 5 most recent LeaveRequest entities for the user
      */
-
     public List<LeaveRequest> getRecentLeaveRequestsByUser(Long userId) {
         return leaveRequestRepository.findTop5RecentLeaveRequestsByUserId(userId);
     }
@@ -215,7 +214,9 @@ public class LeaveRequestService {
      */
 
     public List<LeaveRequestApprovalSummaryDTO> getLeaveRequestsWithApprovalsByUserId(BigInteger userId) {
-        List<LeaveRequest> leaveRequests = leaveRequestRepository.findByUserId(userId);
+        List<LeaveRequest> leaveRequests = leaveRequestRepository.findAllByUserIdOrderByCreatedDateDesc(userId);
+
+
 
         return leaveRequests.stream().map(leaveRequest -> {
             List<ManagerApprovalDTO> managerApprovals = leaveRequest.getApprovals().stream().map(approval -> {
@@ -223,7 +224,7 @@ public class LeaveRequestService {
                 dto.setManagerId(approval.getManager().getId().longValue());
                 dto.setManagerEmail(approval.getManager().getEmail());
                 dto.setName(approval.getManager().getName());
-                dto.setRejectionReason(approval.getLeaveRequest().getReason());
+                dto.setRejectionReason(leaveRequest.getRejectReason());
                 dto.setApprovedStatus(approval.getApprovedStatus());
                 dto.setApprovedDate(approval.getApprovedDate());
                 return dto;
@@ -463,13 +464,14 @@ public class LeaveRequestService {
         return leaveRequests.stream()
                 .map(leaveRequest -> {
                     LeaveRequestApprovalSummaryDTO dto = new LeaveRequestApprovalSummaryDTO();
-
+                    long effectiveDays = bankHolidaysService.calculateEffectiveLeaveDays(leaveRequest.getStart_date(), leaveRequest.getEnd_date());
                     dto.setLeaveRequestId(leaveRequest.getId());
                     dto.setEmployeeEmail(leaveRequest.getEmployee_email());
                     dto.setLeaveType(leaveRequest.getLeave_type().getValue());
                     dto.setStartDate(leaveRequest.getStart_date());
                     dto.setEndDate(leaveRequest.getEnd_date());
                     dto.setReason(leaveRequest.getReason());
+                    dto.setDays(effectiveDays);
                     dto.setCreatedDate(leaveRequest.getCreatedDate());
                     dto.setStatus(leaveRequest.getStatus());
 
@@ -526,6 +528,7 @@ public class LeaveRequestService {
                         dto.setApprovedDate(approval.getApprovedDate());
                         return dto;
                     }).collect(Collectors.toList());
+                      long effectiveDays = bankHolidaysService.calculateEffectiveLeaveDays(leaveRequest.getStart_date(), leaveRequest.getEnd_date());
 
                     LeaveRequestApprovalSummaryDTO summaryDTO = new LeaveRequestApprovalSummaryDTO();
                     summaryDTO.setLeaveRequestId(leaveRequest.getId());
@@ -534,6 +537,7 @@ public class LeaveRequestService {
                     summaryDTO.setStartDate(leaveRequest.getStart_date());
                     summaryDTO.setEndDate(leaveRequest.getEnd_date());
                     summaryDTO.setReason(leaveRequest.getReason());
+                    summaryDTO.setDays(effectiveDays);
                     summaryDTO.setCreatedDate(leaveRequest.getCreatedDate());
                     summaryDTO.setStatus(leaveRequest.getStatus());
                     summaryDTO.setApprovals(managerApprovals);
