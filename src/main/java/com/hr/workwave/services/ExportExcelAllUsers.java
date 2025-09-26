@@ -42,7 +42,7 @@ public class ExportExcelAllUsers {
         Map<BigInteger, List<User>> usersByProject = allUsers.stream()
                 .collect(Collectors.groupingBy(user -> {
                     if (user.getProject() == null || user.getProject().getId() == null) {
-                        throw new IllegalArgumentException("One of the users does not have a project.");
+                        return BigInteger.ZERO;
                     }
                     return BigInteger.valueOf(user.getProject().getId());
                 }));
