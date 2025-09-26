@@ -275,7 +275,6 @@ public class LeaveRequestController {
      * @param leaveType (optional) the type of leave to filter statistics by
      * @return a response entity containing leave statistics or a 404 if the user is not found
      */
-//
     @GetMapping("/dashboard/stats/{userId}")
     public ResponseEntity<?> getLeaveStats(@PathVariable BigInteger userId, @RequestParam(required = false) LeaveRequestTypeEnum leaveType) {
         Map<String, Object> stats = leaveRequestService.getLeaveStatsByUserId(userId, leaveType);

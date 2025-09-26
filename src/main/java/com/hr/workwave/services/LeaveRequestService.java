@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigInteger;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
@@ -401,7 +402,7 @@ public class LeaveRequestService {
 
     private void validateHomeOfficeLeave(User user, LeaveRequestDTO dto) {
 
-        if (user.getProject().getId() == null) {
+        if (user.getProject() == null || user.getProject().getId() == null) {
             throw new RuntimeException("User does not have a project assigned. Cannot request HOME_OFFICE leave.");
         }
 
@@ -662,56 +663,53 @@ public class LeaveRequestService {
      */
 
     public double calculateLeaveDays(User user, LocalDate currentDate) {
-        LocalDate startOfWork = user.getStart_Of_Work();
-        if (startOfWork == null || currentDate == null) {
+        if (user == null || user.getStart_Of_Work() == null || currentDate == null) {
             return 0;
         }
-        int year = currentDate.getMonthValue() >= 7 ? currentDate.getYear() : currentDate.getYear() - 1;
-        LocalDate leaveYearStart = LocalDate.of(year, 7, 1);
-        LocalDate leaveYearEnd = LocalDate.of(year + 1, 6, 30);
 
+        LocalDate startOfWork = user.getStart_Of_Work();
+
+        if (startOfWork.isAfter(currentDate)) {
+            return 0;
+        }
+
+        int leaveYear = currentDate.getMonthValue() >= 7 ? currentDate.getYear() : currentDate.getYear() - 1;
+        LocalDate leaveYearStart = LocalDate.of(leaveYear, 7, 1);
+        LocalDate leaveYearEnd = LocalDate.of(leaveYear + 1, 6, 30);
+
+        double baseDays = user.getAvailableLeaveDays() != null ? user.getAvailableLeaveDays().doubleValue() : 20;
         double leaveDays = 0;
 
-        long monthsWorkedBeforeJuly = ChronoUnit.MONTHS.between(startOfWork, leaveYearStart);
-        long totalMonthsWorked = ChronoUnit.MONTHS.between(startOfWork, currentDate);
+        if (currentDate.isAfter(leaveYearEnd)) {
+            leaveDays = baseDays;
+        }
+        else if (startOfWork.getMonthValue() <= 6 &&
+                startOfWork.isAfter(leaveYearStart.minusYears(1)) &&
+                startOfWork.isBefore(leaveYearEnd.plusDays(1))) {
+            leaveDays = 18;
+        }
+        else if (startOfWork.getMonthValue() >= 7 && startOfWork.getYear() == leaveYear) {
+            long monthsWorkedUntilJune = ChronoUnit.MONTHS.between(
+                    startOfWork.withDayOfMonth(1),
+                    leaveYearEnd.withDayOfMonth(1)
+            ) + 1;
 
+            leaveDays = monthsWorkedUntilJune * 1.5;
+        }
+        else {
+            leaveDays = baseDays;
+        }
+
+        long totalMonthsWorked = ChronoUnit.MONTHS.between(
+                startOfWork.withDayOfMonth(1),
+                currentDate.withDayOfMonth(1)
+        );
         int experienceYears = (int) (totalMonthsWorked / 12);
-        int increments = experienceYears / 5;
+        int extraDaysForExperience = experienceYears / 5;
 
-        if (monthsWorkedBeforeJuly < 6) {
+        leaveDays += extraDaysForExperience;
 
-            LocalDate sixMonthsAfterStart = startOfWork.plusMonths(6);
-
-            if (currentDate.isBefore(sixMonthsAfterStart)) {
-                leaveDays = 0;
-            } else {
-                leaveDays += 9;
-
-                LocalDate endDateForMonthlyAdd = currentDate.isBefore(leaveYearEnd) ? currentDate : leaveYearEnd;
-                long monthsAfter6 = ChronoUnit.MONTHS.between(sixMonthsAfterStart.withDayOfMonth(1), endDateForMonthlyAdd.withDayOfMonth(1));
-                leaveDays += monthsAfter6 * 1.5;
-            }
-        } else {
-            if (!currentDate.isBefore(leaveYearStart)) {
-                leaveDays = 20;
-
-                LocalDate sixMonthsAfterJuly = leaveYearStart.plusMonths(6);
-                if (!currentDate.isBefore(sixMonthsAfterJuly)) {
-                    leaveDays += 9;
-
-                    long monthsAfter6 = ChronoUnit.MONTHS.between(sixMonthsAfterJuly.withDayOfMonth(1), currentDate.withDayOfMonth(1));
-                    leaveDays += monthsAfter6 * 1.5;
-                }
-            } else {
-                leaveDays = 0;
-            }
-        }
-        leaveDays += increments;
-
-        if (leaveDays < 0) {
-            leaveDays = 0;
-        }
-        return leaveDays;
+        return Math.max(leaveDays, 0);
     }
 
     /**
