@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigInteger;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
@@ -418,7 +417,7 @@ public class LeaveRequestService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
         for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
-            int countRequestsOnDate = leaveRequestRepository.countHomeOfficeRequestsOnDate(date);
+            int countRequestsOnDate = leaveRequestRepository.countHomeOfficeRequestsOnDateAndProject(date, projectId);
             double percentage = teamSize == 0 ? 0 : (double) countRequestsOnDate / teamSize;
 
             if (percentage >= 0.5) {
