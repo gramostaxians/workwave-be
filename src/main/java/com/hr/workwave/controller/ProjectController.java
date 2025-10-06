@@ -4,6 +4,7 @@ import com.hr.workwave.model.Project;
 import com.hr.workwave.services.ProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigInteger;
@@ -16,16 +17,20 @@ public class ProjectController {
 
     private final ProjectService projectService;
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/project")
     public List<Project> getAllProjects() {
         return projectService.getAllProject();
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping("/add/project")
     public ResponseEntity<Project> createProject(@RequestBody Project project) {
         Project savedProject = projectService.createProject(project);
         return ResponseEntity.ok(savedProject);
     }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/update/project/{projectId}")
     public ResponseEntity<Project> updateProject(@PathVariable BigInteger projectId, @RequestBody Project updatedProject) {
         try {

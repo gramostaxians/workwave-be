@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -18,7 +19,7 @@ public class LeaveRequestExportController {
 
     private final LeaveRequestExcelExportService leaveRequestExcelExportService;
     private final ExportExcelAllUsers exportExcelAllUsers;
-
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/approved-leaves/{userId}")
     public ResponseEntity<InputStreamResource> exportLeaves(@PathVariable Long userId) throws IOException {
         ByteArrayInputStream excel = leaveRequestExcelExportService.exportToExcel(userId);
@@ -34,6 +35,7 @@ public class LeaveRequestExportController {
                 .body(new InputStreamResource(excel));
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/leave-tracker")
     public void exportLeaveTracker(
             @RequestParam int month,

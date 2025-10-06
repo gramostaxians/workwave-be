@@ -7,8 +7,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Optional;
 
 public interface UsersRepository extends JpaRepository<User, BigInteger> {
+    User findByEmail(String email);
+
     List<User> findByProjectId(BigInteger projectId);
 
     @Query("SELECT u FROM User u WHERE u.role = :role")

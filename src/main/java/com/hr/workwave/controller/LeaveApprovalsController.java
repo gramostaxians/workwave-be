@@ -4,6 +4,7 @@ import com.hr.workwave.dto.LeaveApprovalsDto;
 import com.hr.workwave.dto.UpdateApprovalStatusRequest;
 import com.hr.workwave.services.LeaveApprovalsService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,7 +22,7 @@ public class LeaveApprovalsController {
      *
      * Note: This endpoint is intended to be accessed by users with MANAGER or ADMIN roles.
      */
-//  @PreAuthorize("hasAnyAuthority('MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyAuthority('MANAGER', 'ADMIN')")
     @PutMapping("/status")
     public LeaveApprovalsDto updateStatus(@RequestBody UpdateApprovalStatusRequest request){
 

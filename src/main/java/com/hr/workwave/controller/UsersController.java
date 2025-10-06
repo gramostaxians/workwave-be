@@ -9,6 +9,7 @@ import com.hr.workwave.services.UsersService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigInteger;
@@ -30,7 +31,7 @@ public class UsersController {
      * This can be achieved by uncommenting and configuring the @PreAuthorize annotation.
      **/
 
-    //    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/users")
     public List<User> getAllUser() {
         return usersService.getAllUsers();
@@ -41,7 +42,7 @@ public class UsersController {
      * Access can be restricted to ADMIN via @PreAuthorize.
      */
 
-    //    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/user-with-managers")
     public ResponseEntity<List<UserWithManagersDTO>> getAllUsersWithManagers() {
         List<UserWithManagersDTO> data = usersService.getAllUsersWithManagers();
@@ -54,7 +55,7 @@ public class UsersController {
      * Access can be restricted to ADMIN via @PreAuthorize.
      */
 
-    //    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/update/user/{userId}")
     public ResponseEntity<User> updateUserAndManagers(
             @PathVariable BigInteger userId,
@@ -65,6 +66,7 @@ public class UsersController {
         return ResponseEntity.ok(updatedUser);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/setProjectId/{userId}")
     public ResponseEntity<User> setProjectId(
             @PathVariable BigInteger userId,

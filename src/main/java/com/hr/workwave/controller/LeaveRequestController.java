@@ -12,6 +12,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigInteger;
@@ -58,7 +59,7 @@ public class LeaveRequestController {
      * @return ResponseEntity containing the LeaveRequest if found, or 404 Not Found if not found
      */
 
-//    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('MANAGER', 'ADMIN')")
     @GetMapping("/leave-request/{id}")
     public ResponseEntity<LeaveRequest> getLeaveRequestById(@PathVariable Long id) {
         Optional<LeaveRequest> leaveRequest = leaveRequestService.getLeaveRequestById(id);
@@ -74,7 +75,7 @@ public class LeaveRequestController {
      * @return a list of approved LeaveRequest objects for the given user
      */
 
-//    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/users/{userId}/leave-request/approved")
     public List<LeaveRequest> getAllLeaveRequestsApprovedById(@PathVariable Long userId) {
         return leaveRequestService.getLeaveRequestsApprovedById(userId);
@@ -105,7 +106,7 @@ public class LeaveRequestController {
      * @return list of leave requests submitted by the user
      */
 
-//    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('MANAGER', 'ADMIN')")
     @GetMapping("/users/{userId}/leave-request/approvals")
     public List<LeaveRequest> getLeaveRequestsById(@PathVariable BigInteger userId) {
         return leaveRequestService.getLeaveRequestsById(userId);
@@ -119,7 +120,7 @@ public class LeaveRequestController {
      * @return a ResponseEntity containing a list of leave request summaries with manager approvals
      */
 
-//    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/users/{userId}/leave-requests/with-approvals")
     public ResponseEntity<List<LeaveRequestApprovalSummaryDTO>> getLeaveRequestsWithApprovalsByUserId(@PathVariable("userId") BigInteger userId) {
         List<LeaveRequestApprovalSummaryDTO> dtos = leaveRequestService.getLeaveRequestsWithApprovalsByUserId(userId);
@@ -134,7 +135,7 @@ public class LeaveRequestController {
      * @return a ResponseEntity containing a list of pending leave request summaries
      */
 
-//    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/leave-requests/pending")
     public ResponseEntity<List<LeaveRequestApprovalSummaryDTO>> getAllPendingLeaveRequests() {
         List<LeaveRequestApprovalSummaryDTO> dto = leaveRequestService.getAllPendingLeaveRequests();
@@ -150,7 +151,7 @@ public class LeaveRequestController {
      * @return a ResponseEntity containing a list of pending leave request summaries for the manager
      */
 
-//  @PreAuthorize("hasAnyAuthority('MANAGER', 'ADMIN')")
+  @PreAuthorize("hasAnyAuthority('MANAGER', 'ADMIN')")
     @GetMapping("/leave-requests/pending/manager/{managerId}")
     public ResponseEntity<List<LeaveRequestApprovalSummaryDTO>> getPendingLeaveRequestsForManager(@PathVariable Long managerId) {
         List<LeaveRequestApprovalSummaryDTO> dto = leaveRequestService.getPendingLeaveRequestsForManager(managerId);
@@ -238,7 +239,7 @@ public class LeaveRequestController {
      * @return ResponseEntity containing a list of annual leave summaries
      */
 
-//    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/{userId}/leave-approvals/annual-summary")
     public ResponseEntity<List<Map<String, Object>>> getAnnualLeaveSummary(
             @PathVariable Long userId,
