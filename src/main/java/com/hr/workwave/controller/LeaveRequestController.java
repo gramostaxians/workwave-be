@@ -120,7 +120,6 @@ public class LeaveRequestController {
      * @return a ResponseEntity containing a list of leave request summaries with manager approvals
      */
 
-    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/users/{userId}/leave-requests/with-approvals")
     public ResponseEntity<List<LeaveRequestApprovalSummaryDTO>> getLeaveRequestsWithApprovalsByUserId(@PathVariable("userId") BigInteger userId) {
         List<LeaveRequestApprovalSummaryDTO> dtos = leaveRequestService.getLeaveRequestsWithApprovalsByUserId(userId);
