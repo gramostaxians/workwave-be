@@ -8,7 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/leave-approval")
+@RequestMapping("/api/leave-approval")
 @RequiredArgsConstructor
 public class LeaveApprovalsController {
 
