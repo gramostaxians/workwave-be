@@ -69,7 +69,7 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     List<LeaveRequest> findByMonthAndYear(@Param("month") int month, @Param("year") int year);
 
 
-    @Query("SELECT lr FROM LeaveRequest lr WHERE lr.user.id = :userId AND lr.leave_type <>com.hr.workwave.enums.LeaveRequestTypeEnum.HOME_OFFICE ORDER BY lr.createdDate DESC")
+    @Query("SELECT lr FROM LeaveRequest lr WHERE lr.user.id = :userId  ORDER BY lr.createdDate DESC")
     List<LeaveRequest> findAllByUserIdOrderByCreatedDateDesc(@Param("userId") BigInteger userId);
 
 
