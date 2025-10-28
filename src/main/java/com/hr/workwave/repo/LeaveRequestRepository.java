@@ -28,14 +28,14 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
 
     List<LeaveRequest> findByStatus(LeaveRequestStatusEnum status);
 
-    @Query("SELECT lr FROM LeaveRequest lr WHERE lr.user.id = :userId AND lr.status = 'APPROVED'")
+    @Query("SELECT lr FROM LeaveRequest lr WHERE lr.user.id = :userId AND lr.status = 'APPROVED' ORDER BY lr.createdDate DESC")
     List<LeaveRequest> findByStatusAndUserId(@Param("userId") Long userId);
 
 
     @Query("SELECT lr FROM LeaveRequest lr WHERE lr.id = :userId")
     List<LeaveRequest> getLeaveRequestsById(@Param("userId") BigInteger Id);
 
-    @Query("SELECT lr FROM LeaveRequest lr WHERE lr.user.id = :userId AND lr.status = 'APPROVED'")
+    @Query("SELECT lr FROM LeaveRequest lr WHERE lr.user.id = :userId AND lr.status = 'APPROVED' ORDER BY lr.createdDate DESC")
     List<LeaveRequest> getApprovedLeaveRequests(@Param("userId") Long userId);
 
     @Query("SELECT lr FROM LeaveRequest lr " +
@@ -69,7 +69,7 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     List<LeaveRequest> findByMonthAndYear(@Param("month") int month, @Param("year") int year);
 
 
-    @Query("SELECT lr FROM LeaveRequest lr WHERE lr.user.id = :userId ORDER BY lr.createdDate DESC")
+    @Query("SELECT lr FROM LeaveRequest lr WHERE lr.user.id = :userId AND lr.leave_type <>com.hr.workwave.enums.LeaveRequestTypeEnum.HOME_OFFICE ORDER BY lr.createdDate DESC")
     List<LeaveRequest> findAllByUserIdOrderByCreatedDateDesc(@Param("userId") BigInteger userId);
 
 

@@ -128,7 +128,7 @@ public class LeaveApprovalsService {
                         "<p><strong>Reason:</strong> " + leaveRequest.getReason() + "</p>" +
                         "<p><strong>Status:</strong> " + leaveRequest.getStatus() + "</p>" +
                         "</div>" +
-                        "<p style=\"font-size: 16px; margin-top: 20px;\">Follow the link to see your request.:</p>" +
+                        "<p style=\"font-size: 16px; margin-top: 20px;\">Follow the link to see your request:</p>" +
                         "<a href=\"https://s-1564-workwave/my-leaves\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\">Link</a>" +
                         "<p style=\"font-size: 16px; margin-top: 20px;\">Thank you.</p>" +
                         "</div>" +
@@ -166,8 +166,8 @@ public class LeaveApprovalsService {
                     "<p><strong>Reason:</strong> " + leaveRequest.getReason() + "</p>" +
                     "<p><strong>Status:</strong> " + leaveRequest.getStatus() + "</p>" +
                     "</div>" +
-                    "<p style=\"font-size: 16px; margin-top: 20px;\">Follow the link to see your request.:</p>" +
-                    "<a href=\"https://s-1564-workwave/my-leaves\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\">Link</a>" +
+                    "<p style=\"font-size: 16px; margin-top: 20px;\">Follow the link to see your request:</p>" +
+                    "<a href=\"https://s-1564-workwave/my-leaves\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\">https://s-1564-workwave/my-leaves</a>" +
                     "<p style=\"font-size: 16px; margin-top: 20px;\">Thank you.</p>" +
                     "</div>" +
                     "</body>" +
@@ -193,8 +193,8 @@ public class LeaveApprovalsService {
                     "<p><strong>Reason:</strong> " + leaveRequest.getReason() + "</p>" +
                     "<p><strong>Status:</strong> " + leaveRequest.getStatus() + "</p>" +
                     "</div>" +
-                    "<p style=\"font-size: 16px; margin-top: 20px;\">Follow the link to see your request.:</p>" +
-                    "<a href=\"https://s-1564-workwave/my-leaves\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\">Link</a>" +
+                    "<p style=\"font-size: 16px; margin-top: 20px;\">Follow the link to the App:</p>" +
+                    "<a href=\"https://s-1564-workwave\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\">https://s-1564-workwave</a>" +
                     "<p style=\"font-size: 16px; margin-top: 20px;\">Thank you.</p>" +
                     "</div>" +
                     "</body>" +
@@ -226,8 +226,8 @@ public class LeaveApprovalsService {
                             "<p><strong>Reason:</strong> " + leaveRequest.getReason() + "</p>" +
                             "<p><strong>Status:</strong> " + leaveRequest.getStatus() + "</p>" +
                             "</div>" +
-                            "<p style=\"font-size: 16px; margin-top: 20px;\">Follow the link to see the request:</p>" +
-                            "<a href=\"https://s-1564-workwave/my-leaves\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\">Link</a>" +
+                            "<p style=\"font-size: 16px; margin-top: 20px;\">Follow the link to the App:</p>" +
+                            "<a href=\"https://s-1564-workwave\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\">https://s-1564-workwave</a>" +
                             "<p style=\"font-size: 16px; margin-top: 20px;\">Thank you.</p>" +
                             "</div>" +
                             "</body>" +

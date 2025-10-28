@@ -357,7 +357,7 @@ public class LeaveRequestService {
                     "</div>" +
                     "<p style=\"font-size: 16px; margin-top: 20px;\">Please log in to the system to review and respond to the request at your earliest convenience.</p>" +
                     "<p style=\"font-size: 16px;\">Follow the link:</p>" +
-                    "<a href=\"https://s-1564-workwave/leave-approval\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\">Link</a>" +
+                    "<a href=\"https://s-1564-workwave/leave-approval\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\">https://s-1564-workwave/leave-approval</a>" +
                     "<p style=\"font-size: 16px; margin-top: 20px;\">Thank you.</p>" +
                     "</div>" +
                     "</body>" +
@@ -384,7 +384,7 @@ public class LeaveRequestService {
                 "<p><strong>Status:</strong> " + leaveRequest.getStatus() + "</p>" +
                 "</div>" +
                 "<p style=\"font-size: 16px; margin-top: 20px;\">You can view your request using the link below:</p>" +
-                "<a href=\"https://s-1564-workwave/my-leaves\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\">Link</a>" +
+                "<a href=\"https://s-1564-workwave/my-leaves\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\">https://s-1564-workwave/my-leaves</a>" +
                 "<p style=\"font-size: 16px; margin-top: 20px;\">You will be notified once it is reviewed.</p>" +
                 "<p style=\"font-size: 16px;\">Thank you.</p>" +
                 "</div>" +
