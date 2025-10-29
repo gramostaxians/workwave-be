@@ -273,6 +273,11 @@ public class LeaveRequestService {
         User user = usersRepository.findById(BigInteger.valueOf(dto.getUserId()))
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        LocalDate today = LocalDate.now();
+        if (dto.getStartDate().isBefore(today) || dto.getEndDate().isBefore(today)) {
+            throw new IllegalArgumentException("Start date and end date cannot be before today");
+        }
+
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
         if (dto.getLeaveType() == LeaveRequestTypeEnum.HOME_OFFICE) {
