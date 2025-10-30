@@ -146,6 +146,9 @@ public class LeaveRequestExcelExportService {
             int rowIdx = 7;
 
             for (LeaveRequest lr : userRequests) {
+                if ("HOME_OFFICE".equalsIgnoreCase(lr.getLeave_type().toString())) {
+                    continue;
+                }
                 Row row = sheet.createRow(rowIdx++);
 
                 String fullName = lr.getUser().getName();
