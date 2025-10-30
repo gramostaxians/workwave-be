@@ -35,7 +35,7 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     @Query("SELECT lr FROM LeaveRequest lr WHERE lr.id = :userId")
     List<LeaveRequest> getLeaveRequestsById(@Param("userId") BigInteger Id);
 
-    @Query("SELECT lr FROM LeaveRequest lr WHERE lr.user.id = :userId AND lr.status = 'APPROVED' ORDER BY lr.createdDate DESC")
+    @Query("SELECT lr FROM LeaveRequest lr WHERE lr.user.id = :userId AND lr.status = 'APPROVED' AND lr.leave_type <> 'HOME_OFFICE' ORDER BY lr.start_date DESC")
     List<LeaveRequest> getApprovedLeaveRequests(@Param("userId") Long userId);
 
     @Query("SELECT lr FROM LeaveRequest lr " +
