@@ -212,9 +212,21 @@ public class LeaveRequestController {
                     .status(HttpStatus.BAD_REQUEST).body(leaveRequest);
 
         }
+        if (dto.getLeaveType() == LeaveRequestTypeEnum.HOME_OFFICE) {
 
 
-        LeaveRequestDTO createdRequest = leaveRequestService.createLeaveRequest(dto);
+            if (!startDate.isEqual(endDate)) {
+                var leaveRequest = new LeaveRequestDTO();
+                leaveRequest.setReason("You can request HOME_OFFICE for one day only.");
+                return ResponseEntity
+                        .status(HttpStatus.BAD_REQUEST)
+                        .body(leaveRequest);
+            }
+        }
+
+
+
+            LeaveRequestDTO createdRequest = leaveRequestService.createLeaveRequest(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdRequest);
     }
 
