@@ -187,20 +187,6 @@ public class LeaveRequestController {
 
     @PostMapping("/create/leave-request")
     public ResponseEntity<LeaveRequestDTO> createLeaveRequest(@RequestBody LeaveRequestDTO dto) {
-        String currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-        User authenticatedUser = usersRepository.findByEmail(currentUserEmail);
-        if (authenticatedUser == null) {
-            var leaveRequest = new LeaveRequestDTO();
-            leaveRequest.setReason("Authenticated user not found");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(leaveRequest);
-        }
-
-
-        if (!dto.isActingAsAdmin() && !dto.getUserId().equals(authenticatedUser.getId())) {
-            var leaveRequest = new LeaveRequestDTO();
-            leaveRequest.setReason("Cannot create leave for another user.");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(leaveRequest);
-        }
 
         LocalDate today = LocalDate.now();
         LocalDate startDate = dto.getStartDate();
