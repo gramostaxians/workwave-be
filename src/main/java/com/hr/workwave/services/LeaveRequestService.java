@@ -134,7 +134,13 @@ public class LeaveRequestService {
         List<UserManagers> managerLinks = userManagerRepository.findByUserId(userId);
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        LocalDate today = LocalDate.now();
+        LocalDate startDate = request.getStart_date();
 
+
+        if (startDate != null && !startDate.isAfter(today)) {
+            throw new IllegalStateException("Cannot delete leave requests that have already started!");
+        }
 
         leaveRequestRepository.delete(request);
 
