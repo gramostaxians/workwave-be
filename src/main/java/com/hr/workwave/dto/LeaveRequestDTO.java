@@ -24,5 +24,5 @@ public class LeaveRequestDTO {
     private Long userId;
     private String RejectionReason;
     private Number days;
-    private boolean actingAsAdmin;
+
 }
