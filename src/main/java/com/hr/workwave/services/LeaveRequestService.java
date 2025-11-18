@@ -454,7 +454,6 @@ public class LeaveRequestService {
         int daysFromMonday = dayOfWeek == DayOfWeek.SUNDAY ? 6 : dayOfWeek.getValue() - 1;
         LocalDate currentMonday = today.minusDays(daysFromMonday);
 
-
         int HO_WEEKS = 4;
         LocalDate maxAllowedDate = currentMonday.plusDays(HO_WEEKS * 7 - 1);
 
@@ -465,7 +464,12 @@ public class LeaveRequestService {
                             "You cannot request dates after: " + maxAllowedDate
             );
         }
-
+        if (startDate.getDayOfWeek() == DayOfWeek.SATURDAY || startDate.getDayOfWeek() == DayOfWeek.SUNDAY
+                || endDate.getDayOfWeek() == DayOfWeek.SATURDAY || endDate.getDayOfWeek() == DayOfWeek.SUNDAY) {
+            throw new IllegalArgumentException(
+                    "Home Office is not allowed on weekends.."
+            );
+        }
 
         for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
             int countRequestsOnDate = leaveRequestRepository.countHomeOfficeRequestsOnDateAndProject(date, projectId);

@@ -39,7 +39,7 @@ public class LeaveRequestController {
      * @return List of LeaveRequest entities representing all leave requests.
      */
 
-    @GetMapping("/leave-request")
+    @GetMapping("/leave-requests")
     public List<LeaveRequest> getAllLeaveRequests() {
         return leaveRequestService.getAllLeaveRequests();
     }
