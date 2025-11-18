@@ -13,7 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigInteger;
@@ -168,13 +170,21 @@ public class LeaveRequestController {
      */
 
     @DeleteMapping("/leave-request/{id}/delete")
-    public ResponseEntity<Void> deleteRequestById(@PathVariable Long id) {
-        boolean deleted = leaveRequestService.deleteRequestById(id);
-        if (deleted) {
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
+    public ResponseEntity<Void> deleteRequestById(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {
+        if (jwt == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+        String email = jwt.getClaimAsString("upn");
+
+        User currentUser = usersRepository.findByEmail(email);
+        if (currentUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        boolean deleted = leaveRequestService.deleteRequestById(id, currentUser);
+
+        return deleted ? ResponseEntity.noContent().build()
+                : ResponseEntity.notFound().build();
     }
 
     /**
@@ -213,19 +223,6 @@ public class LeaveRequestController {
                     .status(HttpStatus.BAD_REQUEST).body(leaveRequest);
 
         }
-        if (dto.getLeaveType() == LeaveRequestTypeEnum.HOME_OFFICE) {
-
-
-            if (!startDate.isEqual(endDate)) {
-                var leaveRequest = new LeaveRequestDTO();
-                leaveRequest.setReason("You can request HOME_OFFICE for one day only.");
-                return ResponseEntity
-                        .status(HttpStatus.BAD_REQUEST)
-                        .body(leaveRequest);
-            }
-        }
-
-
             LeaveRequestDTO createdRequest = leaveRequestService.createLeaveRequest(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdRequest);
     }

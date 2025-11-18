@@ -20,9 +20,17 @@ public class GlobalException {
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ResponseExceptionDto> generalException(IllegalArgumentException ia) {
+    public ResponseEntity<ResponseExceptionDto> handleIllegalArgumentException(IllegalArgumentException ex) {
         ResponseExceptionDto response = new ResponseExceptionDto();
-        response.setMessage(ia.getMessage());
-        return ResponseEntity.ok(response);
+        response.setCustomCode(BigInteger.valueOf(1002));
+        response.setMessage(ex.getMessage());
+        return ResponseEntity.status(400).body(response);
+    }
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ResponseExceptionDto> handleIllegalStateException(IllegalStateException ex) {
+        ResponseExceptionDto response = new ResponseExceptionDto();
+        response.setCustomCode(BigInteger.valueOf(1001));
+        response.setMessage(ex.getMessage());
+        return ResponseEntity.status(400).body(response);
     }
 }

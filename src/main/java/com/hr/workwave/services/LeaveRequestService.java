@@ -113,37 +113,45 @@ public class LeaveRequestService {
      * @return true if the deletion and notifications were successfully processed
      * @throws RuntimeException if the leave request or associated user or managers are not found
      */
+    public boolean deleteRequestById(Long id, User currentUser) {
 
-    public boolean deleteRequestById(Long id) {
-        Optional<LeaveRequest> requestOpt = leaveRequestRepository.findById(id);
+        LeaveRequest request = leaveRequestRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Leave request not found with ID: " + id));
 
-        if (!requestOpt.isPresent()) {
-            throw new RuntimeException("Leave request not found with ID: " + id);
-        }
-
-        LeaveRequest request = requestOpt.get();
-        LeaveRequestStatusEnum status = request.getStatus();
-        String userEmail = request.getEmployee_email();
         User user = request.getUser();
-
         if (user == null) {
             throw new RuntimeException("Leave request has no associated user");
         }
+        String userEmail = request.getEmployee_email();
 
-        BigInteger userId = user.getId();
-        List<UserManagers> managerLinks = userManagerRepository.findByUserId(userId);
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        List<UserManagers> managerLinks = userManagerRepository.findByUserId(user.getId());
+
+
+        boolean isManager = managerLinks.stream()
+                .anyMatch(link -> link.getManagerId().equals(user.getId()) || link.getManagerId().equals(currentUser.getId()));
+
         LocalDate today = LocalDate.now();
         LocalDate startDate = request.getStart_date();
 
+        boolean canDelete;
+        if (startDate != null && startDate.isAfter(today)) {
 
-        if (startDate != null && !startDate.isAfter(today)) {
-            throw new IllegalStateException("Cannot delete leave requests that have already started!");
+            canDelete = currentUser.getRole() == UserRolesEnum.ADMIN
+                    || currentUser.getRole() == UserRolesEnum.MANAGER
+                    || currentUser.getId().equals(user.getId());
+        } else {
+
+            canDelete = currentUser.getRole() == UserRolesEnum.ADMIN
+                    || currentUser.getRole() == UserRolesEnum.MANAGER;
         }
+        if (!canDelete) {
+            throw new IllegalStateException("You do not have permission to delete this leave request!");
+        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
 
         leaveRequestRepository.delete(request);
-
         if (userEmail != null) {
             String htmlMessage = "<html>" +
                     "<body style=\"font-family: Arial, sans-serif;\">" +
@@ -279,10 +287,27 @@ public class LeaveRequestService {
         User user = usersRepository.findById(BigInteger.valueOf(dto.getUserId()))
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        boolean isAdmin = user.getRole() == UserRolesEnum.ADMIN;
+
+
+        boolean isCreator = user.getEmail().equalsIgnoreCase(dto.getEmployeeEmail());
+
+
+        if (!isAdmin && !isCreator) {
+            throw new IllegalArgumentException(
+                    "Only an admin or the user who created the request can submit it."
+            );
+        }
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
         if (dto.getLeaveType() == LeaveRequestTypeEnum.HOME_OFFICE) {
             validateHomeOfficeLeave(user, dto);
+
+            if (!dto.getStartDate().isEqual(dto.getEndDate())) {
+                throw new IllegalArgumentException(
+                        "HOME_OFFICE can only be requested for one day."
+                );
+            }
         }
 
         LeaveRequest leaveRequest = new LeaveRequest();
@@ -421,6 +446,26 @@ public class LeaveRequestService {
         LocalDate endDate = dto.getEndDate();
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+        LocalDate today = LocalDate.now();
+
+
+        DayOfWeek dayOfWeek = today.getDayOfWeek();
+        int daysFromMonday = dayOfWeek == DayOfWeek.SUNDAY ? 6 : dayOfWeek.getValue() - 1;
+        LocalDate currentMonday = today.minusDays(daysFromMonday);
+
+
+        int HO_WEEKS = 4;
+        LocalDate maxAllowedDate = currentMonday.plusDays(HO_WEEKS * 7 - 1);
+
+
+        if (startDate.isAfter(maxAllowedDate) || endDate.isAfter(maxAllowedDate)) {
+            throw new IllegalArgumentException(
+                    "Home Office is allowed only within the next 4 weeks. " +
+                            "You cannot request dates after: " + maxAllowedDate
+            );
+        }
+
 
         for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
             int countRequestsOnDate = leaveRequestRepository.countHomeOfficeRequestsOnDateAndProject(date, projectId);
