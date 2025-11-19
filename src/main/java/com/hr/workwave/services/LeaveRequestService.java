@@ -334,7 +334,7 @@ public class LeaveRequestService {
                 List<UserManagers> maternityPaternityManagers = userManagerRepository.findByUserId(user.getId());
                 break;
 
-            case BEREAVEMENT_LEAVE:
+            //case BEREAVEMENT_LEAVE:
             case BLOOD_DONATION_LEAVE:
                 leaveRequest.setStatus(LeaveRequestStatusEnum.APPROVED);
                 leaveRequestRepository.save(leaveRequest);
