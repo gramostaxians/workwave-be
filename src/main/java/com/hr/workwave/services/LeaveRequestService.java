@@ -333,6 +333,19 @@ public class LeaveRequestService {
                                 ") that overlaps with these dates."
                 );
             }
+        }List<BankHolidays> holidays = bankHolidaysService.getAllHolidays();
+
+        boolean overlapsHoliday = dto.getStartDate().datesUntil(dto.getEndDate().plusDays(1))
+                .anyMatch(date ->
+                        holidays.stream().anyMatch(h ->
+                                h.getDay() == date.getDayOfMonth() &&
+                                        (h.getMonth() + 1) == date.getMonthValue() &&
+                                        (h.getYear() == null || h.getYear() == 0 || h.getYear() == date.getYear()) // kontroll për null
+                        )
+                );
+
+        if (overlapsHoliday) {
+            throw new IllegalArgumentException("Leave cannot be scheduled on a bank holiday.");
         }
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
