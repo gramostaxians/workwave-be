@@ -288,8 +288,6 @@ public class LeaveRequestService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         boolean isAdmin = user.getRole() == UserRolesEnum.ADMIN;
-
-
         boolean isCreator = user.getEmail().equalsIgnoreCase(dto.getEmployeeEmail());
 
 
@@ -298,6 +296,45 @@ public class LeaveRequestService {
                     "Only an admin or the user who created the request can submit it."
             );
         }
+
+        List<LeaveRequest> userLeaves = leaveRequestRepository.findByUserId(user.getId());
+        if (dto.getLeaveType() == LeaveRequestTypeEnum.MATRIMONIAL_LEAVE) {
+
+            Long userIdLong = user.getId().longValue();
+
+            boolean alreadyExists = leaveRequestRepository.existsMatrimonialLeave(
+                    userIdLong,
+                    LeaveRequestTypeEnum.MATRIMONIAL_LEAVE,
+                    LeaveRequestStatusEnum.APPROVED
+            );
+
+            if (alreadyExists) {
+                throw new IllegalArgumentException(
+                        "Matrimonial Leave can only be used once per employee."
+                );
+            }
+
+            long requestedDays = ChronoUnit.DAYS.between(dto.getStartDate(), dto.getEndDate()) + 1;
+            if (requestedDays > 5) {
+                throw new IllegalArgumentException(
+                        "Matrimonial Leave cannot exceed 5 days."
+                );
+            }
+
+        }
+
+
+        for (LeaveRequest lr : userLeaves) {
+            boolean overlaps = !dto.getEndDate().isBefore(lr.getStart_date()) &&
+                    !dto.getStartDate().isAfter(lr.getEnd_date());
+            if (overlaps) {
+                throw new IllegalArgumentException(
+                        "You already have a leave request (status: " + lr.getStatus().getValue() +
+                                ") that overlaps with these dates."
+                );
+            }
+        }
+
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
         if (dto.getLeaveType() == LeaveRequestTypeEnum.HOME_OFFICE) {
@@ -460,8 +497,8 @@ public class LeaveRequestService {
 
         if (startDate.isAfter(maxAllowedDate) || endDate.isAfter(maxAllowedDate)) {
             throw new IllegalArgumentException(
-                    "Home Office is allowed only within the next 4 weeks. " +
-                            "You cannot request dates after: " + maxAllowedDate
+                    "Home Office is allowed only within the next 4 weeks. "
+
             );
         }
         if (startDate.getDayOfWeek() == DayOfWeek.SATURDAY || startDate.getDayOfWeek() == DayOfWeek.SUNDAY

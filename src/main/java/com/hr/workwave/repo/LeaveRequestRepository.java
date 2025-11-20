@@ -43,10 +43,11 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
             "AND lr.leave_type = com.hr.workwave.enums.LeaveRequestTypeEnum.ANNUAL_LEAVE " +
             "AND lr.status = 'APPROVED' " +
             "AND lr.start_date >= :startDate " +
-            "AND lr.end_date <= :endDate")List<LeaveRequest> findApprovedAnnualLeavesByPeriod(
-                    @Param("userId") Long userId,
-                    @Param("startDate") LocalDate startDate,
-                    @Param("endDate") LocalDate endDate);
+            "AND lr.end_date <= :endDate")
+    List<LeaveRequest> findApprovedAnnualLeavesByPeriod(
+            @Param("userId") Long userId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
 
 
     @Query("SELECT COUNT(lr) FROM LeaveRequest lr WHERE lr.leave_type = 'HOME_OFFICE' AND lr.start_date <= :date AND lr.end_date >= :date AND lr.user.project.id = :projectId")
@@ -65,12 +66,22 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
             "(EXTRACT(MONTH FROM lr.start_date) = :month OR EXTRACT(MONTH FROM lr.end_date) = :month) " +
             "AND (EXTRACT(YEAR FROM lr.start_date) = :year OR EXTRACT(YEAR FROM lr.end_date) = :year) " +
             "AND lr.leave_type = 'HOME_OFFICE'")
-
     List<LeaveRequest> findByMonthAndYear(@Param("month") int month, @Param("year") int year);
 
 
     @Query("SELECT lr FROM LeaveRequest lr WHERE lr.user.id = :userId  ORDER BY lr.createdDate DESC")
     List<LeaveRequest> findAllByUserIdOrderByCreatedDateDesc(@Param("userId") BigInteger userId);
+
+    @Query("SELECT CASE WHEN COUNT(lr) > 0 THEN true ELSE false END " +
+            "FROM LeaveRequest lr " +
+            "WHERE lr.user.id = :userId " +
+            "AND lr.leave_type = :leaveType " +
+            "AND lr.status = :status")
+    boolean existsMatrimonialLeave(
+            @Param("userId") Long userId,
+            @Param("leaveType") LeaveRequestTypeEnum leaveType,
+            @Param("status") LeaveRequestStatusEnum status
+    );
 
 
 }
