@@ -44,4 +44,7 @@ public class User {
 
     @JoinColumn(name = "available_leave_days")
     private BigInteger availableLeaveDays;
+
+    @Column(name = "resource_no")
+    private String resourceNo;
 }

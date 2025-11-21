@@ -12,5 +12,9 @@ http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
 <!--    <include file="007-create-table-Project.xml" relativeToChangelogFile="true"/>-->
 <!--    <include file="008-add-project-id-to-users.xml" relativeToChangelogFile="true" />-->
     <include file="009-add-available-leave-days-to-users.xml" relativeToChangelogFile="true"/>
+    <include file="010-create-table-work-logs.xml" relativeToChangelogFile="true"/>
+    <include file="011-add-user-id-to-work-logs.xml" relativeToChangelogFile="true"/>
+    <include file="012-add-resource-no-to-users.xml" relativeToChangelogFile="true"/>
+    <include file="013-remove-resource-no-from-work-logs.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
