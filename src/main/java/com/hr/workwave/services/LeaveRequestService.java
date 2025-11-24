@@ -284,7 +284,6 @@ public class LeaveRequestService {
      */
 
     public LeaveRequestDTO createLeaveRequest(LeaveRequestDTO dto) {
-
         User user = usersRepository.findById(BigInteger.valueOf(dto.getUserId()))
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -297,22 +296,27 @@ public class LeaveRequestService {
                     "Only an admin or the user who created the request can submit it."
             );
         }
-
         Long userIdLong = user.getId().longValue();
-        List<LeaveRequest> userLeaves = leaveRequestRepository.findByUserId(BigInteger.valueOf(userIdLong));
-
+        List<LeaveRequest> userLeaves = leaveRequestRepository.findByUserId(user.getId());
         if (dto.getLeaveType() == LeaveRequestTypeEnum.MATRIMONIAL_LEAVE) {
-;
+
+
             boolean alreadyExists = leaveRequestRepository.existsMatrimonialLeave(
                     userIdLong,
                     LeaveRequestTypeEnum.MATRIMONIAL_LEAVE,
-                    Arrays.asList(LeaveRequestStatusEnum.PENDING, LeaveRequestStatusEnum.APPROVED)
+                  Arrays.asList(LeaveRequestStatusEnum.PENDING,LeaveRequestStatusEnum.APPROVED)
             );
-
 
             if (alreadyExists) {
                 throw new IllegalArgumentException(
                         "Matrimonial Leave can only be used once per employee."
+                );
+            }
+
+            long requestedDays = ChronoUnit.DAYS.between(dto.getStartDate(), dto.getEndDate()) + 1;
+            if (requestedDays > 5) {
+                throw new IllegalArgumentException(
+                        "Matrimonial Leave cannot exceed 5 days."
                 );
             }
 
@@ -327,39 +331,6 @@ public class LeaveRequestService {
                                 ") that overlaps with these dates."
                 );
             }
-        }
-        List<BankHolidays> holidays = bankHolidaysService.getAllHolidays();
-        long workingDays = dto.getStartDate().datesUntil(dto.getEndDate().plusDays(1))
-                .filter(date -> {
-                    DayOfWeek day = date.getDayOfWeek();
-                    if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY) return false;
-                    boolean isHoliday = holidays.stream().anyMatch(h ->
-                            h.getDay() == date.getDayOfMonth() &&
-                                    (h.getMonth() + 1) == date.getMonthValue() &&
-                                    (h.getYear() == null || h.getYear() == 0 || h.getYear() == date.getYear())
-                    );
-                    return !isHoliday;
-                }).count();
-
-        if (workingDays > 5) {
-            throw new IllegalArgumentException("Matrimonial Leave cannot exceed 5 working days.");
-        }
-
-
-        boolean overlapsHoliday = dto.getStartDate().datesUntil(dto.getEndDate().plusDays(1))
-                .anyMatch(date -> holidays.stream().anyMatch(h ->
-                        h.getDay() == date.getDayOfMonth() &&
-                                (h.getMonth() + 1) == date.getMonthValue() &&
-                                (h.getYear() == null || h.getYear() == 0 || h.getYear() == date.getYear())
-                ));
-
-        if (overlapsHoliday) {
-            throw new IllegalArgumentException("Leave cannot be scheduled on a bank holiday.");
-        }
-
-
-        if (overlapsHoliday) {
-            throw new IllegalArgumentException("Leave cannot be scheduled on a bank holiday.");
         }
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
