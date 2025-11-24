@@ -72,16 +72,19 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     @Query("SELECT lr FROM LeaveRequest lr WHERE lr.user.id = :userId  ORDER BY lr.createdDate DESC")
     List<LeaveRequest> findAllByUserIdOrderByCreatedDateDesc(@Param("userId") BigInteger userId);
 
-    @Query("SELECT CASE WHEN COUNT(lr) > 0 THEN true ELSE false END " +
-            "FROM LeaveRequest lr " +
-            "WHERE lr.user.id = :userId " +
-            "AND lr.leave_type = :leaveType " +
-            "AND lr.status = :status")
+    @Query("""
+    SELECT CASE WHEN COUNT(lr) > 0 THEN TRUE ELSE FALSE END
+    FROM LeaveRequest lr
+    WHERE lr.user.id = :userId
+      AND lr.leave_type = :leaveType
+      AND lr.status IN :statuses
+""")
     boolean existsMatrimonialLeave(
             @Param("userId") Long userId,
             @Param("leaveType") LeaveRequestTypeEnum leaveType,
-            @Param("status") LeaveRequestStatusEnum status
+            @Param("statuses") List<LeaveRequestStatusEnum> statuses
     );
+
 
 
 }
