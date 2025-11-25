@@ -683,21 +683,45 @@ public class LeaveRequestService {
      */
 
     public List<Map<String, Object>> getAnnualLeaveSummary(Long userId, List<Integer> years) {
+
+        User user = usersRepository.findById(BigInteger.valueOf(userId))
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        LocalDate employmentStart = user.getStart_Of_Work();
+
         if (years == null || years.isEmpty()) {
             years = Collections.singletonList(LocalDate.now().getYear());
         }
+
+
+        List<Integer> invalidYears = years.stream()
+                .filter(y -> {
+                    LocalDate cycleStart = LocalDate.of(y - 1, 7, 1);
+                    return cycleStart.isBefore(employmentStart);
+                })
+                .toList();
+
+        if (!invalidYears.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Years outside employment period: " + invalidYears
+            );
+        }
+
         List<Map<String, Object>> summaries = new ArrayList<>();
 
         for (Integer year : years) {
+
             LocalDate start = LocalDate.of(year - 1, 7, 1);
             LocalDate end = LocalDate.of(year, 6, 30);
-            List<LeaveRequest> leaves = leaveRequestRepository.findApprovedAnnualLeavesByPeriod(userId, start, end);
+
+            List<LeaveRequest> leaves =
+                    leaveRequestRepository.findApprovedAnnualLeavesByPeriod(userId, start, end);
+
             int spentDays = leaves.stream()
                     .mapToInt(lr -> (int) ChronoUnit.DAYS.between(lr.getStart_date(), lr.getEnd_date()) + 1)
                     .sum();
 
             int totalAnnualLeave = 20;
-
             int leftDays = totalAnnualLeave - spentDays;
 
             Map<String, Object> summary = new LinkedHashMap<>();
@@ -707,10 +731,12 @@ public class LeaveRequestService {
             summary.put("total", totalAnnualLeave);
             summary.put("spent", spentDays);
             summary.put("left", leftDays);
-            summaries.add(summary);    }
+
+            summaries.add(summary);
+        }
+
         return summaries;
     }
-
     /**
      * Converts a LeaveRequest entity to a LeaveRequestDTO.
      *
