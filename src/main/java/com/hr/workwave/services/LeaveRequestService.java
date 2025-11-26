@@ -313,13 +313,16 @@ public class LeaveRequestService {
                 );
             }
 
-            long requestedDays = ChronoUnit.DAYS.between(dto.getStartDate(), dto.getEndDate()) + 1;
-            if (requestedDays > 5) {
+            long workingDays = bankHolidaysService.calculateEffectiveLeaveDays(
+                    dto.getStartDate(),
+                    dto.getEndDate()
+            );
+
+            if (workingDays > 5) {
                 throw new IllegalArgumentException(
-                        "Matrimonial Leave cannot exceed 5 days."
+                        "Matrimonial Leave cannot exceed 5 working days (excluding weekends and bank holidays)."
                 );
             }
-
         }
 
         for (LeaveRequest lr : userLeaves) {
@@ -693,13 +696,13 @@ public class LeaveRequestService {
             years = Collections.singletonList(LocalDate.now().getYear());
         }
 
+        int currentYear = LocalDate.now().getYear();
+        int startYear = employmentStart.getYear();
 
+        // find invalid years
         List<Integer> invalidYears = years.stream()
-                .filter(y -> {
-                    LocalDate cycleStart = LocalDate.of(y - 1, 7, 1);
-                    return cycleStart.isBefore(employmentStart);
-                })
-                .toList();
+                .filter(y -> y < startYear || y > currentYear)
+                .collect(Collectors.toList());
 
         if (!invalidYears.isEmpty()) {
             throw new IllegalArgumentException(
@@ -716,13 +719,16 @@ public class LeaveRequestService {
 
             List<LeaveRequest> leaves =
                     leaveRequestRepository.findApprovedAnnualLeavesByPeriod(userId, start, end);
+            long  spentDays = 0;
 
-            int spentDays = leaves.stream()
-                    .mapToInt(lr -> (int) ChronoUnit.DAYS.between(lr.getStart_date(), lr.getEnd_date()) + 1)
-                    .sum();
+            for (LeaveRequest leaveRequest : leaves) {
+                long spentDaysPerLeave = bankHolidaysService.calculateEffectiveLeaveDays(leaveRequest.getStart_date(),leaveRequest.getEnd_date() );
+                spentDays += spentDaysPerLeave;
+            }
 
-            int totalAnnualLeave = 20;
-            int leftDays = totalAnnualLeave - spentDays;
+
+            long totalAnnualLeave = 20;
+            long leftDays = totalAnnualLeave - spentDays;
 
             Map<String, Object> summary = new LinkedHashMap<>();
             summary.put("year", year);

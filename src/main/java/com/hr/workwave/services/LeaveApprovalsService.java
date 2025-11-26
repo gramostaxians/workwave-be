@@ -178,7 +178,7 @@ public class LeaveApprovalsService {
                     "New Leave Request from " + leaveRequest.getUser().getName(),
                     htmlMessage
             );
-
+//,userit
             for (User admin : Admins) {
             String htmlMessage1 = "<html>" +
                     "<body style=\"font-family: Arial, sans-serif;\">" +
@@ -207,7 +207,7 @@ public class LeaveApprovalsService {
                 );
             }
             List<UserManagers> managerLinks = userManagerRepository.findByUserId(leaveRequest.getUser().getId());
-
+//admin
             for (UserManagers link : managerLinks) {
                 BigInteger managerId = link.getManagerId();
                 User manager = usersRepository.findById(managerId)
