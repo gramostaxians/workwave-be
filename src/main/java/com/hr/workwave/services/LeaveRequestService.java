@@ -298,6 +298,16 @@ public class LeaveRequestService {
         }
         Long userIdLong = user.getId().longValue();
         List<LeaveRequest> userLeaves = leaveRequestRepository.findByUserId(user.getId());
+
+        if (dto.getLeaveType() == LeaveRequestTypeEnum.MATERNITY_LEAVE) {
+            LocalDate expectedEnd = dto.getStartDate().plusMonths(6);
+            if (!dto.getEndDate().isEqual(expectedEnd)) {
+                throw new IllegalArgumentException(
+                        "Maternity Leave must be exactly 6 months. Expected end date: " + expectedEnd
+                );
+            }
+        }
+
         if (dto.getLeaveType() == LeaveRequestTypeEnum.MATRIMONIAL_LEAVE) {
 
 
@@ -1041,6 +1051,7 @@ public class LeaveRequestService {
                     return !start.isAfter(end) ? calculateEffectiveLeaveDays(start, end) : 0;
                 })
                 .sum();
+
         double availableDays = Math.max(0, totalAvailableDays - usedDays);
 
         Map<String, Object> stats = new HashMap<>();
