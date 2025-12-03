@@ -863,14 +863,20 @@ public class LeaveRequestService {
         } else {
             leaveRequests = leaveRequestRepository.findByUserId(userId);
         }
-        LocalDate leaveYearStart = LocalDate.of(currentYear, 7, 1);
-        LocalDate leaveYearEnd = LocalDate.of(currentYear + 1, 6, 30);
+        LocalDate calculatedStart;
+        LocalDate calculatedEnd;
 
-        if(today.getMonthValue()<=6){
-            leaveYearStart = LocalDate.of(currentYear-1, 7, 1);
-            leaveYearEnd = LocalDate.of(currentYear  , 6, 30);
+        if (today.getMonthValue() <= 6) {
+            calculatedStart = LocalDate.of(currentYear - 1, 7, 1);
+            calculatedEnd = LocalDate.of(currentYear, 6, 30);
+        } else {
+            calculatedStart = LocalDate.of(currentYear, 7, 1);
+            calculatedEnd = LocalDate.of(currentYear + 1, 6, 30);
         }
 
+
+        final LocalDate leaveYearStart = calculatedStart;
+        final LocalDate leaveYearEnd = calculatedEnd;
         leaveRequests = leaveRequests.stream()
                 .filter(lr -> lr.getStart_date().getYear() == currentYear || lr.getEnd_date().getYear() == currentYear)
                 .collect(Collectors.toList());
