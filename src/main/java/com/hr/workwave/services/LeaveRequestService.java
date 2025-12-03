@@ -699,7 +699,6 @@ public class LeaveRequestService {
         int currentYear = LocalDate.now().getYear();
         int startYear = employmentStart.getYear();
 
-        // find invalid years
         List<Integer> invalidYears = years.stream()
                 .filter(y -> y < startYear || y > currentYear)
                 .collect(Collectors.toList());
@@ -854,6 +853,7 @@ public class LeaveRequestService {
         }
 
         LocalDate today = LocalDate.now();
+        int currentYear = today.getYear();
 
         double totalAvailableDays = calculateLeaveDays(user, today);
 
@@ -863,6 +863,17 @@ public class LeaveRequestService {
         } else {
             leaveRequests = leaveRequestRepository.findByUserId(userId);
         }
+        LocalDate leaveYearStart = LocalDate.of(currentYear, 7, 1);
+        LocalDate leaveYearEnd = LocalDate.of(currentYear + 1, 6, 30);
+
+        if(today.getMonthValue()<=6){
+            leaveYearStart = LocalDate.of(currentYear-1, 7, 1);
+            leaveYearEnd = LocalDate.of(currentYear  , 6, 30);
+        }
+
+        leaveRequests = leaveRequests.stream()
+                .filter(lr -> lr.getStart_date().getYear() == currentYear || lr.getEnd_date().getYear() == currentYear)
+                .collect(Collectors.toList());
 
         long pendingCount = leaveRequests.stream()
                 .filter(lr -> lr.getStatus() == LeaveRequestStatusEnum.PENDING)
@@ -877,7 +888,11 @@ public class LeaveRequestService {
 
         double usedDays = leaveRequests.stream()
                 .filter(lr -> lr.getStatus() == LeaveRequestStatusEnum.APPROVED)
-                .mapToDouble(lr -> calculateEffectiveLeaveDays(lr.getStart_date(), lr.getEnd_date()))
+                .mapToDouble(lr -> {
+                    LocalDate start = lr.getStart_date().isBefore(leaveYearStart) ? leaveYearStart : lr.getStart_date();
+                    LocalDate end = lr.getEnd_date().isAfter(leaveYearEnd) ? leaveYearEnd : lr.getEnd_date();
+                    return !start.isAfter(end) ? calculateEffectiveLeaveDays(start, end) : 0;
+                })
                 .sum();
 
         double availableDays = Math.max(0, totalAvailableDays - usedDays);
@@ -976,6 +991,7 @@ public class LeaveRequestService {
         if (today.isBefore(refreshDate)) {
             refreshDate = refreshDate.minusYears(1);
         }
+
         LocalDate periodStart = refreshDate;
         LocalDate periodEnd = refreshDate.plusYears(1).minusDays(1);
 
