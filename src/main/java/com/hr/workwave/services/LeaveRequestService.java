@@ -987,6 +987,7 @@ public class LeaveRequestService {
         }
 
         LocalDate today = LocalDate.now();
+        int currentYear = today.getYear();
 
         double totalAvailableDays = calculateSickLeaveDays(user, today);
 
@@ -997,6 +998,21 @@ public class LeaveRequestService {
         if (today.isBefore(refreshDate)) {
             refreshDate = refreshDate.minusYears(1);
         }
+
+        LocalDate calculatedStart;
+        LocalDate calculatedEnd;
+
+        if (today.getMonthValue() <= 6) {
+            calculatedStart = LocalDate.of(currentYear - 1, 7, 1);
+            calculatedEnd = LocalDate.of(currentYear, 6, 30);
+        } else {
+            calculatedStart = LocalDate.of(currentYear, 7, 1);
+            calculatedEnd = LocalDate.of(currentYear + 1, 6, 30);
+        }
+
+
+        final LocalDate leaveYearStart = calculatedStart;
+        final LocalDate leaveYearEnd = calculatedEnd;
 
         LocalDate periodStart = refreshDate;
         LocalDate periodEnd = refreshDate.plusYears(1).minusDays(1);
@@ -1019,9 +1035,12 @@ public class LeaveRequestService {
 
         double usedDays = leaveRequests.stream()
                 .filter(lr -> lr.getStatus() == LeaveRequestStatusEnum.APPROVED)
-                .mapToDouble(lr -> calculateEffectiveLeaveDays(lr.getStart_date(), lr.getEnd_date()))
+                .mapToDouble(lr -> {
+                    LocalDate start = lr.getStart_date().isBefore(leaveYearStart) ? leaveYearStart : lr.getStart_date();
+                    LocalDate end = lr.getEnd_date().isAfter(leaveYearEnd) ? leaveYearEnd : lr.getEnd_date();
+                    return !start.isAfter(end) ? calculateEffectiveLeaveDays(start, end) : 0;
+                })
                 .sum();
-
         double availableDays = Math.max(0, totalAvailableDays - usedDays);
 
         Map<String, Object> stats = new HashMap<>();
