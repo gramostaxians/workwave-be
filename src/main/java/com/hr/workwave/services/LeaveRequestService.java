@@ -436,7 +436,10 @@ public class LeaveRequestService {
                         "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date().format(formatter) + "</p>" +
                         "<p><strong>Status:</strong> " + leaveRequest.getStatus() + "</p>" +
                         "</div>" +
-                        "<p style=\"font-size: 16px; margin-top: 20px;\">Thank You.</p>" +
+                        "<p style=\"font-size: 16px; margin-top: 20px;\">Please log in to the system to review and respond to the request at your earliest convenience.</p>" +
+                        "<p style=\"font-size: 16px;\">Follow the link:</p>" +
+                        "<a href=\"https://s-1564-workwave/leave-approval\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\">https://s-1564-workwave/leave-approval</a>" +
+                        "<p style=\"font-size: 16px; margin-top: 20px;\">Thank you.</p>" +
                         "</div>" +
                         "</body>" +
                         "</html>";
