@@ -420,28 +420,51 @@ public class LeaveRequestService {
             approval.setApprovedStatus(autoApprove ? LeaveRequestStatusEnum.APPROVED : LeaveRequestStatusEnum.PENDING);
             leaveApprovalsRepository.save(approval);
 
-            String htmlMessage = "<html>" +
-                    "<body style=\"font-family: Arial, sans-serif;\">" +
-                    "<div style=\"background-color: #c9daeb; padding: 20px;\">" +
-                    "<h2 style=\"color: #333;\">New Leave Request</h2>" +
-                    "<p style=\"font-size: 16px;\">Dear " + manager.getName() + ",</p>" +
-                    "<p style=\"font-size: 16px;\">You have a new leave request awaiting your review and approval</p>" +
-                    "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
-                    "<p><strong>From:</strong> " + user.getName() + "</p>" +
-                    "<p><strong>Leave Type:</strong> " + leaveRequest.getLeave_type() + "</p>" +
-                    "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date().format(formatter) + "</p>" +
-                    "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date().format(formatter) + "</p>" +
-                    "<p><strong>Reason:</strong> " + leaveRequest.getReason() + "</p>" +
-                    "<p><strong>Status:</strong> " + leaveRequest.getStatus() + "</p>" +
-                    "</div>" +
-                    "<p style=\"font-size: 16px; margin-top: 20px;\">Please log in to the system to review and respond to the request at your earliest convenience.</p>" +
-                    "<p style=\"font-size: 16px;\">Follow the link:</p>" +
-                    "<a href=\"https://s-1564-workwave/leave-approval\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\">https://s-1564-workwave/leave-approval</a>" +
-                    "<p style=\"font-size: 16px; margin-top: 20px;\">Thank you.</p>" +
-                    "</div>" +
-                    "</body>" +
-                    "</html>";
+            String htmlMessage;
 
+            if (autoApprove) {
+                htmlMessage = "<html>" +
+                        "<body style=\"font-family: Arial, sans-serif;\">" +
+                        "<div style=\"background-color: #c9daeb; padding: 20px;\">" +
+                        "<h2 style=\"color: #333;\">Leave Request Approved</h2>" +
+                        "<p style=\"font-size: 16px;\">Dear " + manager.getName() + ",</p>" +
+                        "<p style=\"font-size: 16px;\">A new " + leaveRequest.getLeave_type() +
+                        " request for <strong>" + user.getName() + "</strong> has been automatically approved.</p>" +
+                        "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
+                        "<p><strong>Leave Type:</strong> " + leaveRequest.getLeave_type() + "</p>" +
+                        "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date().format(formatter) + "</p>" +
+                        "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date().format(formatter) + "</p>" +
+                        "<p><strong>Status:</strong> " + leaveRequest.getStatus() + "</p>" +
+                        "</div>" +
+                        "<p style=\"font-size: 16px; margin-top: 20px;\">Thank You.</p>" +
+                        "</div>" +
+                        "</body>" +
+                        "</html>";
+            } else {
+                htmlMessage = "<html>" +
+                        "<body style=\"font-family: Arial, sans-serif;\">" +
+                        "<div style=\"background-color: #c9daeb; padding: 20px;\">" +
+                        "<h2 style=\"color: #333;\">New Leave Request</h2>" +
+                        "<p style=\"font-size: 16px;\">Dear " + manager.getName() + ",</p>" +
+                        "<p style=\"font-size: 16px;\">You have a new leave request awaiting your review and approval</p>" +
+                        "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
+                        "<p><strong>From:</strong> " + user.getName() + "</p>" +
+                        "<p><strong>Leave Type:</strong> " + leaveRequest.getLeave_type() + "</p>" +
+                        "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date().format(formatter) + "</p>" +
+                        "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date().format(formatter) + "</p>" +
+                        "<p><strong>Reason:</strong> " + leaveRequest.getReason() + "</p>" +
+                        "<p><strong>Status:</strong> " + leaveRequest.getStatus() + "</p>" +
+                        "</div>" +
+                        "<p style=\"font-size: 16px; margin-top: 20px;\">Please log in to the system to review and respond to the request at your earliest convenience.</p>" +
+                        "<p style=\"font-size: 16px;\">Follow the link:</p>" +
+                        "<a href=\"https://s-1564-workwave/leave-approval\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\">https://s-1564-workwave/leave-approval</a>" +
+                        "<p style=\"font-size: 16px; margin-top: 20px;\">Thank you.</p>" +
+                        "</div>" +
+                        "</body>" +
+                        "</html>";
+
+
+            }
             emailService.sendEmail(manager.getEmail(),
                     "New Leave Request from " + user.getName(),
                     htmlMessage
