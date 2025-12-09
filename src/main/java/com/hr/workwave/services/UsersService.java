@@ -1,9 +1,6 @@
 package com.hr.workwave.services;
 
-import com.hr.workwave.dto.ManagerDTO;
-import com.hr.workwave.dto.UpdateUsersDTO;
-import com.hr.workwave.dto.UserRequestDTO;
-import com.hr.workwave.dto.UserWithManagersDTO;
+import com.hr.workwave.dto.*;
 import com.hr.workwave.enums.UserRolesEnum;
 import com.hr.workwave.model.Project;
 import com.hr.workwave.model.UserManagers;
@@ -206,6 +203,23 @@ public class UsersService {
             throw new EntityNotFoundException("User not found");
         }
         return result;
+    }
+
+    public CalendarStatusDTO getCalendarStatus(String email) {
+
+        boolean isConnected = checkCalendarConnection(email);
+
+        String connectUrl = isConnected ? null : generateCalendarConnectUrl(email);
+
+        return new CalendarStatusDTO(isConnected, connectUrl);
+    }
+
+    private boolean checkCalendarConnection(String email) {
+        return false;
+    }
+
+    private String generateCalendarConnectUrl(String email) {
+        return "https://example.com/connect-calendar?email=" + email;
     }
 }
 
