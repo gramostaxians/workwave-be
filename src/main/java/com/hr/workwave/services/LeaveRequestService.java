@@ -735,16 +735,26 @@ public class LeaveRequestService {
         int currentYear = LocalDate.now().getYear();
         int startYear = employmentStart.getYear();
 
+        int minYearAllowed;
+
+        if (employmentStart.isBefore(LocalDate.of(startYear, 6, 1))) {
+            minYearAllowed = startYear - 1;
+        } else {
+            minYearAllowed = startYear;
+        }
+
+        int maxYearAllowed = currentYear + 1;
+
         List<Integer> invalidYears = years.stream()
-                .filter(y -> y < startYear || y > currentYear)
+                .filter(y -> y < minYearAllowed || y > maxYearAllowed)
                 .collect(Collectors.toList());
 
         if (!invalidYears.isEmpty()) {
             throw new IllegalArgumentException(
-                    "Years outside employment period: " + invalidYears
+                    "Years outside employment period: " + invalidYears +
+                            " (Allowed: " + minYearAllowed + " - " + maxYearAllowed + ")"
             );
         }
-
         List<Map<String, Object>> summaries = new ArrayList<>();
 
         for (Integer year : years) {
@@ -890,6 +900,7 @@ public class LeaveRequestService {
 
         LocalDate today = LocalDate.now();
         int currentYear = today.getYear();
+
 
         double totalAvailableDays = calculateLeaveDays(user, today);
 
