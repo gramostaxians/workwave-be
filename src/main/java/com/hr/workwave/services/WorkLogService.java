@@ -63,4 +63,7 @@ public class WorkLogService {
 
         workLogRepository.deleteById(id);
     }
+    public void bulkDeleteWorkLogs(List<Long> workLogIds){
+        workLogRepository.bulkDeleteByIds(workLogIds);
+    }
 }

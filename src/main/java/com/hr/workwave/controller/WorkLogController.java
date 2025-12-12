@@ -93,4 +93,11 @@ public class WorkLogController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @DeleteMapping("/bulk-delete")
+    public ResponseEntity deleteWorkLog(@RequestBody List<Long> workLogIds, @AuthenticationPrincipal Jwt jwt) {
+        workLogService.bulkDeleteWorkLogs(workLogIds);
+        return ResponseEntity.noContent().build();
+    }
+
 }
