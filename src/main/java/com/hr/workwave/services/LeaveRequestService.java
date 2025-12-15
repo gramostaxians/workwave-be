@@ -925,9 +925,10 @@ public class LeaveRequestService {
         final LocalDate leaveYearStart = calculatedStart;
         final LocalDate leaveYearEnd = calculatedEnd;
         leaveRequests = leaveRequests.stream()
-                .filter(lr -> lr.getStart_date().getYear() == currentYear || lr.getEnd_date().getYear() == currentYear)
+                .filter(lr ->
+                        !(lr.getEnd_date().isBefore(leaveYearStart) || lr.getStart_date().isAfter(leaveYearEnd))
+                )
                 .collect(Collectors.toList());
-
         long pendingCount = leaveRequests.stream()
                 .filter(lr -> lr.getStatus() == LeaveRequestStatusEnum.PENDING)
                 .count();
