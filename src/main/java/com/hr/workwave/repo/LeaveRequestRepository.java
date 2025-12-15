@@ -88,7 +88,18 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
             @Param("leaveType") LeaveRequestTypeEnum leaveType,
             @Param("statuses") List<LeaveRequestStatusEnum> statuses
     );
-
-
-
+    @Query("""
+        SELECT l FROM LeaveRequest l
+        WHERE l.user.id = :userId
+        AND l.start_date >= :start
+        AND l.end_date <= :end
+    """)
+    List<LeaveRequest> findLeavesInPeriodByUser(
+            @Param("userId") Long userId,
+            @Param("start") LocalDate start,
+            @Param("end") LocalDate end
+    );
 }
+
+
+

@@ -186,28 +186,28 @@ public class LeaveRequestService {
 
             if (manager.getEmail() != null) {
                 String htmlMessage = "<html>" +
-                    "<body style=\"font-family: Arial, sans-serif;\">" +
-                    "<div style=\"background-color: #c9daeb; padding: 20px;\">" +
-                    "<h2 style=\"color: #333;\">Leave Request Deleted</h2>" +
-                    "<p style=\"font-size: 16px;\">Dear " + manager.getName() + ",</p>" +
-                    "<p style=\"font-size: 16px;\">A leave request has been CANCELED</p>" +
-                    "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
-                    "<p><strong>From: :</strong> " + user.getName() + "</p>" +
-                    "<p><strong>Leave Type:</strong> " + request.getLeave_type() + "</p>" +
-                    "<p><strong>Start Date:</strong> " + request.getStart_date().format(formatter) + "</p>" +
-                    "<p><strong>End Date:</strong> " + request.getEnd_date().format(formatter) + "</p>" +
-                    "<p><strong>Reason:</strong> " + request.getReason() + "</p>" +
-                    "<p><strong>Status:</strong> " + request.getStatus() + "</p>" +
-                    "</div>" +
-                    "<p style=\"font-size: 16px; margin-top: 20px;\">Thank you.</p>" +
-                    "</div>" +
-                    "</body>" +
-                    "</html>";
+                        "<body style=\"font-family: Arial, sans-serif;\">" +
+                        "<div style=\"background-color: #c9daeb; padding: 20px;\">" +
+                        "<h2 style=\"color: #333;\">Leave Request Deleted</h2>" +
+                        "<p style=\"font-size: 16px;\">Dear " + manager.getName() + ",</p>" +
+                        "<p style=\"font-size: 16px;\">A leave request has been CANCELED</p>" +
+                        "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
+                        "<p><strong>From: :</strong> " + user.getName() + "</p>" +
+                        "<p><strong>Leave Type:</strong> " + request.getLeave_type() + "</p>" +
+                        "<p><strong>Start Date:</strong> " + request.getStart_date().format(formatter) + "</p>" +
+                        "<p><strong>End Date:</strong> " + request.getEnd_date().format(formatter) + "</p>" +
+                        "<p><strong>Reason:</strong> " + request.getReason() + "</p>" +
+                        "<p><strong>Status:</strong> " + request.getStatus() + "</p>" +
+                        "</div>" +
+                        "<p style=\"font-size: 16px; margin-top: 20px;\">Thank you.</p>" +
+                        "</div>" +
+                        "</body>" +
+                        "</html>";
 
-            emailService.sendEmail(
-                    manager.getEmail(),
-                    "Leave Request Deleted from " + user.getName(),
-                    htmlMessage
+                emailService.sendEmail(
+                        manager.getEmail(),
+                        "Leave Request Deleted from " + user.getName(),
+                        htmlMessage
                 );
             }
         }
@@ -221,7 +221,7 @@ public class LeaveRequestService {
      * - Fetches leave requests associated with the specified user ID.
      * - Maps each leave request to a summary DTO that includes leave request details.
      * - For each leave request, it also maps the associated approvals to manager approval DTOs,
-     *   containing manager information and approval status.
+     * containing manager information and approval status.
      *
      * @param userId the ID of the user whose leave requests and approvals are to be retrieved
      * @return a list of LeaveRequestApprovalSummaryDTO objects representing leave requests and their approvals
@@ -229,7 +229,6 @@ public class LeaveRequestService {
 
     public List<LeaveRequestApprovalSummaryDTO> getLeaveRequestsWithApprovalsByUserId(BigInteger userId) {
         List<LeaveRequest> leaveRequests = leaveRequestRepository.findAllByUserIdOrderByCreatedDateDesc(userId);
-
 
 
         return leaveRequests.stream().map(leaveRequest -> {
@@ -276,7 +275,7 @@ public class LeaveRequestService {
      * - Sends a confirmation email to the requesting user with details of their leave request.
      * Special cases:
      * - Certain leave types (e.g. BEREAVEMENT_LEAVE, BLOOD_DONATION_LEAVE) are auto-approved,
-     *   and notification is sent to admins instead of managers.
+     * and notification is sent to admins instead of managers.
      *
      * @param dto the data transfer object containing leave request details
      * @return a LeaveRequestDTO representing the newly created leave request
@@ -314,7 +313,7 @@ public class LeaveRequestService {
             boolean alreadyExists = leaveRequestRepository.existsMatrimonialLeave(
                     userIdLong,
                     LeaveRequestTypeEnum.MATRIMONIAL_LEAVE,
-                  Arrays.asList(LeaveRequestStatusEnum.PENDING,LeaveRequestStatusEnum.APPROVED)
+                    Arrays.asList(LeaveRequestStatusEnum.PENDING, LeaveRequestStatusEnum.APPROVED)
             );
 
             if (alreadyExists) {
@@ -639,7 +638,7 @@ public class LeaveRequestService {
      * email, and department information are included in the summary.
      *
      * @return a list of LeaveRequestApprovalSummaryDTO representing all leave requests
-     *         with PENDING status along with their approval details.
+     * with PENDING status along with their approval details.
      */
 
     public List<LeaveRequestApprovalSummaryDTO> getAllPendingLeaveRequests() {
@@ -657,7 +656,7 @@ public class LeaveRequestService {
                         dto.setApprovedDate(approval.getApprovedDate());
                         return dto;
                     }).collect(Collectors.toList());
-                      long effectiveDays = bankHolidaysService.calculateEffectiveLeaveDays(leaveRequest.getStart_date(), leaveRequest.getEnd_date());
+                    long effectiveDays = bankHolidaysService.calculateEffectiveLeaveDays(leaveRequest.getStart_date(), leaveRequest.getEnd_date());
 
                     LeaveRequestApprovalSummaryDTO summaryDTO = new LeaveRequestApprovalSummaryDTO();
                     summaryDTO.setLeaveRequestId(leaveRequest.getId());
@@ -684,7 +683,7 @@ public class LeaveRequestService {
     /**
      * Updates the calendar event ID associated with a specific leave request.
      *
-     * @param leaveRequestId the ID of the leave request to update
+     * @param leaveRequestId  the ID of the leave request to update
      * @param calendarEventId the new calendar event ID to be set
      * @throws EntityNotFoundException if no leave request is found with the given ID
      */
@@ -695,6 +694,7 @@ public class LeaveRequestService {
         leaveRequest.setCalendar_event_id(calendarEventId);
         leaveRequestRepository.save(leaveRequest);
     }
+
     public void deleteCalendarEvent(Long leaveRequestId) {
         LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId)
                 .orElseThrow(() -> new EntityNotFoundException("LeaveRequest not found with ID: " + leaveRequestId));
@@ -702,23 +702,22 @@ public class LeaveRequestService {
     }
 
 
-
     /**
      * Retrieves an annual leave summary for a given user over specified years.
-
+     * <p>
      * The summary period runs from July 1 of the previous year to June 30 of the given year.
      * For each year, it calculates the total approved annual leave days taken,
      * the total annual leave entitlement (defaulted to 20 days), and the remaining leave days.
      *
      * @param userId the ID of the user for whom the summary is generated
-     * @param years a list of years to generate summaries for; if null or empty, the current year is used
+     * @param years  a list of years to generate summaries for; if null or empty, the current year is used
      * @return a list of maps containing leave summary data per year, with keys:
-     *         "year" - the year of the summary
-     *         "from" - start date of the leave period (July 1 of previous year)
-     *         "to" - end date of the leave period (June 30 of the given year)
-     *         "total" - total annual leave entitlement
-     *         "spent" - total leave days taken during the period
-     *         "left" - remaining leave days
+     * "year" - the year of the summary
+     * "from" - start date of the leave period (July 1 of previous year)
+     * "to" - end date of the leave period (June 30 of the given year)
+     * "total" - total annual leave entitlement
+     * "spent" - total leave days taken during the period
+     * "left" - remaining leave days
      */
 
     public List<Map<String, Object>> getAnnualLeaveSummary(Long userId, List<Integer> years) {
@@ -764,10 +763,10 @@ public class LeaveRequestService {
 
             List<LeaveRequest> leaves =
                     leaveRequestRepository.findApprovedAnnualLeavesByPeriod(userId, start, end);
-            long  spentDays = 0;
+            long spentDays = 0;
 
             for (LeaveRequest leaveRequest : leaves) {
-                long spentDaysPerLeave = bankHolidaysService.calculateEffectiveLeaveDays(leaveRequest.getStart_date(),leaveRequest.getEnd_date() );
+                long spentDaysPerLeave = bankHolidaysService.calculateEffectiveLeaveDays(leaveRequest.getStart_date(), leaveRequest.getEnd_date());
                 spentDays += spentDaysPerLeave;
             }
 
@@ -788,6 +787,7 @@ public class LeaveRequestService {
 
         return summaries;
     }
+
     /**
      * Converts a LeaveRequest entity to a LeaveRequestDTO.
      *
@@ -816,14 +816,14 @@ public class LeaveRequestService {
      * - Incremental leave days added for every 5 years of experience.
      * Rules summary:
      * - If the employee started less than 6 months before July 1st of the leave year:
-     *     - No leave if current date is within the first 6 months of starting.
-     *     - After 6 months of work, 9 base days plus 1.5 days per month worked after that.
+     * - No leave if current date is within the first 6 months of starting.
+     * - After 6 months of work, 9 base days plus 1.5 days per month worked after that.
      * - If the employee started more than 6 months before July 1st:
-     *     - Base 20 days from July 1st.
-     *     - Additional 9 days after 6 months from July 1st plus 1.5 days per month worked after that.
+     * - Base 20 days from July 1st.
+     * - Additional 9 days after 6 months from July 1st plus 1.5 days per month worked after that.
      * - Adds 1 extra leave day for every 5 years of experience.
      *
-     * @param user the employee whose leave days are being calculated
+     * @param user        the employee whose leave days are being calculated
      * @param currentDate the date on which the leave days calculation is based
      * @return the total leave days the employee is entitled to as of currentDate
      */
@@ -848,21 +848,18 @@ public class LeaveRequestService {
 
         if (currentDate.isAfter(leaveYearEnd)) {
             leaveDays = baseDays;
-        }
-        else if (startOfWork.getMonthValue() <= 6 &&
+        } else if (startOfWork.getMonthValue() <= 6 &&
                 startOfWork.isAfter(leaveYearStart.minusYears(1)) &&
                 startOfWork.isBefore(leaveYearEnd.plusDays(1))) {
             leaveDays = 18;
-        }
-        else if (startOfWork.getMonthValue() >= 7 && startOfWork.getYear() == leaveYear) {
+        } else if (startOfWork.getMonthValue() >= 7 && startOfWork.getYear() == leaveYear) {
             long monthsWorkedUntilJune = ChronoUnit.MONTHS.between(
                     startOfWork.withDayOfMonth(1),
                     leaveYearEnd.withDayOfMonth(1)
             ) + 1;
 
             leaveDays = monthsWorkedUntilJune * 1.5;
-        }
-        else {
+        } else {
             leaveDays = baseDays;
         }
 
@@ -886,10 +883,10 @@ public class LeaveRequestService {
      * - Total leave days used (sum of approved leave days calculated as business days)
      * - Total number of leave requests submitted
      *
-     * @param userId the ID of the user for whom stats are fetched
+     * @param userId    the ID of the user for whom stats are fetched
      * @param leaveType (optional) the type of leave to filter by; if null, includes all leave types
      * @return a map with keys: "available", "pending", "approved", "rejected", "total", "used", "totalAllowed"
-     *         or null if user not found
+     * or null if user not found
      */
 
     public Map<String, Object> getLeaveStatsByUserId(BigInteger userId, LeaveRequestTypeEnum leaveType) {
@@ -967,9 +964,9 @@ public class LeaveRequestService {
      * Counts the number of business days (Monday to Friday) between two dates inclusive.
      *
      * @param start the start date (inclusive)
-     * @param end the end date (inclusive)
+     * @param end   the end date (inclusive)
      * @return the count of business days between start and end, excluding Saturdays and Sundays
-     *         Returns 0 if either date is null or if start is after end.
+     * Returns 0 if either date is null or if start is after end.
      */
     public double countBusinessDays(LocalDate start, LocalDate end) {
         if (start == null || end == null || start.isAfter(end)) {
@@ -991,7 +988,7 @@ public class LeaveRequestService {
      * Sick leave entitlement is fixed at 20 days annually. If the user's start date is
      * after the current leave year refresh date (July 1st), they are granted the full 20 days.
      *
-     * @param user the user whose sick leave is being calculated
+     * @param user  the user whose sick leave is being calculated
      * @param today the current date for the calculation context
      * @return the number of sick leave days available
      */
@@ -1025,7 +1022,7 @@ public class LeaveRequestService {
      *
      * @param userId the ID of the user for whom the sick leave stats are fetched
      * @return a map containing counts of available, pending, approved, rejected, total, used, and total allowed sick leave days;
-     *         returns null if the user is not found
+     * returns null if the user is not found
      */
 
     public Map<String, Object> geSicktLeaveStatsByUserId(BigInteger userId) {
@@ -1103,26 +1100,26 @@ public class LeaveRequestService {
 
         return stats;
     }
+
     public long calculateEffectiveLeaveDays(LocalDate start, LocalDate end) {
         return bankHolidaysService.calculateEffectiveLeaveDays(start, end);
     }
-    public List<LeaveRequest> getLeaveRequestsForCurrentPeriod() {
+
+    public List<LeaveRequest> getLeaveRequestsForCurrentPeriod(Long userId) {
         LocalDate today = LocalDate.now();
         int currentYear = today.getYear();
         LocalDate calculatedStart;
         LocalDate calculatedEnd;
 
         if (today.getMonthValue() <= 6) {
-
             calculatedStart = LocalDate.of(currentYear - 1, 7, 1);
             calculatedEnd = LocalDate.of(currentYear, 6, 30);
         } else {
-
             calculatedStart = LocalDate.of(currentYear, 7, 1);
             calculatedEnd = LocalDate.of(currentYear + 1, 6, 30);
         }
 
-        return leaveRequestRepository.findLeavesInPeriod(calculatedStart, calculatedEnd);
+        return leaveRequestRepository
+                .findLeavesInPeriodByUser(userId, calculatedStart, calculatedEnd);
     }
-
 }

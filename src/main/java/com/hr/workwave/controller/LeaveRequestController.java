@@ -337,8 +337,11 @@ public class LeaveRequestController {
 
         return ResponseEntity.ok(stats);
     }
-    @GetMapping("/leaves")
-    public List<LeaveRequest> getLeaveRequestsForCurrentPeriod() {
-        return leaveRequestService.getLeaveRequestsForCurrentPeriod();
+    @GetMapping("/leaves/{userId}")
+    public List<LeaveRequest> getLeaveRequestsForCurrentPeriod(
+            @PathVariable Long userId) {
+
+        return leaveRequestService.getLeaveRequestsForCurrentPeriod(userId);
     }
+
 }
