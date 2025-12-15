@@ -140,5 +140,10 @@ public class UsersController {
         }
     }
 
+    @GetMapping("/users/managers/potential")
+    public ResponseEntity<List<PotentialManagerDTO>> getPotentialManagers(@RequestParam String excludeEmail) {
+        List<PotentialManagerDTO> managers = usersService.getPotentialManagers(excludeEmail);
+        return ResponseEntity.ok(managers);
+    }
 
 }

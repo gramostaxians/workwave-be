@@ -17,6 +17,7 @@ import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -221,5 +222,18 @@ public class UsersService {
     private String generateCalendarConnectUrl(String email) {
         return "https://example.com/connect-calendar?email=" + email;
     }
+    public List<PotentialManagerDTO> getPotentialManagers(String excludeEmail) {
+        List<User> users = usersRepository.findPotentialManagers(excludeEmail);
+        return users.stream()
+                .map(u -> new PotentialManagerDTO(
+                        u.getId().longValue(),
+                        u.getEmail(),
+                        u.getName(),
+                        u.getDepartment(),
+                        u.getRole().getRole()
+                ))
+                .collect(Collectors.toList());
+    }
+
 }
 

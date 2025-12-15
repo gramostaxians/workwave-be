@@ -32,4 +32,7 @@ public interface UsersRepository extends JpaRepository<User, BigInteger> {
     """, nativeQuery = true)
     Map<String, Object> findUserWithManagerByEmail(@Param("email") String email);
 
+    @Query("SELECT u FROM User u WHERE u.email != :excludeEmail ORDER BY u.name, u.email")
+    List<User> findPotentialManagers(@Param("excludeEmail") String excludeEmail);
 }
+
