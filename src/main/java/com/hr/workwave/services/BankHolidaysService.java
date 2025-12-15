@@ -71,7 +71,8 @@ public class BankHolidaysService {
                     boolean isHoliday = holidays.stream()
                             .anyMatch(h ->
                                     h.getDay() == date.getDayOfMonth() &&
-                                    (h.getMonth() + 1) == date.getMonthValue()
+                                    (h.getMonth() + 1) == date.getMonthValue() &&
+                                            h.getYear() == date.getYear()
                             );
                     return !isHoliday;
                 })
