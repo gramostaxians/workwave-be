@@ -337,4 +337,8 @@ public class LeaveRequestController {
 
         return ResponseEntity.ok(stats);
     }
+    @GetMapping("/leaves")
+    public List<LeaveRequest> getLeaveRequestsForCurrentPeriod() {
+        return leaveRequestService.getLeaveRequestsForCurrentPeriod();
+    }
 }

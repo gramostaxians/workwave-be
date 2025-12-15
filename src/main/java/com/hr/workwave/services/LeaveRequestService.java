@@ -1106,5 +1106,23 @@ public class LeaveRequestService {
     public long calculateEffectiveLeaveDays(LocalDate start, LocalDate end) {
         return bankHolidaysService.calculateEffectiveLeaveDays(start, end);
     }
+    public List<LeaveRequest> getLeaveRequestsForCurrentPeriod() {
+        LocalDate today = LocalDate.now();
+        int currentYear = today.getYear();
+        LocalDate calculatedStart;
+        LocalDate calculatedEnd;
+
+        if (today.getMonthValue() <= 6) {
+
+            calculatedStart = LocalDate.of(currentYear - 1, 7, 1);
+            calculatedEnd = LocalDate.of(currentYear, 6, 30);
+        } else {
+
+            calculatedStart = LocalDate.of(currentYear, 7, 1);
+            calculatedEnd = LocalDate.of(currentYear + 1, 6, 30);
+        }
+
+        return leaveRequestRepository.findLeavesInPeriod(calculatedStart, calculatedEnd);
+    }
 
 }
