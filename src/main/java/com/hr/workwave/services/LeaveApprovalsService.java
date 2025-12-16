@@ -208,38 +208,38 @@ public class LeaveApprovalsService {
             }
             List<UserManagers> managerLinks = userManagerRepository.findByUserId(leaveRequest.getUser().getId());
 
-            for (UserManagers link : managerLinks) {
-                BigInteger managerId = link.getManagerId();
-                User manager = usersRepository.findById(managerId)
-                        .orElseThrow(() -> new RuntimeException("Manager not found: " + managerId));
-
-                if (manager.getEmail() != null) {
-                    String htmlMessageManager = "<html>" +
-                            "<body style=\"font-family: Arial, sans-serif;\">" +
-                            "<div style=\"background-color: #c9daeb; padding: 20px;\">" +
-                            "<p style=\"font-size: 16px;\">Dear " + manager.getName() + ",</p>" +
-                            "<p style=\"font-size: 16px;\">A leave request has been <strong>APPROVED</strong> for " + leaveRequest.getUser().getName() + ".</p>" +
-                            "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
-                            "<p><strong>Leave Type:</strong> " + leaveRequest.getLeave_type() + "</p>" +
-                            "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date().format(formatter) + "</p>" +
-                            "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date().format(formatter) + "</p>" +
-                            "<p><strong>Reason:</strong> " + leaveRequest.getReason() + "</p>" +
-                            "<p><strong>Status:</strong> " + leaveRequest.getStatus() + "</p>" +
-                            "</div>" +
-                            "<p style=\"font-size: 16px; margin-top: 20px;\">Follow the link to the App:</p>" +
-                            "<a href=\"https://s-1564-workwave\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\">https://s-1564-workwave</a>" +
-                            "<p style=\"font-size: 16px; margin-top: 20px;\">Thank you.</p>" +
-                            "</div>" +
-                            "</body>" +
-                            "</html>";
-
-                    emailService.sendEmail(
-                            manager.getEmail(),
-                            "Leave Request Approved for " + leaveRequest.getUser().getName(),
-                            htmlMessageManager
-                    );
-                }
-            }
+//            for (UserManagers link : managerLinks) {
+//                BigInteger managerId = link.getManagerId();
+//                User manager = usersRepository.findById(managerId)
+//                        .orElseThrow(() -> new RuntimeException("Manager not found: " + managerId));
+//
+//                if (manager.getEmail() != null) {
+//                    String htmlMessageManager = "<html>" +
+//                            "<body style=\"font-family: Arial, sans-serif;\">" +
+//                            "<div style=\"background-color: #c9daeb; padding: 20px;\">" +
+//                            "<p style=\"font-size: 16px;\">Dear " + manager.getName() + ",</p>" +
+//                            "<p style=\"font-size: 16px;\">A leave request has been <strong>APPROVED</strong> for " + leaveRequest.getUser().getName() + ".</p>" +
+//                            "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
+//                            "<p><strong>Leave Type:</strong> " + leaveRequest.getLeave_type() + "</p>" +
+//                            "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date().format(formatter) + "</p>" +
+//                            "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date().format(formatter) + "</p>" +
+//                            "<p><strong>Reason:</strong> " + leaveRequest.getReason() + "</p>" +
+//                            "<p><strong>Status:</strong> " + leaveRequest.getStatus() + "</p>" +
+//                            "</div>" +
+//                            "<p style=\"font-size: 16px; margin-top: 20px;\">Follow the link to the App:</p>" +
+//                            "<a href=\"https://s-1564-workwave\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\">https://s-1564-workwave</a>" +
+//                            "<p style=\"font-size: 16px; margin-top: 20px;\">Thank you.</p>" +
+//                            "</div>" +
+//                            "</body>" +
+//                            "</html>";
+//
+//                    emailService.sendEmail(
+//                            manager.getEmail(),
+//                            "Leave Request Approved for " + leaveRequest.getUser().getName(),
+//                            htmlMessageManager
+//                    );
+//                }
+//            }
 
         }
     }
