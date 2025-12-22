@@ -21,18 +21,31 @@ public interface UsersRepository extends JpaRepository<User, BigInteger> {
 
     @Query("SELECT u.project.projectName FROM User u WHERE u.id = :userId")
     String findProjectNameByUserId(@Param("userId") BigInteger userId);
+
     @Query(value = """
-    SELECT u.*,
+
+            SELECT u.*,
            m.name AS manager_name,
            m.email AS manager_email,
            m.department AS manager_department
-    FROM users u
-    LEFT JOIN users m ON u.manager_email = m.email
-    WHERE u.email = :email
+            FROM users u
+            LEFT JOIN users m ON u.manager_email = m.email
+            WHERE u.email = :email
     """, nativeQuery = true)
     Map<String, Object> findUserWithManagerByEmail(@Param("email") String email);
 
-    @Query("SELECT u FROM User u WHERE u.email != :excludeEmail ORDER BY u.name, u.email")
-    List<User> findPotentialManagers(@Param("excludeEmail") String excludeEmail);
-}
 
+    @Query("""
+            
+    SELECT u
+    FROM User u
+    WHERE u.email <> :excludeEmail
+      AND u.role IN (
+          com.hr.workwave.enums.UserRolesEnum.ADMIN,
+          com.hr.workwave.enums.UserRolesEnum.MANAGER
+      )
+    ORDER BY u.name, u.email
+""")
+    List<User> findPotentialManagers(@Param("excludeEmail") String excludeEmail);
+
+}
