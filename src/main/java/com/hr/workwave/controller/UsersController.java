@@ -31,9 +31,9 @@ public class UsersController {
      * This can be achieved by uncommenting and configuring the @PreAuthorize annotation.
      **/
 
-    //@PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('MANAGER', 'ADMIN')")
     @GetMapping("/users")
-    public List<User> getAllUser() {
+    public List<User> getUsers() {
         return usersService.getAllUsers();
     }
 

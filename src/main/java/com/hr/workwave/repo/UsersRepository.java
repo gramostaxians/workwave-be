@@ -2,6 +2,7 @@ package com.hr.workwave.repo;
 
 import com.hr.workwave.enums.UserRolesEnum;
 import com.hr.workwave.model.User;
+import com.hr.workwave.model.UserManagers;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -48,4 +49,5 @@ public interface UsersRepository extends JpaRepository<User, BigInteger> {
 """)
     List<User> findPotentialManagers(@Param("excludeEmail") String excludeEmail);
 
+    User findById(Long id);
 }

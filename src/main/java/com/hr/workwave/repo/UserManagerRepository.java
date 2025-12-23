@@ -20,4 +20,5 @@ public interface UserManagerRepository extends JpaRepository<UserManagers, BigIn
     void insertIgnoreConflict(@Param("userId") BigInteger userId,
                               @Param("managerId") BigInteger managerId);
 
+    List<UserManagers> findByManagerId(BigInteger managerId);
 }

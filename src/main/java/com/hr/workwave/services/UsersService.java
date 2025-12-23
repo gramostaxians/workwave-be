@@ -11,6 +11,8 @@ import com.hr.workwave.repo.UsersRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
@@ -37,7 +39,31 @@ public class UsersService {
      */
 
     public List<User> getAllUsers() {
-        return usersRepository.findAll();
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+
+        User loggedUser = usersRepository.findByEmail(email);
+        if (loggedUser == null) {
+            throw new RuntimeException("User not found");
+        }
+
+
+        if ("ADMIN".equalsIgnoreCase(loggedUser.getRole().getRole())) {
+            return usersRepository.findAll();
+        }
+
+
+        if ("MANAGER".equalsIgnoreCase(loggedUser.getRole().getRole())) {
+            List<UserManagers> links = userManagerRepository.findByManagerId(loggedUser.getId());
+            return links.stream()
+                    .map(link -> usersRepository.findById(link.getUserId()).orElse(null))
+                    .filter(Objects::nonNull)
+                    .toList();
+        }
+
+
+        return new ArrayList<>();
     }
 
     /**
