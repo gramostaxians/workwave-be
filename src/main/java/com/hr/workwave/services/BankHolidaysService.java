@@ -22,8 +22,7 @@ public class BankHolidaysService {
     private final BankHolidaysRepository bankHolidayRepository;
 
     public List<BankHolidays> getAllHolidays() {
-
-        return bankHolidayRepository.findAll();
+        return bankHolidayRepository.findAllLatestFirst();
     }
 
     public BankHolidays createHoliday(BankHolidays holiday) {
@@ -67,13 +66,16 @@ public class BankHolidaysService {
                     if (date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY) {
                         return false;
                     }
-
                     boolean isHoliday = holidays.stream()
                             .anyMatch(h ->
                                     h.getDay() == date.getDayOfMonth() &&
-                                    (h.getMonth() + 1) == date.getMonthValue() &&
+                                            (h.getMonth() + 1) == date.getMonthValue() &&
                                             h.getYear() == date.getYear()
                             );
+
+
+
+
                     return !isHoliday;
                 })
                 .count();
