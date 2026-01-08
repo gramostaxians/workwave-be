@@ -22,6 +22,8 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.hr.workwave.enums.LeaveRequestStatusEnum.APPROVED;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -397,6 +399,23 @@ public class LeaveRequestService {
 
                 autoApprove = true;
                 break;
+
+            case SICK_LEAVE:
+                leaveRequest.setStatus(APPROVED);
+                leaveRequestRepository.save(leaveRequest);
+
+                List<UserManagers> sickLeaveManagers =
+                        userManagerRepository.findByUserId(user.getId());
+
+                for (UserManagers link : sickLeaveManagers) {
+                    User manager = usersRepository.findById(link.getManagerId())
+                            .orElseThrow(() ->
+                                    new RuntimeException("Manager not found: " + link.getManagerId()));
+                    managersToNotify.add(manager);
+                }
+
+                autoApprove = true;
+               break;
 
             case HOME_OFFICE:
                 leaveRequest.setStatus(LeaveRequestStatusEnum.APPROVED);
