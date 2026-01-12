@@ -17,7 +17,6 @@ public class ProjectController {
 
     private final ProjectService projectService;
 
-    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/project")
     public List<Project> getAllProjects() {
         return projectService.getAllProject();

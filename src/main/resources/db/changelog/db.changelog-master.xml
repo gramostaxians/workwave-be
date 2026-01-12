@@ -16,5 +16,5 @@ http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
     <include file="011-add-user-id-to-work-logs.xml" relativeToChangelogFile="true"/>
     <include file="012-add-resource-no-to-users.xml" relativeToChangelogFile="true"/>
     <include file="013-remove-resource-no-from-work-logs.xml" relativeToChangelogFile="true"/>
-
+    <include file="014-insert-resource-no-into-users_table.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
