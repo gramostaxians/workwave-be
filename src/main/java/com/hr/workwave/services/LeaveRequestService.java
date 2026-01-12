@@ -452,6 +452,7 @@ public class LeaveRequestService {
                         "<p><strong>Leave Type:</strong> " + leaveRequest.getLeave_type() + "</p>" +
                         "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date().format(formatter) + "</p>" +
                         "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date().format(formatter) + "</p>" +
+                        "<p><strong>Reason:</strong> " + leaveRequest.getReason() + "</p>" +
                         "<p><strong>Status:</strong> " + leaveRequest.getStatus() + "</p>" +
                         "</div>" +
                         "<p style=\"font-size: 16px; margin-top: 20px;\">Please log in to the system to review and respond to the request at your earliest convenience.</p>" +
