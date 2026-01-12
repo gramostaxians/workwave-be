@@ -285,18 +285,33 @@ public class LeaveRequestService {
      */
 
     public LeaveRequestDTO createLeaveRequest(LeaveRequestDTO dto) {
+        LocalDate today = LocalDate.now();
+        LocalDate startDate = dto.getStartDate();
+        LocalDate endDate = dto.getEndDate();
+
+
         User user = usersRepository.findById(BigInteger.valueOf(dto.getUserId()))
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
 
         boolean isAdmin = user.getRole() == UserRolesEnum.ADMIN;
         boolean isCreator = user.getEmail().equalsIgnoreCase(dto.getEmployeeEmail());
 
+
+        if (!isAdmin && (startDate.isBefore(today) || endDate.isBefore(today))) {
+            throw new IllegalArgumentException("Start date and end date cannot be before today");
+        }
+
+        if (startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException("Start date cannot be after end date");
+        }
 
         if (!isAdmin && !isCreator) {
             throw new IllegalArgumentException(
                     "Only an admin or the user who created the request can submit it."
             );
         }
+
         Long userIdLong = user.getId().longValue();
         List<LeaveRequest> userLeaves = leaveRequestRepository.findByUserId(user.getId());
 

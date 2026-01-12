@@ -197,34 +197,14 @@ public class LeaveRequestController {
 
     @PostMapping("/create/leave-request")
     public ResponseEntity<LeaveRequestDTO> createLeaveRequest(@RequestBody LeaveRequestDTO dto) {
-
-        LocalDate today = LocalDate.now();
-        LocalDate startDate = dto.getStartDate();
-        LocalDate endDate = dto.getEndDate();
-
-        var areDatesValid = true;
-        var invalidDatesMessage = "";
-
-        if (startDate.isBefore(today) || endDate.isBefore(today)) {
-            areDatesValid = false;
-            invalidDatesMessage = "Start date and end date cannot be before today";
-        }
-
-        if (startDate.isAfter(endDate)) {
-            areDatesValid = false;
-            invalidDatesMessage = "Start date cannot be after end date";
-        }
-
-        if(!areDatesValid) {
-            var leaveRequest = new LeaveRequestDTO();
-            leaveRequest.setReason(invalidDatesMessage);
-
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST).body(leaveRequest);
-
-        }
+        try {
             LeaveRequestDTO createdRequest = leaveRequestService.createLeaveRequest(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdRequest);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdRequest);
+        } catch (IllegalArgumentException ex) {
+            LeaveRequestDTO errorDto = new LeaveRequestDTO();
+            errorDto.setReason(ex.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDto);
+        }
     }
 
     /**
