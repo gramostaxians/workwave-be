@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="017-update-project-data-project-table" author="Gramos">
+
+        <loadUpdateData
+                commentLineStartsWith="//"
+                encoding="UTF-8"
+                file="../../csv/project_quarter_no.csv"
+                relativeToChangelogFile="true"
+                tableName="project"
+                primaryKey="id">
+            <column header="id"
+                    name="id" />
+            <column header="project_name"
+                    name="project_name" />
+            <column header="q1"
+                    name="quarter_1"/>
+            <column header="q2"
+                    name="quarter_2"/>
+            <column header="q3"
+                    name="quarter_3"/>
+            <column header="q4"
+                    name="quarter_4"/>
+        </loadUpdateData>
+
+    </changeSet>
+
+</databaseChangeLog>
