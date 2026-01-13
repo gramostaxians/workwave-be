@@ -1,5 +1,6 @@
 package com.hr.workwave.controller;
 
+import com.hr.workwave.dto.projection.ProjectWorkLogDTO;
 import com.hr.workwave.model.User;
 import com.hr.workwave.model.WorkLog;
 import com.hr.workwave.repo.UsersRepository;
@@ -98,6 +99,11 @@ public class WorkLogController {
     public ResponseEntity deleteWorkLog(@RequestBody List<Long> workLogIds, @AuthenticationPrincipal Jwt jwt) {
         workLogService.bulkDeleteWorkLogs(workLogIds);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/billable-hours")
+    public List<ProjectWorkLogDTO> getBillableHoursReport() {
+        return workLogService.getCurrentQuarterReport();
     }
 
 }

@@ -1,5 +1,6 @@
 package com.hr.workwave.services;
 
+import com.hr.workwave.dto.projection.ProjectWorkLogDTO;
 import com.hr.workwave.model.User;
 import com.hr.workwave.model.WorkLog;
 import com.hr.workwave.repo.UsersRepository;
@@ -8,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -65,5 +67,12 @@ public class WorkLogService {
     }
     public void bulkDeleteWorkLogs(List<Long> workLogIds){
         workLogRepository.bulkDeleteByIds(workLogIds);
+    }
+
+    public List<ProjectWorkLogDTO> getCurrentQuarterReport() {
+        LocalDate now = LocalDate.now();
+        int currentMonth = now.getMonthValue();
+        int currentYear = now.getYear();
+        return workLogRepository.findCurrentQuarterWorkLogs(currentMonth, currentYear);
     }
 }

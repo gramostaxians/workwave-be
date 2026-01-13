@@ -261,5 +261,15 @@ public class UsersService {
                 .collect(Collectors.toList());
     }
 
+    public List<UserRequestDTO> getManagers(){
+        return usersRepository.getManagers();
+    }
+
+    public User getUserById(BigInteger userId) {
+        Optional<User> user = usersRepository.findById(userId);
+        return user.orElseGet(User::new);
+
+    }
+
 }
 

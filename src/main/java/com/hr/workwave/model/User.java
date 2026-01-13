@@ -1,5 +1,6 @@
 package com.hr.workwave.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.hr.workwave.enums.UserRolesEnum;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
