@@ -40,4 +40,11 @@ public class ProjectController {
             throw new RuntimeException(e.getMessage());
         }
     }
+
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER')")
+    @DeleteMapping("/delete/{projectId}")
+    public ResponseEntity<?> deleteProject(@PathVariable BigInteger projectId) {
+        projectService.deleteProject(projectId);
+        return ResponseEntity.ok().build();
+    }
 }

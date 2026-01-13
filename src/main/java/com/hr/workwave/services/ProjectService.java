@@ -41,4 +41,8 @@ public class ProjectService {
         existingProject.setQuarter4(updatedProject.getQuarter4());
         return projectRepository.save(existingProject);
     }
+
+    public void deleteProject(BigInteger projectId) {
+        projectRepository.deleteById(projectId);
+    }
 }
