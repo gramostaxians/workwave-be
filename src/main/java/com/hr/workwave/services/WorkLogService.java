@@ -36,22 +36,23 @@ public class WorkLogService {
     }
 
     public WorkLog updateWorkLog(Long id, WorkLog updatedWorkLog, BigInteger userId) {
-        return workLogRepository.findById(id)
-                .map(workLog -> {
-                    // Verify the work log belongs to the user
-                    if (!workLog.getUser().getId().equals(userId)) {
-                        throw new RuntimeException("Work log does not belong to user");
-                    }
-                    workLog.setDate(updatedWorkLog.getDate());
-                    workLog.setProjectName(updatedWorkLog.getProjectName());
-                    workLog.setStartTime(updatedWorkLog.getStartTime());
-                    workLog.setEndTime(updatedWorkLog.getEndTime());
-                    workLog.setHoursTotal(updatedWorkLog.getHoursTotal());
-                    workLog.setHourType(updatedWorkLog.getHourType());
-                    workLog.setDescription(updatedWorkLog.getDescription());
-                    return workLogRepository.save(workLog);
-                })
-                .orElseThrow(() -> new RuntimeException("WorkLog not found with id " + id));
+
+        Optional<WorkLog> currentWorkLog =  workLogRepository.findById(id);
+        if(currentWorkLog.isPresent()) {
+            WorkLog workLog = currentWorkLog.get();
+            workLog.setDate(updatedWorkLog.getDate());
+            workLog.setStartTime(updatedWorkLog.getStartTime());
+            workLog.setEndTime(updatedWorkLog.getEndTime());
+            workLog.setHoursTotal(updatedWorkLog.getHoursTotal());
+            workLog.setHourType(updatedWorkLog.getHourType());
+            workLog.setDescription(updatedWorkLog.getDescription());
+            workLog.setProject(updatedWorkLog.getProject());
+            return workLogRepository.save(workLog);
+        }
+        else{
+            return new WorkLog();
+        }
+
     }
 
     public void deleteWorkLog(Long id, BigInteger userId) {

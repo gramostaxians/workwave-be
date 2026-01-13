@@ -34,7 +34,7 @@ public interface WorkLogRepository extends JpaRepository<WorkLog, Long> {
             SUM(CASE WHEN wl.hour_type = 'billable' THEN wl.hours_total ELSE 0 END) AS billableHours
         FROM work_logs wl
         JOIN users u ON wl.user_id = u.id
-        JOIN project p ON wl.project_name = p.project_name
+        JOIN project p ON wl.project_id = p.id
         WHERE EXTRACT(MONTH FROM wl.date) = :month
         AND EXTRACT(YEAR FROM wl.date) = :year
         GROUP BY u.resource_no, quarterValue, p.id
