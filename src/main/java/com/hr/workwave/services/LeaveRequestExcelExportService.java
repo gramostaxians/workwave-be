@@ -215,7 +215,6 @@ public class LeaveRequestExcelExportService {
         Font boldFont = workbook.createFont();
         boldFont.setBold(true);
 
-
         CellStyle dateStyle = workbook.createCellStyle();
         dateStyle.setFont(boldFont);
         dateStyle.setAlignment(HorizontalAlignment.CENTER);
