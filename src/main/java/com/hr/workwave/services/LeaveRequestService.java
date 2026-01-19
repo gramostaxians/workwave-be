@@ -445,15 +445,28 @@ public class LeaveRequestService {
                     managersToNotify.add(manager);
                 }
         }
-
         for (User manager : managersToNotify) {
             LeaveApprovals approval = new LeaveApprovals();
             approval.setLeaveRequest(savedRequest);
             approval.setManager(manager);
-            approval.setApprovedStatus(autoApprove ? LeaveRequestStatusEnum.APPROVED : LeaveRequestStatusEnum.PENDING);
+            approval.setApprovedStatus(
+                    autoApprove ? LeaveRequestStatusEnum.APPROVED : LeaveRequestStatusEnum.PENDING
+            );
             leaveApprovalsRepository.save(approval);
 
             String htmlMessage;
+
+            String leaveTypeFormatted = Arrays.stream(leaveRequest.getLeave_type().name().split("_"))
+                    .map(w -> w.substring(0,1).toUpperCase() + w.substring(1).toLowerCase())
+                    .collect(Collectors.joining(" "));
+
+
+            leaveTypeFormatted = Character.toUpperCase(leaveTypeFormatted.charAt(0))
+                    + leaveTypeFormatted.substring(1);
+
+            leaveTypeFormatted =
+                    Character.toUpperCase(leaveTypeFormatted.charAt(0))
+                            + leaveTypeFormatted.substring(1);
 
             if (autoApprove) {
                 htmlMessage = "<html>" +
@@ -461,10 +474,10 @@ public class LeaveRequestService {
                         "<div style=\"background-color: #c9daeb; padding: 20px;\">" +
                         "<h2 style=\"color: #333;\">Leave Request Approved</h2>" +
                         "<p style=\"font-size: 16px;\">Dear " + manager.getName() + ",</p>" +
-                        "<p style=\"font-size: 16px;\">A new " + leaveRequest.getLeave_type() +
+                        "<p style=\"font-size: 16px;\">A new " + leaveTypeFormatted +
                         " request for <strong>" + user.getName() + "</strong> has been automatically approved.</p>" +
                         "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
-                        "<p><strong>Leave Type:</strong> " + leaveRequest.getLeave_type() + "</p>" +
+                        "<p><strong>Leave Type:</strong> " + leaveTypeFormatted + "</p>" +
                         "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date().format(formatter) + "</p>" +
                         "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date().format(formatter) + "</p>" +
                         "<p><strong>Reason:</strong> " + leaveRequest.getReason() + "</p>" +

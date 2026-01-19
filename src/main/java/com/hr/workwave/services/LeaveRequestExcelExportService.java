@@ -1,5 +1,6 @@
 package com.hr.workwave.services;
 
+import com.hr.workwave.enums.LeaveRequestTypeEnum;
 import com.hr.workwave.model.LeaveRequest;
 import com.hr.workwave.model.User;
 import com.hr.workwave.repo.LeaveRequestRepository;
@@ -15,6 +16,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class LeaveRequestExcelExportService {
@@ -52,7 +55,7 @@ public class LeaveRequestExcelExportService {
             String Name = user.getName();
             LocalDate start_Date = user.getStart_Of_Work();
 
-            // Styles
+
             Font boldFont = workbook.createFont();
             boldFont.setBold(true);
 
@@ -74,7 +77,7 @@ public class LeaveRequestExcelExportService {
             boldCenterStyle.setFont(boldFont);
             boldCenterStyle.setAlignment(HorizontalAlignment.CENTER);
 
-            // Header data
+
             Row nameRow = sheet.createRow(1);
             Cell nameCell = nameRow.createCell(0);
             nameCell.setCellValue(Name);
@@ -113,7 +116,7 @@ public class LeaveRequestExcelExportService {
             historyTitleCell.setCellStyle(boldCenterStyle);
             sheet.addMergedRegion(new CellRangeAddress(5, 5, 0, 5));
 
-            // Table headers
+
             CellStyle headerStyle = workbook.createCellStyle();
             Font headerFont = workbook.createFont();
             headerFont.setBold(true);
@@ -134,7 +137,7 @@ public class LeaveRequestExcelExportService {
                 cell.setCellStyle(headerStyle);
             }
 
-            // Data rows
+
             CellStyle cellStyle = workbook.createCellStyle();
             cellStyle.setBorderBottom(BorderStyle.THIN);
             cellStyle.setBorderTop(BorderStyle.THIN);
@@ -183,7 +186,7 @@ public class LeaveRequestExcelExportService {
                 c5.setCellStyle(cellStyle);
             }
 
-            // Autosize columns
+
             for (int i = 0; i <= 5; i++) {
                 sheet.autoSizeColumn(i);
             }
@@ -193,4 +196,152 @@ public class LeaveRequestExcelExportService {
             return new ByteArrayInputStream(out.toByteArray());
         }
     }
+    public ByteArrayInputStream exportSickLeaveReport(
+            LocalDate startDate,
+            LocalDate endDate
+    ) throws IOException {
+
+        List<LeaveRequest> sickLeaves =
+                leaveRequestRepository.findSickLeavesBetween(
+                        com.hr.workwave.enums.LeaveRequestTypeEnum.SICK_LEAVE,
+                        startDate,
+                        endDate
+                );
+
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Sick Leave Report");
+
+
+        Font boldFont = workbook.createFont();
+        boldFont.setBold(true);
+
+
+        CellStyle dateStyle = workbook.createCellStyle();
+        dateStyle.setFont(boldFont);
+        dateStyle.setAlignment(HorizontalAlignment.CENTER);
+        dateStyle.setFillForegroundColor(IndexedColors.LIGHT_GREEN.getIndex());
+        dateStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        dateStyle.setBorderBottom(BorderStyle.THIN);
+        dateStyle.setBorderTop(BorderStyle.THIN);
+        dateStyle.setBorderLeft(BorderStyle.THIN);
+        dateStyle.setBorderRight(BorderStyle.THIN);
+
+        CellStyle titleStyle = workbook.createCellStyle();
+        titleStyle.setFont(boldFont);
+        titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+        CellStyle headerStyle = workbook.createCellStyle();
+        headerStyle.setFont(boldFont);
+        headerStyle.setAlignment(HorizontalAlignment.CENTER);
+        headerStyle.setBorderBottom(BorderStyle.THIN);
+        headerStyle.setBorderTop(BorderStyle.THIN);
+        headerStyle.setBorderLeft(BorderStyle.THIN);
+        headerStyle.setBorderRight(BorderStyle.THIN);
+
+        CellStyle rowStyle = workbook.createCellStyle();
+        rowStyle.setBorderBottom(BorderStyle.THIN);
+        rowStyle.setBorderTop(BorderStyle.THIN);
+        rowStyle.setBorderLeft(BorderStyle.THIN);
+        rowStyle.setBorderRight(BorderStyle.THIN);
+
+        CellStyle totalStyle = workbook.createCellStyle();
+        totalStyle.setFont(boldFont);
+        totalStyle.setAlignment(HorizontalAlignment.CENTER);
+        totalStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+        totalStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        totalStyle.setBorderBottom(BorderStyle.THIN);
+        totalStyle.setBorderTop(BorderStyle.THIN);
+        totalStyle.setBorderLeft(BorderStyle.THIN);
+        totalStyle.setBorderRight(BorderStyle.THIN);
+
+        int rowIdx = 0;
+
+        Row startRow = sheet.createRow(rowIdx++);
+        Cell startCell = startRow.createCell(0);
+        startCell.setCellValue(startDate.format(java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy")));
+        startCell.setCellStyle(dateStyle);
+
+        Row endRow = sheet.createRow(rowIdx++);
+        Cell endCell = endRow.createCell(0);
+        endCell.setCellValue(endDate.format(java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy")));
+        endCell.setCellStyle(dateStyle);
+
+        rowIdx++;
+
+
+        Row titleRow = sheet.createRow(rowIdx++);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue("Sick Leave Days");
+        titleCell.setCellStyle(titleStyle);
+
+
+        Row headerRow = sheet.createRow(rowIdx++);
+
+        Cell h1 = headerRow.createCell(0);
+        h1.setCellValue("Employee");
+        h1.setCellStyle(totalStyle);
+
+        Cell h2 = headerRow.createCell(1);
+        h2.setCellValue("No. of days");
+        h2.setCellStyle(totalStyle);
+
+
+
+        Map<User, List<LeaveRequest>> groupedByUser =
+                sickLeaves.stream()
+                        .collect(Collectors.groupingBy(LeaveRequest::getUser));
+
+        long overallTotal = 0;
+
+        for (User user : groupedByUser.keySet()) {
+
+            long userTotalDays = 0;
+
+            for (LeaveRequest lr : groupedByUser.get(user)) {
+
+                LocalDate effectiveStart =
+                        lr.getStart_date().isBefore(startDate) ? startDate : lr.getStart_date();
+
+                LocalDate effectiveEnd =
+                        lr.getEnd_date().isAfter(endDate) ? endDate : lr.getEnd_date();
+
+                userTotalDays +=
+                        leaveRequestService.calculateEffectiveLeaveDays(
+                                effectiveStart,
+                                effectiveEnd
+                        );
+            }
+
+            Row row = sheet.createRow(rowIdx++);
+            Cell c0 = row.createCell(0);
+            c0.setCellValue(user.getName());
+            c0.setCellStyle(rowStyle);
+
+            Cell c1 = row.createCell(1);
+            c1.setCellValue(userTotalDays);
+            c1.setCellStyle(rowStyle);
+
+            overallTotal += userTotalDays;
+        }
+
+
+        Row totalRow = sheet.createRow(rowIdx);
+        Cell t0 = totalRow.createCell(0);
+        t0.setCellValue("TOTAL");
+        t0.setCellStyle(totalStyle);
+
+        Cell t1 = totalRow.createCell(1);
+        t1.setCellValue(overallTotal);
+        t1.setCellStyle(totalStyle);
+
+        sheet.autoSizeColumn(0);
+        sheet.autoSizeColumn(1);
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        workbook.write(out);
+        workbook.close();
+
+        return new ByteArrayInputStream(out.toByteArray());
+    }
+
 }

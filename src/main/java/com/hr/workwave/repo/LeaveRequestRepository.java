@@ -99,7 +99,17 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
             @Param("start") LocalDate start,
             @Param("end") LocalDate end
     );
-}
 
-
-
+        @Query("""
+           SELECT lr
+           FROM LeaveRequest lr
+           WHERE lr.leave_type = :leaveType
+             AND lr.start_date <= :endDate
+             AND lr.end_date >= :startDate
+           """)
+        List<LeaveRequest> findSickLeavesBetween(
+                @Param("leaveType") LeaveRequestTypeEnum leaveType,
+                @Param("startDate") LocalDate startDate,
+                @Param("endDate") LocalDate endDate
+        );
+    }

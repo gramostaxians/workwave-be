@@ -5,12 +5,14 @@ import com.hr.workwave.services.LeaveRequestExcelExportService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.time.LocalDate;
 
 @RestController
 @RequiredArgsConstructor
@@ -43,4 +45,28 @@ public class LeaveRequestExportController {
             HttpServletResponse response) throws IOException {
         exportExcelAllUsers.export(month, year, response);
     }
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping("/sick-leave")
+    public void exportSickLeaveReport(
+            @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam("endDate")   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            HttpServletResponse response
+    ) throws IOException {
+
+        ByteArrayInputStream excel = leaveRequestExcelExportService.exportSickLeaveReport(startDate, endDate);
+
+        response.setContentType(
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        );
+
+        response.setHeader(
+                "Content-Disposition",
+                "attachment; filename=SickLeaveReport_" + startDate + "_" + endDate + ".xlsx"
+        );
+
+
+        org.apache.commons.io.IOUtils.copy(excel, response.getOutputStream());
+    }
+
+
 }
