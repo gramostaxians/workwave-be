@@ -1,5 +1,7 @@
 package com.hr.workwave.controller;
 
+import com.hr.workwave.WebConfig.SecurityHelper;
+import com.hr.workwave.dto.projection.ProjectWorkLogDTO;
 import com.hr.workwave.model.User;
 import com.hr.workwave.model.WorkLog;
 import com.hr.workwave.repo.UsersRepository;
@@ -12,6 +14,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/work-logs")
@@ -20,15 +23,13 @@ public class WorkLogController {
 
     private final WorkLogService workLogService;
     private final UsersRepository usersRepository;
+    private final SecurityHelper securityHelper;
 
     @GetMapping
-    public ResponseEntity<List<WorkLog>> getWorkLogs(@AuthenticationPrincipal Jwt jwt) {
-        if (jwt == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        String email = jwt.getClaimAsString("upn");
+    public ResponseEntity<List<WorkLog>> getWorkLogs() {
 
-        User currentUser = usersRepository.findByEmail(email);
+        User currentUser = usersRepository.findByEmail(securityHelper.getCurrentUserId());
+
         if (currentUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -38,13 +39,9 @@ public class WorkLogController {
     }
 
     @PostMapping
-    public ResponseEntity<WorkLog> createWorkLog(@RequestBody WorkLog workLog, @AuthenticationPrincipal Jwt jwt) {
-        if (jwt == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        String email = jwt.getClaimAsString("upn");
+    public ResponseEntity<WorkLog> createWorkLog(@RequestBody WorkLog workLog) {
 
-        User currentUser = usersRepository.findByEmail(email);
+        User currentUser = usersRepository.findByEmail(securityHelper.getCurrentUserId());
         if (currentUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -54,34 +51,20 @@ public class WorkLogController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<WorkLog> updateWorkLog(@PathVariable Long id, @RequestBody WorkLog workLog,
-            @AuthenticationPrincipal Jwt jwt) {
-        if (jwt == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        String email = jwt.getClaimAsString("upn");
+    public ResponseEntity<WorkLog> updateWorkLog(@PathVariable Long id, @RequestBody WorkLog workLog) {
 
-        User currentUser = usersRepository.findByEmail(email);
+        User currentUser = usersRepository.findByEmail(securityHelper.getCurrentUserId());
         if (currentUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-
-        try {
-            WorkLog updatedWorkLog = workLogService.updateWorkLog(id, workLog, currentUser.getId());
-            return ResponseEntity.ok(updatedWorkLog);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+        WorkLog optionalUpdatedWorkLog = workLogService.updateWorkLog(id, workLog, currentUser.getId());
+        return ResponseEntity.ok(optionalUpdatedWorkLog);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteWorkLog(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {
-        if (jwt == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        String email = jwt.getClaimAsString("upn");
 
-        User currentUser = usersRepository.findByEmail(email);
+        User currentUser = usersRepository.findByEmail(securityHelper.getCurrentUserId());
         if (currentUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -98,6 +81,11 @@ public class WorkLogController {
     public ResponseEntity deleteWorkLog(@RequestBody List<Long> workLogIds, @AuthenticationPrincipal Jwt jwt) {
         workLogService.bulkDeleteWorkLogs(workLogIds);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/billable-hours")
+    public List<ProjectWorkLogDTO> getBillableHoursReport() {
+        return workLogService.getCurrentQuarterReport();
     }
 
 }

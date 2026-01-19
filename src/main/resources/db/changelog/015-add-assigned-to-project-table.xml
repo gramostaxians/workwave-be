@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="015-add-assigned-to-project-table" author="Gramos">
+
+        <addColumn tableName="project">
+            <column name="assigned_to" type="BIGINT">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+
+        <addForeignKeyConstraint
+                baseTableName="project"
+                baseColumnNames="assigned_to"
+                referencedTableName="users"
+                referencedColumnNames="id"
+                constraintName="fk_project_assigned_to_user"
+                onDelete="SET NULL"/>
+
+    </changeSet>
+
+</databaseChangeLog>

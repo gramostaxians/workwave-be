@@ -23,9 +23,6 @@ public class WorkLog {
     @Column(nullable = false)
     private LocalDate date;
 
-    @Column(name = "project_name", nullable = false)
-    private String projectName;
-
     @Column(name = "start_time", nullable = false)
     private LocalTime startTime;
 
@@ -44,4 +41,8 @@ public class WorkLog {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "project_id", nullable = false)
+    private Project project;
 }

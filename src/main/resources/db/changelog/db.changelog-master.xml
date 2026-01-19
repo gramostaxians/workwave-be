@@ -17,4 +17,8 @@ http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
     <include file="012-add-resource-no-to-users.xml" relativeToChangelogFile="true"/>
     <include file="013-remove-resource-no-from-work-logs.xml" relativeToChangelogFile="true"/>
     <include file="014-insert-resource-no-into-users_table.xml" relativeToChangelogFile="true"/>
+    <include file="015-add-assigned-to-project-table.xml" relativeToChangelogFile="true" />
+    <include file="016-add-project-id-column-work-log-table.xml" relativeToChangelogFile="true"/>
+    <include file="017-update-project-data-project-table.xml" relativeToChangelogFile="true"/>
+    <include file="018-remove-project-name-work_logs-table.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

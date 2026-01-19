@@ -1,5 +1,6 @@
 package com.hr.workwave.repo;
 
+import com.hr.workwave.dto.UserRequestDTO;
 import com.hr.workwave.enums.UserRolesEnum;
 import com.hr.workwave.model.User;
 import com.hr.workwave.model.UserManagers;
@@ -50,4 +51,16 @@ public interface UsersRepository extends JpaRepository<User, BigInteger> {
     List<User> findPotentialManagers(@Param("excludeEmail") String excludeEmail);
 
     User findById(Long id);
+
+    @Query("""
+                SELECT new com.hr.workwave.dto.UserRequestDTO
+                (
+                    u.email,
+                    u.name,
+                    u.role
+                )
+                FROM User u
+                WHERE u.role = com.hr.workwave.enums.UserRolesEnum.MANAGER
+            """)
+    List<UserRequestDTO> getManagers();
 }

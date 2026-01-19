@@ -42,7 +42,7 @@ public class UsersController {
      * Access can be restricted to ADMIN via @PreAuthorize.
      */
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER')")
     @GetMapping("/user-with-managers")
     public ResponseEntity<List<UserWithManagersDTO>> getAllUsersWithManagers() {
         List<UserWithManagersDTO> data = usersService.getAllUsersWithManagers();
@@ -144,6 +144,12 @@ public class UsersController {
     public ResponseEntity<List<PotentialManagerDTO>> getPotentialManagers(@RequestParam String excludeEmail) {
         List<PotentialManagerDTO> managers = usersService.getPotentialManagers(excludeEmail);
         return ResponseEntity.ok(managers);
+    }
+
+    @GetMapping("/users/all-managers")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    public ResponseEntity<List<UserRequestDTO>> getManagers(){
+        return ResponseEntity.ok(usersService.getManagers());
     }
 
 }
