@@ -78,7 +78,7 @@ public class LeaveRequestController {
      * @return a list of approved LeaveRequest objects for the given user
      */
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('MANAGER', 'ADMIN')")
     @GetMapping("/users/{userId}/leave-request/approved")
     public List<LeaveRequest> getAllLeaveRequestsApprovedById(@PathVariable Long userId) {
         return leaveRequestService.getLeaveRequestsApprovedById(userId);
@@ -255,7 +255,7 @@ public class LeaveRequestController {
      * @return ResponseEntity containing a list of annual leave summaries
      */
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('MANAGER', 'ADMIN')")
     @GetMapping("/{userId}/leave-approvals/annual-summary")
     public ResponseEntity<List<Map<String, Object>>> getAnnualLeaveSummary(
             @PathVariable Long userId,

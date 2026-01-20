@@ -773,7 +773,12 @@ public class LeaveRequestService {
         User user = usersRepository.findById(BigInteger.valueOf(userId))
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+
         LocalDate employmentStart = user.getStart_Of_Work();
+        if (employmentStart == null) {
+            throw new IllegalStateException("Employment start date is not set for user " + userId);
+        }
+
 
         if (years == null || years.isEmpty()) {
             years = Collections.singletonList(LocalDate.now().getYear());
@@ -783,7 +788,6 @@ public class LeaveRequestService {
         int startYear = employmentStart.getYear();
 
         int minYearAllowed;
-
         if (employmentStart.isBefore(LocalDate.of(startYear, 6, 1))) {
             minYearAllowed = startYear - 1;
         } else {
@@ -791,6 +795,7 @@ public class LeaveRequestService {
         }
 
         int maxYearAllowed = currentYear + 1;
+
 
         List<Integer> invalidYears = years.stream()
                 .filter(y -> y < minYearAllowed || y > maxYearAllowed)
@@ -802,7 +807,9 @@ public class LeaveRequestService {
                             " (Allowed: " + minYearAllowed + " - " + maxYearAllowed + ")"
             );
         }
+
         List<Map<String, Object>> summaries = new ArrayList<>();
+
 
         for (Integer year : years) {
 
@@ -811,13 +818,13 @@ public class LeaveRequestService {
 
             List<LeaveRequest> leaves =
                     leaveRequestRepository.findApprovedAnnualLeavesByPeriod(userId, start, end);
-            long spentDays = 0;
 
+            long spentDays = 0;
             for (LeaveRequest leaveRequest : leaves) {
-                long spentDaysPerLeave = bankHolidaysService.calculateEffectiveLeaveDays(leaveRequest.getStart_date(), leaveRequest.getEnd_date());
+                long spentDaysPerLeave = bankHolidaysService.calculateEffectiveLeaveDays(
+                        leaveRequest.getStart_date(), leaveRequest.getEnd_date());
                 spentDays += spentDaysPerLeave;
             }
-
 
             long totalAnnualLeave = 20;
             long leftDays = totalAnnualLeave - spentDays;
