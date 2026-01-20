@@ -197,14 +197,10 @@ public class LeaveRequestController {
 
     @PostMapping("/create/leave-request")
     public ResponseEntity<LeaveRequestDTO> createLeaveRequest(@RequestBody LeaveRequestDTO dto) {
-        try {
+
             LeaveRequestDTO createdRequest = leaveRequestService.createLeaveRequest(dto);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdRequest);
-        } catch (IllegalArgumentException ex) {
-            LeaveRequestDTO errorDto = new LeaveRequestDTO();
-            errorDto.setReason(ex.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDto);
-        }
+
     }
 
     /**
