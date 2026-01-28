@@ -320,19 +320,4 @@ public class LeaveRequestController {
 
         return leaveRequestService.getLeaveRequestsForCurrentPeriod(userId);
     }
-//    @PostMapping("/approve/{leaveId}")
-//    public String testApproveLeave(@PathVariable Long leaveId) {
-//        try {
-//            LeaveApprovalsService.updateLeaveRequestStatus(leaveId);
-//            LeaveRequest leave = leaveRequestRepository.findById(leaveId)
-//                    .orElseThrow(() -> new RuntimeException("LeaveRequest not found"));
-//
-//            if (leave.getCalendar_event_id() != null) {
-//                return "Leave approved & Teams event created with ID: " + leave.getCalendar_event_id();
-//            } else {
-//                return "Leave approved but Teams event not created (check logs).";
-//            }
-//        } catch (Exception e) {
-//            return "Error: " + e.getMessage();
-//        }
 }
