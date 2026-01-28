@@ -34,6 +34,7 @@ public class LeaveApprovalsService {
     private final LeaveRequestRepository leaveRequestRepository;
     private final EmailService emailService;
     private final UserManagerRepository userManagerRepository;
+    private final GraphCalendarService graphCalendarService;
 
 
     public LeaveApprovalsDto toDto(LeaveApprovals approval, String mainStatus) {
@@ -98,7 +99,6 @@ public class LeaveApprovalsService {
      * @throws RuntimeException if the leave request is not found
      */
 
-
     public void updateLeaveRequestStatus(Long leaveRequestId) {
         List<LeaveApprovals> approvals = leaveApprovalsRepository.findByLeaveRequestId(leaveRequestId);
 
@@ -111,16 +111,28 @@ public class LeaveApprovalsService {
 
         boolean hasRejected = approvals.stream()
                 .anyMatch(a -> a.getApprovedStatus() == LeaveRequestStatusEnum.REJECTED);
+
         if (hasRejected) {
             setLeaveRequestStatus(leaveRequestId, LeaveRequestStatusEnum.REJECTED);
+
             if (leaveRequest.getUser() != null && leaveRequest.getUser().getEmail() != null) {
+
+                if (leaveRequest.getCalendar_event_id() != null) {
+                    try {
+                        graphCalendarService.deleteLeaveEvent(leaveRequest);
+                        leaveRequest.setCalendar_event_id(null);
+                        leaveRequestRepository.save(leaveRequest);
+                    } catch (Exception e) {
+                        System.err.println("Failed to delete Teams event: " + e.getMessage());
+                    }
+                }
 
                 String htmlMessage = "<html>" +
                         "<body style=\"font-family: Arial, sans-serif;\">" +
                         "<div style=\"background-color: #c9daeb; padding: 20px;\">" +
                         "<p style=\"font-size: 16px;\">Dear " + leaveRequest.getUser().getName() + ",</p>" +
                         "<p style=\"font-size: 16px;\">Your Leave request has been <Strong> REJECTED </strong></p>" +
-                        "<p><Strong> Rejection reason :</strong>"+ leaveRequest.getRejectReason() + "</p>" +
+                        "<p><Strong> Rejection reason :</strong>" + leaveRequest.getRejectReason() + "</p>" +
                         "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
                         "<p><strong>Leave Type:</strong> " + leaveRequest.getLeave_type() + "</p>" +
                         "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date().format(formatter) + "</p>" +
@@ -146,12 +158,14 @@ public class LeaveApprovalsService {
 
         boolean hasPending = approvals.stream()
                 .anyMatch(a -> a.getApprovedStatus() == LeaveRequestStatusEnum.PENDING);
+
         if (hasPending) {
             setLeaveRequestStatus(leaveRequestId, LeaveRequestStatusEnum.PENDING);
             return;
         }
 
         setLeaveRequestStatus(leaveRequestId, LeaveRequestStatusEnum.APPROVED);
+
         if (leaveRequest.getUser() != null && leaveRequest.getUser().getEmail() != null) {
 
             String htmlMessage = "<html>" +
@@ -180,25 +194,25 @@ public class LeaveApprovalsService {
             );
 
             for (User admin : Admins) {
-            String htmlMessage1 = "<html>" +
-                    "<body style=\"font-family: Arial, sans-serif;\">" +
-                    "<div style=\"background-color: #c9daeb; padding: 20px;\">" +
-                    "<p style=\"font-size: 16px;\">Dear " + admin.getName() + ",</p>" +
-                    "<p style=\"font-size: 16px;\">A new leave request has been <Strong> APPROVED </strong></p>" +
-                    "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
-                    "<p><strong>From: :</strong> " + leaveRequest.getUser().getName() + "</p>" +
-                    "<p><strong>Leave Type:</strong> " + leaveRequest.getLeave_type() + "</p>" +
-                    "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date().format(formatter) + "</p>" +
-                    "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date().format(formatter) + "</p>" +
-                    "<p><strong>Reason:</strong> " + leaveRequest.getReason() + "</p>" +
-                    "<p><strong>Status:</strong> " + leaveRequest.getStatus() + "</p>" +
-                    "</div>" +
-                    "<p style=\"font-size: 16px; margin-top: 20px;\">Follow the link to the App:</p>" +
-                    "<a href=\"https://s-1564-workwave\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\">https://s-1564-workwave</a>" +
-                    "<p style=\"font-size: 16px; margin-top: 20px;\">Thank you.</p>" +
-                    "</div>" +
-                    "</body>" +
-                    "</html>";
+                String htmlMessage1 = "<html>" +
+                        "<body style=\"font-family: Arial, sans-serif;\">" +
+                        "<div style=\"background-color: #c9daeb; padding: 20px;\">" +
+                        "<p style=\"font-size: 16px;\">Dear " + admin.getName() + ",</p>" +
+                        "<p style=\"font-size: 16px;\">A new leave request has been <Strong> APPROVED </strong></p>" +
+                        "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
+                        "<p><strong>From: :</strong> " + leaveRequest.getUser().getName() + "</p>" +
+                        "<p><strong>Leave Type:</strong> " + leaveRequest.getLeave_type() + "</p>" +
+                        "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date().format(formatter) + "</p>" +
+                        "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date().format(formatter) + "</p>" +
+                        "<p><strong>Reason:</strong> " + leaveRequest.getReason() + "</p>" +
+                        "<p><strong>Status:</strong> " + leaveRequest.getStatus() + "</p>" +
+                        "</div>" +
+                        "<p style=\"font-size: 16px; margin-top: 20px;\">Follow the link to the App:</p>" +
+                        "<a href=\"https://s-1564-workwave\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\">https://s-1564-workwave</a>" +
+                        "<p style=\"font-size: 16px; margin-top: 20px;\">Thank you.</p>" +
+                        "</div>" +
+                        "</body>" +
+                        "</html>";
 
                 emailService.sendEmail(
                         admin.getEmail(),
@@ -206,41 +220,19 @@ public class LeaveApprovalsService {
                         htmlMessage1
                 );
             }
-            List<UserManagers> managerLinks = userManagerRepository.findByUserId(leaveRequest.getUser().getId());
 
-//            for (UserManagers link : managerLinks) {
-//                BigInteger managerId = link.getManagerId();
-//                User manager = usersRepository.findById(managerId)
-//                        .orElseThrow(() -> new RuntimeException("Manager not found: " + managerId));
-//
-//                if (manager.getEmail() != null) {
-//                    String htmlMessageManager = "<html>" +
-//                            "<body style=\"font-family: Arial, sans-serif;\">" +
-//                            "<div style=\"background-color: #c9daeb; padding: 20px;\">" +
-//                            "<p style=\"font-size: 16px;\">Dear " + manager.getName() + ",</p>" +
-//                            "<p style=\"font-size: 16px;\">A leave request has been <strong>APPROVED</strong> for " + leaveRequest.getUser().getName() + ".</p>" +
-//                            "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
-//                            "<p><strong>Leave Type:</strong> " + leaveRequest.getLeave_type() + "</p>" +
-//                            "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date().format(formatter) + "</p>" +
-//                            "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date().format(formatter) + "</p>" +
-//                            "<p><strong>Reason:</strong> " + leaveRequest.getReason() + "</p>" +
-//                            "<p><strong>Status:</strong> " + leaveRequest.getStatus() + "</p>" +
-//                            "</div>" +
-//                            "<p style=\"font-size: 16px; margin-top: 20px;\">Follow the link to the App:</p>" +
-//                            "<a href=\"https://s-1564-workwave\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\">https://s-1564-workwave</a>" +
-//                            "<p style=\"font-size: 16px; margin-top: 20px;\">Thank you.</p>" +
-//                            "</div>" +
-//                            "</body>" +
-//                            "</html>";
-//
-//                    emailService.sendEmail(
-//                            manager.getEmail(),
-//                            "Leave Request Approved for " + leaveRequest.getUser().getName(),
-//                            htmlMessageManager
-//                    );
-//                }
-//            }
+            List<UserManagers> managerLinks =
+                    userManagerRepository.findByUserId(leaveRequest.getUser().getId());
 
+            if (leaveRequest.getCalendar_event_id() == null) {
+                try {
+                    String eventId = graphCalendarService.createLeaveEvent(leaveRequest);
+                    leaveRequest.setCalendar_event_id(eventId);
+                    leaveRequestRepository.save(leaveRequest);
+                } catch (Exception e) {
+                    System.err.println("Failed to create Teams event: " + e.getMessage());
+                }
+            }
         }
     }
 

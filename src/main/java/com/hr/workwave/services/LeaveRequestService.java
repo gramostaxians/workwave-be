@@ -21,6 +21,7 @@ import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
+import com.hr.workwave.services.GraphCalendarService;
 
 import static com.hr.workwave.enums.LeaveRequestStatusEnum.APPROVED;
 
@@ -36,7 +37,7 @@ public class LeaveRequestService {
     private final UsersRepository usersRepository;
     private final UserManagerRepository userManagerRepository;
     private final BankHolidaysService bankHolidaysService;
-
+    private final GraphCalendarService calendarService;
     /**
      * Retrieves all leave requests from the repository.
      *
@@ -1177,4 +1178,6 @@ public class LeaveRequestService {
         return leaveRequestRepository
                 .findLeavesInPeriodByUser(userId, calculatedStart, calculatedEnd);
     }
+
 }
+
