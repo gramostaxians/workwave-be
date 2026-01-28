@@ -201,9 +201,16 @@ public class LeaveRequestExcelExportService {
             LocalDate endDate
     ) throws IOException {
 
+
+        if (startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException(
+                    "startDate must be before or equal to endDate"
+            );
+        }
+
         List<LeaveRequest> sickLeaves =
                 leaveRequestRepository.findSickLeavesBetween(
-                        com.hr.workwave.enums.LeaveRequestTypeEnum.SICK_LEAVE,
+                        LeaveRequestTypeEnum.SICK_LEAVE,
                         startDate,
                         endDate
                 );
@@ -211,9 +218,22 @@ public class LeaveRequestExcelExportService {
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Sick Leave Report");
 
-
         Font boldFont = workbook.createFont();
         boldFont.setBold(true);
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+
+
+        CellStyle labelStyle = workbook.createCellStyle();
+        labelStyle.setFont(boldFont);
+        labelStyle.setAlignment(HorizontalAlignment.CENTER);
+        labelStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+        labelStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        labelStyle.setBorderBottom(BorderStyle.THIN);
+        labelStyle.setBorderTop(BorderStyle.THIN);
+        labelStyle.setBorderLeft(BorderStyle.THIN);
+        labelStyle.setBorderRight(BorderStyle.THIN);
+
 
         CellStyle dateStyle = workbook.createCellStyle();
         dateStyle.setFont(boldFont);
@@ -225,17 +245,11 @@ public class LeaveRequestExcelExportService {
         dateStyle.setBorderLeft(BorderStyle.THIN);
         dateStyle.setBorderRight(BorderStyle.THIN);
 
+
         CellStyle titleStyle = workbook.createCellStyle();
         titleStyle.setFont(boldFont);
         titleStyle.setAlignment(HorizontalAlignment.CENTER);
 
-        CellStyle headerStyle = workbook.createCellStyle();
-        headerStyle.setFont(boldFont);
-        headerStyle.setAlignment(HorizontalAlignment.CENTER);
-        headerStyle.setBorderBottom(BorderStyle.THIN);
-        headerStyle.setBorderTop(BorderStyle.THIN);
-        headerStyle.setBorderLeft(BorderStyle.THIN);
-        headerStyle.setBorderRight(BorderStyle.THIN);
 
         CellStyle rowStyle = workbook.createCellStyle();
         rowStyle.setBorderBottom(BorderStyle.THIN);
@@ -243,27 +257,26 @@ public class LeaveRequestExcelExportService {
         rowStyle.setBorderLeft(BorderStyle.THIN);
         rowStyle.setBorderRight(BorderStyle.THIN);
 
-        CellStyle totalStyle = workbook.createCellStyle();
-        totalStyle.setFont(boldFont);
-        totalStyle.setAlignment(HorizontalAlignment.CENTER);
-        totalStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
-        totalStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-        totalStyle.setBorderBottom(BorderStyle.THIN);
-        totalStyle.setBorderTop(BorderStyle.THIN);
-        totalStyle.setBorderLeft(BorderStyle.THIN);
-        totalStyle.setBorderRight(BorderStyle.THIN);
-
         int rowIdx = 0;
 
-        Row startRow = sheet.createRow(rowIdx++);
-        Cell startCell = startRow.createCell(0);
-        startCell.setCellValue(startDate.format(java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy")));
-        startCell.setCellStyle(dateStyle);
 
-        Row endRow = sheet.createRow(rowIdx++);
-        Cell endCell = endRow.createCell(0);
-        endCell.setCellValue(endDate.format(java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy")));
-        endCell.setCellStyle(dateStyle);
+        Row fromRow = sheet.createRow(rowIdx++);
+        Cell fromLabel = fromRow.createCell(0);
+        fromLabel.setCellValue("From:");
+        fromLabel.setCellStyle(labelStyle);
+
+        Cell fromDate = fromRow.createCell(1);
+        fromDate.setCellValue(startDate.format(formatter));
+        fromDate.setCellStyle(dateStyle);
+
+        Row toRow = sheet.createRow(rowIdx++);
+        Cell toLabel = toRow.createCell(0);
+        toLabel.setCellValue("To:");
+        toLabel.setCellStyle(labelStyle);
+
+        Cell toDate = toRow.createCell(1);
+        toDate.setCellValue(endDate.format(formatter));
+        toDate.setCellStyle(dateStyle);
 
         rowIdx++;
 
@@ -275,15 +288,13 @@ public class LeaveRequestExcelExportService {
 
 
         Row headerRow = sheet.createRow(rowIdx++);
-
         Cell h1 = headerRow.createCell(0);
         h1.setCellValue("Employee");
-        h1.setCellStyle(totalStyle);
+        h1.setCellStyle(labelStyle);
 
         Cell h2 = headerRow.createCell(1);
         h2.setCellValue("No. of days");
-        h2.setCellStyle(totalStyle);
-
+        h2.setCellStyle(labelStyle);
 
 
         Map<User, List<LeaveRequest>> groupedByUser =
@@ -293,22 +304,19 @@ public class LeaveRequestExcelExportService {
         long overallTotal = 0;
 
         for (User user : groupedByUser.keySet()) {
-
             long userTotalDays = 0;
 
             for (LeaveRequest lr : groupedByUser.get(user)) {
+                LocalDate effectiveStart = lr.getStart_date().isBefore(startDate)
+                        ? startDate : lr.getStart_date();
 
-                LocalDate effectiveStart =
-                        lr.getStart_date().isBefore(startDate) ? startDate : lr.getStart_date();
+                LocalDate effectiveEnd = lr.getEnd_date().isAfter(endDate)
+                        ? endDate : lr.getEnd_date();
 
-                LocalDate effectiveEnd =
-                        lr.getEnd_date().isAfter(endDate) ? endDate : lr.getEnd_date();
-
-                userTotalDays +=
-                        leaveRequestService.calculateEffectiveLeaveDays(
-                                effectiveStart,
-                                effectiveEnd
-                        );
+                userTotalDays += leaveRequestService.calculateEffectiveLeaveDays(
+                        effectiveStart,
+                        effectiveEnd
+                );
             }
 
             Row row = sheet.createRow(rowIdx++);
@@ -327,11 +335,13 @@ public class LeaveRequestExcelExportService {
         Row totalRow = sheet.createRow(rowIdx);
         Cell t0 = totalRow.createCell(0);
         t0.setCellValue("TOTAL");
-        t0.setCellStyle(totalStyle);
+        t0.setCellStyle(labelStyle);
 
         Cell t1 = totalRow.createCell(1);
         t1.setCellValue(overallTotal);
-        t1.setCellStyle(totalStyle);
+        t1.setCellStyle(dateStyle);
+
+
 
         sheet.autoSizeColumn(0);
         sheet.autoSizeColumn(1);
