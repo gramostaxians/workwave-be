@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="020-add-project-application-property-on-work-logs-table" author="Gramos">
+        <addColumn tableName="work_logs">
+            <column name="project_application_id" type="bigint">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+
+
+        <addForeignKeyConstraint
+                baseTableName="work_logs"
+                baseColumnNames="project_application_id"
+                referencedTableName="project_applications"
+                referencedColumnNames="id"
+                constraintName="fk_work_logs_project_application" />
+    </changeSet>
+
+</databaseChangeLog>
