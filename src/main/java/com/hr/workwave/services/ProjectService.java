@@ -2,6 +2,8 @@ package com.hr.workwave.services;
 
 import com.hr.workwave.dto.request.RequestProjectDto;
 import com.hr.workwave.model.Project;
+import com.hr.workwave.model.ProjectApplication;
+import com.hr.workwave.repo.ProjectApplicationRepository;
 import com.hr.workwave.repo.ProjectRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
@@ -17,6 +19,7 @@ public class ProjectService {
 
     private final ProjectRepository projectRepository;
     private final UsersService usersService;
+    private final ProjectApplicationRepository projectApplicationRepository;
 
     public List<Project> getAllProject() {
         return projectRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
@@ -44,5 +47,9 @@ public class ProjectService {
 
     public void deleteProject(BigInteger projectId) {
         projectRepository.deleteById(projectId);
+    }
+
+    public List<ProjectApplication> getAllProjectApplications(){
+        return projectApplicationRepository.findAll();
     }
 }
