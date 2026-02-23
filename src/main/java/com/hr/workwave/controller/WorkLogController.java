@@ -84,8 +84,12 @@ public class WorkLogController {
     }
 
     @GetMapping("/billable-hours")
-    public List<ProjectWorkLogDTO> getBillableHoursReport() {
-        return workLogService.getCurrentQuarterReport();
+    public List<ProjectWorkLogDTO> getBillableHoursReport(@RequestParam(required = false) Integer month,
+                                                          @RequestParam(required = false) Integer year) {
+        if (month == null || year == null) {
+            return workLogService.getCurrentQuarterReport();
+        }
+        return workLogService.getBillableHoursReport(month, year);
     }
 
 }

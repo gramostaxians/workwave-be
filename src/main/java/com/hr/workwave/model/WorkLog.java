@@ -45,4 +45,8 @@ public class WorkLog {
     @ManyToOne
     @JoinColumn(name = "project_id", nullable = false)
     private Project project;
+
+    @ManyToOne
+    @JoinColumn(name = "project_application_id")
+    private ProjectApplication projectApplication;
 }

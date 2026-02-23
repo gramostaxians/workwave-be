@@ -2,8 +2,10 @@ package com.hr.workwave.controller;
 
 import com.hr.workwave.dto.request.RequestProjectDto;
 import com.hr.workwave.model.Project;
+import com.hr.workwave.model.ProjectApplication;
 import com.hr.workwave.services.ProjectService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -46,5 +48,10 @@ public class ProjectController {
     public ResponseEntity<?> deleteProject(@PathVariable BigInteger projectId) {
         projectService.deleteProject(projectId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/project-application")
+    public List<ProjectApplication> getAllProjectApplication() {
+        return projectService.getAllProjectApplications();
     }
 }

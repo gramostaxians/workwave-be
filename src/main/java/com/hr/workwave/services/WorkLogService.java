@@ -76,4 +76,8 @@ public class WorkLogService {
         int currentYear = now.getYear();
         return workLogRepository.findCurrentQuarterWorkLogs(currentMonth, currentYear);
     }
+
+    public List<ProjectWorkLogDTO> getBillableHoursReport(int month, int year) {
+        return workLogRepository.findCurrentQuarterWorkLogs(month, year);
+    }
 }
