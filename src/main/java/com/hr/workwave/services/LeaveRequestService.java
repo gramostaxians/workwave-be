@@ -298,11 +298,6 @@ public class LeaveRequestService {
         boolean isAdmin = user.getRole() == UserRolesEnum.ADMIN;
         boolean isCreator = user.getEmail().equalsIgnoreCase(dto.getEmployeeEmail());
 
-
-        if (!isAdmin && (startDate.isBefore(today) || endDate.isBefore(today))) {
-            throw new IllegalArgumentException("Start date and end date cannot be before today");
-        }
-
         if (startDate.isAfter(endDate)) {
             throw new IllegalArgumentException("Start date cannot be after end date");
         }
@@ -310,6 +305,12 @@ public class LeaveRequestService {
         if (!isAdmin && !isCreator) {
             throw new IllegalArgumentException(
                     "Only an admin or the user who created the request can submit it."
+            );
+
+        }
+        if (!isAdmin && startDate.isBefore(today)) {
+            throw new IllegalArgumentException(
+                    "You cannot create a leave request for a past date."
             );
         }
 
