@@ -308,11 +308,6 @@ public class LeaveRequestService {
             );
 
         }
-        if (!isAdmin && startDate.isBefore(today)) {
-            throw new IllegalArgumentException(
-                    "You cannot create a leave request for a past date."
-            );
-        }
 
         Long userIdLong = user.getId().longValue();
         List<LeaveRequest> userLeaves = leaveRequestRepository.findByUserId(user.getId());
