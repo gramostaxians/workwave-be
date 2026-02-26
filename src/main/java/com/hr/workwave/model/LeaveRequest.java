@@ -26,8 +26,8 @@ public class LeaveRequest {
     @Enumerated(EnumType.STRING)
     private LeaveRequestTypeEnum leave_type;
 
-    private LocalDate start_date;
-    private LocalDate end_date;
+    private LocalDateTime start_date;
+    private LocalDateTime end_date;
     private String reason;
     private String calendar_event_id;
 

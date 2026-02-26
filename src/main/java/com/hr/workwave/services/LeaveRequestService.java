@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigInteger;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
@@ -134,8 +135,8 @@ public class LeaveRequestService {
         boolean isManager = managerLinks.stream()
                 .anyMatch(link -> link.getManagerId().equals(user.getId()) || link.getManagerId().equals(currentUser.getId()));
 
-        LocalDate today = LocalDate.now();
-        LocalDate startDate = request.getStart_date();
+        LocalDateTime today = LocalDateTime.now();
+        LocalDateTime startDate = request.getStart_date();
 
         boolean canDelete;
         if (startDate != null && startDate.isAfter(today)) {
@@ -246,15 +247,15 @@ public class LeaveRequestService {
                 return dto;
             }).collect(Collectors.toList());
 
-            long effectiveDays = bankHolidaysService.calculateEffectiveLeaveDays(leaveRequest.getStart_date(), leaveRequest.getEnd_date());
+            long effectiveDays = bankHolidaysService.calculateEffectiveLeaveDays(leaveRequest.getStart_date().toLocalDate(), leaveRequest.getEnd_date().toLocalDate());
 
             LeaveRequestApprovalSummaryDTO summaryDTO = new LeaveRequestApprovalSummaryDTO();
             summaryDTO.setLeaveRequestId(leaveRequest.getId());
             summaryDTO.setEmployeeEmail(leaveRequest.getEmployee_email());
             summaryDTO.setLeaveType(leaveRequest.getLeave_type().getValue());
             summaryDTO.setDays(effectiveDays);
-            summaryDTO.setStartDate(leaveRequest.getStart_date());
-            summaryDTO.setEndDate(leaveRequest.getEnd_date());
+            summaryDTO.setStartDate(leaveRequest.getStart_date().toLocalDate());
+            summaryDTO.setEndDate(leaveRequest.getEnd_date().toLocalDate());
             summaryDTO.setReason(leaveRequest.getReason());
             summaryDTO.setStatus(leaveRequest.getStatus());
             summaryDTO.setCalendar_event_id(leaveRequest.getCalendar_event_id());
@@ -287,8 +288,8 @@ public class LeaveRequestService {
 
     public LeaveRequestDTO createLeaveRequest(LeaveRequestDTO dto) {
         LocalDate today = LocalDate.now();
-        LocalDate startDate = dto.getStartDate();
-        LocalDate endDate = dto.getEndDate();
+        LocalDate startDate = dto.getStartDate().toLocalDate();
+        LocalDate endDate = dto.getEndDate().toLocalDate();
 
 
         User user = usersRepository.findById(BigInteger.valueOf(dto.getUserId()))
@@ -313,8 +314,8 @@ public class LeaveRequestService {
         List<LeaveRequest> userLeaves = leaveRequestRepository.findByUserId(user.getId());
 
         if (dto.getLeaveType() == LeaveRequestTypeEnum.MATERNITY_LEAVE) {
-            LocalDate expectedEnd = dto.getStartDate().plusMonths(6);
-            if (!dto.getEndDate().isEqual(expectedEnd)) {
+            LocalDate expectedEnd = dto.getStartDate().toLocalDate().plusMonths(6);
+            if (!dto.getEndDate().toLocalDate().isEqual(expectedEnd)) {
                 throw new IllegalArgumentException(
                         "Maternity Leave must be exactly 6 months. Expected end date: " + expectedEnd
                 );
@@ -337,8 +338,8 @@ public class LeaveRequestService {
             }
 
             long workingDays = bankHolidaysService.calculateEffectiveLeaveDays(
-                    dto.getStartDate(),
-                    dto.getEndDate()
+                    dto.getStartDate().toLocalDate(),
+                    dto.getEndDate().toLocalDate()
             );
 
             if (workingDays > 5) {
@@ -348,16 +349,17 @@ public class LeaveRequestService {
             }
         }
 
-        for (LeaveRequest lr : userLeaves) {
-            boolean overlaps = !dto.getEndDate().isBefore(lr.getStart_date()) &&
-                    !dto.getStartDate().isAfter(lr.getEnd_date());
-            if (overlaps) {
-                throw new IllegalArgumentException(
-                        "You already have a leave request (status: " + lr.getStatus().getValue() +
-                                ") that overlaps with these dates."
-                );
+            for (LeaveRequest lr : userLeaves) {
+                boolean overlaps = !dto.getEndDate().isBefore(lr.getStart_date()) &&
+                        !dto.getStartDate().isAfter(lr.getEnd_date());
+                if (overlaps) {
+                    throw new IllegalArgumentException(
+                            "You already have a leave request (status: " + lr.getStatus().getValue() +
+                                    ") that overlaps with these dates."
+                    );
+                }
             }
-        }
+
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
@@ -380,7 +382,7 @@ public class LeaveRequestService {
         leaveRequest.setUser(user);
         leaveRequest.setEmployee_email(dto.getEmployeeEmail());
         leaveRequest.setStatus(LeaveRequestStatusEnum.PENDING);
-        double effectiveDays = calculateEffectiveLeaveDays(leaveRequest.getStart_date(), leaveRequest.getEnd_date());
+        double effectiveDays = calculateEffectiveLeaveDays(leaveRequest.getStart_date().toLocalDate(), leaveRequest.getEnd_date().toLocalDate());
 
         LeaveRequest savedRequest = leaveRequestRepository.save(leaveRequest);
 
@@ -430,9 +432,9 @@ public class LeaveRequestService {
                break;
 
             case HOME_OFFICE:
+            case PARTIAL_DAILY_LEAVE:
                 leaveRequest.setStatus(LeaveRequestStatusEnum.APPROVED);
                 leaveRequestRepository.save(leaveRequest);
-
                 break;
             default:
                 List<UserManagers> managerLinks = userManagerRepository.findByUserId(user.getId());
@@ -560,8 +562,8 @@ public class LeaveRequestService {
         int teamSize = teamMembers.size();
 
 
-        LocalDate startDate = dto.getStartDate();
-        LocalDate endDate = dto.getEndDate();
+        LocalDate startDate = dto.getStartDate().toLocalDate();
+        LocalDate endDate = dto.getEndDate().toLocalDate();
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
@@ -590,7 +592,7 @@ public class LeaveRequestService {
         }
 
         for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
-            int countRequestsOnDate = leaveRequestRepository.countHomeOfficeRequestsOnDateAndProject(date, projectId);
+            int countRequestsOnDate = leaveRequestRepository.countHomeOfficeRequestsOnDateAndProject(date.atTime(0,0,0), projectId);
             double percentage = teamSize == 0 ? 0 : (double) countRequestsOnDate / teamSize;
 
             if (percentage >= 0.5) {
@@ -605,8 +607,8 @@ public class LeaveRequestService {
         boolean hasRequestInWeek = leaveRequestRepository.existsByUserIdAndDateRange(
                 user.getId(),
                 LeaveRequestTypeEnum.HOME_OFFICE,
-                weekStart,
-                weekEnd
+                weekStart.atTime(0,0,0),
+                weekEnd.atTime(0,0,0)
         );
         System.out.println("Checking leave for user ID: " + user.getId());
         System.out.println("Week start: " + weekStart + ", week end: " + weekEnd);
@@ -637,12 +639,12 @@ public class LeaveRequestService {
         return leaveRequests.stream()
                 .map(leaveRequest -> {
                     LeaveRequestApprovalSummaryDTO dto = new LeaveRequestApprovalSummaryDTO();
-                    long effectiveDays = bankHolidaysService.calculateEffectiveLeaveDays(leaveRequest.getStart_date(), leaveRequest.getEnd_date());
+                    long effectiveDays = bankHolidaysService.calculateEffectiveLeaveDays(leaveRequest.getStart_date().toLocalDate(), leaveRequest.getEnd_date().toLocalDate());
                     dto.setLeaveRequestId(leaveRequest.getId());
                     dto.setEmployeeEmail(leaveRequest.getEmployee_email());
                     dto.setLeaveType(leaveRequest.getLeave_type().getValue());
-                    dto.setStartDate(leaveRequest.getStart_date());
-                    dto.setEndDate(leaveRequest.getEnd_date());
+                    dto.setStartDate(leaveRequest.getStart_date().toLocalDate());
+                    dto.setEndDate(leaveRequest.getEnd_date().toLocalDate());
                     dto.setReason(leaveRequest.getReason());
                     dto.setDays(effectiveDays);
                     dto.setCreatedDate(leaveRequest.getCreatedDate());
@@ -701,14 +703,14 @@ public class LeaveRequestService {
                         dto.setApprovedDate(approval.getApprovedDate());
                         return dto;
                     }).collect(Collectors.toList());
-                    long effectiveDays = bankHolidaysService.calculateEffectiveLeaveDays(leaveRequest.getStart_date(), leaveRequest.getEnd_date());
+                    long effectiveDays = bankHolidaysService.calculateEffectiveLeaveDays(leaveRequest.getStart_date().toLocalDate(), leaveRequest.getEnd_date().toLocalDate());
 
                     LeaveRequestApprovalSummaryDTO summaryDTO = new LeaveRequestApprovalSummaryDTO();
                     summaryDTO.setLeaveRequestId(leaveRequest.getId());
                     summaryDTO.setEmployeeEmail(leaveRequest.getEmployee_email());
                     summaryDTO.setLeaveType(leaveRequest.getLeave_type().getValue());
-                    summaryDTO.setStartDate(leaveRequest.getStart_date());
-                    summaryDTO.setEndDate(leaveRequest.getEnd_date());
+                    summaryDTO.setStartDate(leaveRequest.getStart_date().toLocalDate());
+                    summaryDTO.setEndDate(leaveRequest.getEnd_date().toLocalDate());
                     summaryDTO.setReason(leaveRequest.getReason());
                     summaryDTO.setDays(effectiveDays);
                     summaryDTO.setCreatedDate(leaveRequest.getCreatedDate());
@@ -814,12 +816,12 @@ public class LeaveRequestService {
             LocalDate end = LocalDate.of(year, 6, 30);
 
             List<LeaveRequest> leaves =
-                    leaveRequestRepository.findApprovedAnnualLeavesByPeriod(userId, start, end);
+                    leaveRequestRepository.findApprovedAnnualLeavesByPeriod(userId, start.atTime(0,0,0), end.atTime(0,0,0));
 
             long spentDays = 0;
             for (LeaveRequest leaveRequest : leaves) {
                 long spentDaysPerLeave = bankHolidaysService.calculateEffectiveLeaveDays(
-                        leaveRequest.getStart_date(), leaveRequest.getEnd_date());
+                        leaveRequest.getStart_date().toLocalDate(), leaveRequest.getEnd_date().toLocalDate());
                 spentDays += spentDaysPerLeave;
             }
 
@@ -975,7 +977,7 @@ public class LeaveRequestService {
         final LocalDate leaveYearEnd = calculatedEnd;
         leaveRequests = leaveRequests.stream()
                 .filter(lr ->
-                        !(lr.getEnd_date().isBefore(leaveYearStart) || lr.getStart_date().isAfter(leaveYearEnd))
+                        !(lr.getEnd_date().toLocalDate().isBefore(leaveYearStart) || lr.getStart_date().toLocalDate().isAfter(leaveYearEnd))
                 )
                 .collect(Collectors.toList());
         long pendingCount = leaveRequests.stream()
@@ -992,8 +994,8 @@ public class LeaveRequestService {
         double usedDays = leaveRequests.stream()
                 .filter(lr -> lr.getStatus() == LeaveRequestStatusEnum.APPROVED)
                 .mapToDouble(lr -> {
-                    LocalDate start = lr.getStart_date().isBefore(leaveYearStart) ? leaveYearStart : lr.getStart_date();
-                    LocalDate end = lr.getEnd_date().isAfter(leaveYearEnd) ? leaveYearEnd : lr.getEnd_date();
+                    LocalDate start = lr.getStart_date().toLocalDate().isBefore(leaveYearStart) ? leaveYearStart : lr.getStart_date().toLocalDate();
+                    LocalDate end = lr.getEnd_date().toLocalDate().isAfter(leaveYearEnd) ? leaveYearEnd : lr.getEnd_date().toLocalDate();
                     return !start.isAfter(end) ? calculateEffectiveLeaveDays(start, end) : 0;
                 })
                 .sum();
@@ -1115,7 +1117,7 @@ public class LeaveRequestService {
         LocalDate periodEnd = refreshDate.plusYears(1).minusDays(1);
 
         List<LeaveRequest> validLeaveRequests = leaveRequests.stream()
-                .filter(lr -> !lr.getEnd_date().isBefore(periodStart) && !lr.getStart_date().isAfter(periodEnd))
+                .filter(lr -> !lr.getEnd_date().toLocalDate().isBefore(periodStart) && !lr.getStart_date().toLocalDate().isAfter(periodEnd))
                 .collect(Collectors.toList());
 
         long pendingCount = validLeaveRequests.stream()
@@ -1133,8 +1135,8 @@ public class LeaveRequestService {
         double usedDays = leaveRequests.stream()
                 .filter(lr -> lr.getStatus() == LeaveRequestStatusEnum.APPROVED)
                 .mapToDouble(lr -> {
-                    LocalDate start = lr.getStart_date().isBefore(leaveYearStart) ? leaveYearStart : lr.getStart_date();
-                    LocalDate end = lr.getEnd_date().isAfter(leaveYearEnd) ? leaveYearEnd : lr.getEnd_date();
+                    LocalDate start = lr.getStart_date().toLocalDate().isBefore(leaveYearStart) ? leaveYearStart : lr.getStart_date().toLocalDate();
+                    LocalDate end = lr.getEnd_date().toLocalDate().isAfter(leaveYearEnd) ? leaveYearEnd : lr.getEnd_date().toLocalDate();
                     return !start.isAfter(end) ? calculateEffectiveLeaveDays(start, end) : 0;
                 })
                 .sum();
@@ -1172,7 +1174,7 @@ public class LeaveRequestService {
         }
 
         return leaveRequestRepository
-                .findLeavesInPeriodByUser(userId, calculatedStart, calculatedEnd);
+                .findLeavesInPeriodByUser(userId, calculatedStart.atTime(0,0,0), calculatedEnd.atTime(0,0,0));
     }
 
 }

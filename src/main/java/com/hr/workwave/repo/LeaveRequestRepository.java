@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.math.BigInteger;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -21,7 +21,7 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     List<LeaveRequest> findTop5RecentLeaveRequestsByUserId(@Param("userId") Long userId);
 
     @Query("SELECT lr FROM LeaveRequest lr WHERE lr.start_date <= :end AND lr.end_date >= :start")
-    List<LeaveRequest> findLeavesInPeriod(@Param("start") LocalDate start, @Param("end") LocalDate end);
+    List<LeaveRequest> findLeavesInPeriod(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
 
     @Query("SELECT lr FROM LeaveRequest lr WHERE lr.user.id = :userId AND lr.leave_type = :leaveType")
@@ -50,20 +50,20 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
             "AND lr.end_date <= :endDate")
     List<LeaveRequest> findApprovedAnnualLeavesByPeriod(
             @Param("userId") Long userId,
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate);
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate);
 
 
     @Query("SELECT COUNT(lr) FROM LeaveRequest lr WHERE lr.leave_type = 'HOME_OFFICE' AND lr.start_date <= :date AND lr.end_date >= :date AND lr.user.project.id = :projectId")
-    int countHomeOfficeRequestsOnDateAndProject(@Param("date") LocalDate date, @Param("projectId") BigInteger projectId);
+    int countHomeOfficeRequestsOnDateAndProject(@Param("date") LocalDateTime date, @Param("projectId") BigInteger projectId);
 
     @Query("SELECT CASE WHEN COUNT(lr) > 0 THEN true ELSE false END FROM LeaveRequest lr " +
             "WHERE lr.user.id = :userId AND lr.start_date <= :weekEnd AND lr.end_date >= :weekStart " +
             "AND lr.leave_type = :leaveType")
     boolean existsByUserIdAndDateRange(@Param("userId") BigInteger userId,
                                        @Param("leaveType") LeaveRequestTypeEnum leaveType,
-                                       @Param("weekStart") LocalDate weekStart,
-                                       @Param("weekEnd") LocalDate weekEnd);
+                                       @Param("weekStart") LocalDateTime weekStart,
+                                       @Param("weekEnd") LocalDateTime weekEnd);
 
 
     @Query("SELECT lr FROM LeaveRequest lr WHERE " +
@@ -96,8 +96,8 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     """)
     List<LeaveRequest> findLeavesInPeriodByUser(
             @Param("userId") Long userId,
-            @Param("start") LocalDate start,
-            @Param("end") LocalDate end
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end
     );
 
         @Query("""
@@ -109,7 +109,7 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
            """)
         List<LeaveRequest> findSickLeavesBetween(
                 @Param("leaveType") LeaveRequestTypeEnum leaveType,
-                @Param("startDate") LocalDate startDate,
-                @Param("endDate") LocalDate endDate
+                @Param("startDate") LocalDateTime startDate,
+                @Param("endDate") LocalDateTime endDate
         );
     }

@@ -58,12 +58,12 @@ public class GraphCalendarService {
         ));
 
         body.put("start", Map.of(
-                "dateTime", leave.getStart_date().atStartOfDay().toString(),
+                "dateTime", leave.getStart_date().toLocalDate().atStartOfDay().toString(),
                 "timeZone", "Europe/Tirane"
         ));
 
         body.put("end", Map.of(
-                "dateTime", leave.getEnd_date().plusDays(1).atStartOfDay().toString(),
+                "dateTime", leave.getEnd_date().plusDays(1).toLocalDate().atStartOfDay().toString(),
                 "timeZone", "Europe/Tirane"
         ));
 

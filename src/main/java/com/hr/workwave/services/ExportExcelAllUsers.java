@@ -147,7 +147,7 @@ public class ExportExcelAllUsers {
                     boolean hasHO = monthRequests.stream()
                             .filter(r -> r.getUser().getId().equals(user.getId()))
                             .filter(r -> r.getLeave_type() == LeaveRequestTypeEnum.HOME_OFFICE)
-                            .anyMatch(r -> !date.isBefore(r.getStart_date()) && !date.isAfter(r.getEnd_date()));
+                            .anyMatch(r -> !date.isBefore(r.getStart_date().toLocalDate()) && !date.isAfter(r.getEnd_date().toLocalDate()));
 
                     if (hasHO) {
                         cell.setCellValue("HO");

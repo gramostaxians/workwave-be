@@ -155,8 +155,8 @@ public class LeaveRequestExcelExportService {
                 Row row = sheet.createRow(rowIdx++);
 
                 String fullName = lr.getUser().getName();
-                LocalDate start = lr.getStart_date();
-                LocalDate end = lr.getEnd_date();
+                LocalDate start = lr.getStart_date().toLocalDate();
+                LocalDate end = lr.getEnd_date().toLocalDate();
                 LocalDate backToWork = end.plusDays(1);
 
                 long days = leaveRequestService.calculateEffectiveLeaveDays(start, end);
@@ -211,8 +211,8 @@ public class LeaveRequestExcelExportService {
         List<LeaveRequest> sickLeaves =
                 leaveRequestRepository.findSickLeavesBetween(
                         LeaveRequestTypeEnum.SICK_LEAVE,
-                        startDate,
-                        endDate
+                        startDate.atTime(0,0,0),
+                        endDate.atTime(0,0,0)
                 );
 
         Workbook workbook = new XSSFWorkbook();
@@ -307,11 +307,11 @@ public class LeaveRequestExcelExportService {
             long userTotalDays = 0;
 
             for (LeaveRequest lr : groupedByUser.get(user)) {
-                LocalDate effectiveStart = lr.getStart_date().isBefore(startDate)
-                        ? startDate : lr.getStart_date();
+                LocalDate effectiveStart = lr.getStart_date().toLocalDate().isBefore(startDate)
+                        ? startDate : lr.getStart_date().toLocalDate();
 
-                LocalDate effectiveEnd = lr.getEnd_date().isAfter(endDate)
-                        ? endDate : lr.getEnd_date();
+                LocalDate effectiveEnd = lr.getEnd_date().toLocalDate().isAfter(endDate)
+                        ? endDate : lr.getEnd_date().toLocalDate();
 
                 userTotalDays += leaveRequestService.calculateEffectiveLeaveDays(
                         effectiveStart,
