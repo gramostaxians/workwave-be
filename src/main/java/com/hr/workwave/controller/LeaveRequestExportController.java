@@ -39,6 +39,20 @@ public class LeaveRequestExportController {
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping("/approved-leaves/all")
+    public ResponseEntity<InputStreamResource> exportAllUsersLeaves() throws IOException {
+        ByteArrayInputStream excel = leaveRequestExcelExportService.exportAllUsersToExcel();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=Vacation_Card_All_Users.xlsx");
+
+        return ResponseEntity
+                .ok()
+                .headers(headers)
+                .body(new InputStreamResource(excel));
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/leave-tracker")
     public void exportLeaveTracker(
             @RequestParam int month,

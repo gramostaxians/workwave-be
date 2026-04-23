@@ -196,6 +196,142 @@ public class LeaveRequestExcelExportService {
             return new ByteArrayInputStream(out.toByteArray());
         }
     }
+    public ByteArrayInputStream exportAllUsersToExcel() throws IOException {
+        List<LeaveRequest> allRequests = leaveRequestRepository.findAllApprovedExcludingHomeOffice();
+
+        if (allRequests.isEmpty()) {
+            throw new RuntimeException("No approved leave requests found for any user.");
+        }
+
+        Map<User, List<LeaveRequest>> byUser = allRequests.stream()
+                .collect(Collectors.groupingBy(LeaveRequest::getUser));
+
+        try (Workbook workbook = new XSSFWorkbook()) {
+
+            Font boldFont = workbook.createFont();
+            boldFont.setBold(true);
+
+            for (Map.Entry<User, List<LeaveRequest>> entry : byUser.entrySet()) {
+                User user = entry.getKey();
+                List<LeaveRequest> userRequests = entry.getValue();
+
+                String sheetName = user.getName().trim().replaceAll("[^a-zA-Z0-9 ]", "_");
+                if (sheetName.length() > 31) sheetName = sheetName.substring(0, 31);
+                Sheet sheet = workbook.createSheet(sheetName);
+
+                LocalDate start_Date = user.getStart_Of_Work();
+
+                CellStyle boxStyle = workbook.createCellStyle();
+                boxStyle.setBorderBottom(BorderStyle.THIN);
+                boxStyle.setBorderTop(BorderStyle.THIN);
+                boxStyle.setBorderLeft(BorderStyle.THIN);
+                boxStyle.setBorderRight(BorderStyle.THIN);
+                boxStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+
+                CellStyle greenBoxStyle = workbook.createCellStyle();
+                greenBoxStyle.cloneStyleFrom(boxStyle);
+                greenBoxStyle.setFillForegroundColor(IndexedColors.LIGHT_GREEN.getIndex());
+                greenBoxStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+                greenBoxStyle.setAlignment(HorizontalAlignment.CENTER);
+                greenBoxStyle.setFont(boldFont);
+
+                CellStyle boldCenterStyle = workbook.createCellStyle();
+                boldCenterStyle.setFont(boldFont);
+                boldCenterStyle.setAlignment(HorizontalAlignment.CENTER);
+
+                Row nameRow = sheet.createRow(1);
+                Cell nameCell = nameRow.createCell(0);
+                nameCell.setCellValue(user.getName());
+                nameCell.setCellStyle(greenBoxStyle);
+                sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 1));
+
+                Row dateRow = sheet.createRow(2);
+                Cell dateCell = dateRow.createCell(0);
+                dateCell.setCellValue(start_Date != null
+                        ? start_Date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+                        : "");
+                dateCell.setCellStyle(greenBoxStyle);
+                sheet.addMergedRegion(new CellRangeAddress(2, 2, 0, 1));
+
+                Row trackerTitleRow = sheet.createRow(3);
+                Cell trackerTitleCell = trackerTitleRow.createCell(0);
+                trackerTitleCell.setCellValue("Annual Leave Tracker");
+                trackerTitleCell.setCellStyle(greenBoxStyle);
+                sheet.addMergedRegion(new CellRangeAddress(3, 3, 0, 1));
+
+                Cell companyNameRowCell = nameRow.createCell(2);
+                companyNameRowCell.setCellValue("Company Name: ");
+                companyNameRowCell.setCellStyle(boldCenterStyle);
+                sheet.addMergedRegion(new CellRangeAddress(1, 1, 2, 5));
+
+                Cell companyCell = dateRow.createCell(2);
+                companyCell.setCellValue("Axians Software Consulting and Development Kosovo L.L.C.");
+                companyCell.setCellStyle(boldCenterStyle);
+                sheet.addMergedRegion(new CellRangeAddress(2, 2, 2, 5));
+
+                Row historyTitleRow = sheet.createRow(5);
+                Cell historyTitleCell = historyTitleRow.createCell(0);
+                historyTitleCell.setCellValue("Annual Leave History");
+                historyTitleCell.setCellStyle(boldCenterStyle);
+                sheet.addMergedRegion(new CellRangeAddress(5, 5, 0, 5));
+
+                CellStyle headerStyle = workbook.createCellStyle();
+                Font headerFont = workbook.createFont();
+                headerFont.setBold(true);
+                headerStyle.setFont(headerFont);
+                headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+                headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+                headerStyle.setBorderBottom(BorderStyle.THIN);
+                headerStyle.setBorderTop(BorderStyle.THIN);
+                headerStyle.setBorderLeft(BorderStyle.THIN);
+                headerStyle.setBorderRight(BorderStyle.THIN);
+                headerStyle.setAlignment(HorizontalAlignment.CENTER);
+
+                Row header = sheet.createRow(6);
+                String[] columns = {"Employee", "Start Date", "End Date", "Back to work", "Leave Type", "No. of days"};
+                for (int i = 0; i < columns.length; i++) {
+                    Cell cell = header.createCell(i);
+                    cell.setCellValue(columns[i]);
+                    cell.setCellStyle(headerStyle);
+                }
+
+                CellStyle cellStyle = workbook.createCellStyle();
+                cellStyle.setBorderBottom(BorderStyle.THIN);
+                cellStyle.setBorderTop(BorderStyle.THIN);
+                cellStyle.setBorderLeft(BorderStyle.THIN);
+                cellStyle.setBorderRight(BorderStyle.THIN);
+                cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MMM-yyyy", Locale.ENGLISH);
+                int rowIdx = 7;
+
+                for (LeaveRequest lr : userRequests) {
+                    Row row = sheet.createRow(rowIdx++);
+
+                    LocalDate start = lr.getStart_date().toLocalDate();
+                    LocalDate end = lr.getEnd_date().toLocalDate();
+                    LocalDate backToWork = end.plusDays(1);
+                    long days = leaveRequestService.calculateEffectiveLeaveDays(start, end);
+
+                    Cell c0 = row.createCell(0); c0.setCellValue(user.getName()); c0.setCellStyle(cellStyle);
+                    Cell c1 = row.createCell(1); c1.setCellValue(start.format(formatter)); c1.setCellStyle(cellStyle);
+                    Cell c2 = row.createCell(2); c2.setCellValue(end.format(formatter)); c2.setCellStyle(cellStyle);
+                    Cell c3 = row.createCell(3); c3.setCellValue(backToWork.format(formatter)); c3.setCellStyle(cellStyle);
+                    Cell c4 = row.createCell(4); c4.setCellValue(lr.getLeave_type().toString()); c4.setCellStyle(cellStyle);
+                    Cell c5 = row.createCell(5); c5.setCellValue(days); c5.setCellStyle(cellStyle);
+                }
+
+                for (int i = 0; i <= 5; i++) {
+                    sheet.autoSizeColumn(i);
+                }
+            }
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            workbook.write(out);
+            return new ByteArrayInputStream(out.toByteArray());
+        }
+    }
+
     public ByteArrayInputStream exportSickLeaveReport(
             LocalDate startDate,
             LocalDate endDate

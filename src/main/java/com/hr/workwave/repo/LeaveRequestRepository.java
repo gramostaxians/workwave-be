@@ -112,4 +112,7 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
                 @Param("startDate") LocalDateTime startDate,
                 @Param("endDate") LocalDateTime endDate
         );
+
+    @Query("SELECT lr FROM LeaveRequest lr WHERE lr.status = 'APPROVED' AND lr.leave_type <> 'HOME_OFFICE' ORDER BY lr.user.id ASC, lr.start_date DESC")
+    List<LeaveRequest> findAllApprovedExcludingHomeOffice();
     }
