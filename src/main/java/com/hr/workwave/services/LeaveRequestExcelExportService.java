@@ -204,6 +204,7 @@ public class LeaveRequestExcelExportService {
         }
 
         Map<User, List<LeaveRequest>> byUser = allRequests.stream()
+                .filter(lr -> lr.getUser() != null && lr.getUser().getName() != null)
                 .collect(Collectors.groupingBy(LeaveRequest::getUser));
 
         try (Workbook workbook = new XSSFWorkbook()) {
