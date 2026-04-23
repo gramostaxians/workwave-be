@@ -39,7 +39,7 @@ public class LeaveRequestExportController {
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @GetMapping("/approved-leaves/all")
+    @GetMapping("/approved-leaves-all")
     public ResponseEntity<InputStreamResource> exportAllUsersLeaves() throws IOException {
         ByteArrayInputStream excel = leaveRequestExcelExportService.exportAllUsersToExcel();
 
