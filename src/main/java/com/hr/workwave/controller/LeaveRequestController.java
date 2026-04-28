@@ -56,6 +56,12 @@ public class LeaveRequestController {
     public List<LeaveRequest> getRecentLeaveRequests(@PathVariable  Long userId) {
         return leaveRequestService.getRecentLeaveRequestsByUser(userId);
     }
+
+
+    @GetMapping("/home-office")
+    public List<LeaveRequest> getAllHomeOffice(){
+        return leaveRequestService.getAllHomeOffice();
+    }
     /**
      * Retrieves a leave request by its ID.
      *
