@@ -59,6 +59,10 @@ public class LeaveRequestService {
         return leaveRequestRepository.findTop5RecentLeaveRequestsByUserId(userId);
     }
 
+    public List<LeaveRequest> getAllHomeOffice(){
+        return leaveRequestRepository.findAllHomeOffice();
+    }
+
     /**
      * Retrieves a leave request by its unique identifier.
      *
