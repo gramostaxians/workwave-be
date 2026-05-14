@@ -271,5 +271,13 @@ public class UsersService {
 
     }
 
+    public User createNewDefaultUser (NewUserDTO newUser){
+        User user = User.builder()
+                .email(newUser.getEmail())
+                .start_Of_Work(newUser.getStartOfWork())
+                .role(UserRolesEnum.EMPLOYEE)
+                .build();
+        return usersRepository.save(user);
+    }
 }
 

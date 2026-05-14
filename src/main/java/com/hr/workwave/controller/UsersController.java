@@ -152,4 +152,9 @@ public class UsersController {
         return ResponseEntity.ok(usersService.getManagers());
     }
 
+    @PostMapping("/users/new-user")
+    public ResponseEntity<User> createNewUser(@RequestBody   NewUserDTO newUser) {
+        return ResponseEntity.ok(usersService.createNewDefaultUser(newUser));
+    }
+
 }
