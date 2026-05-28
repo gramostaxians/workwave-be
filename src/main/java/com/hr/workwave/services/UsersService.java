@@ -104,7 +104,7 @@ public class UsersService {
                     user.getEmail(),
                     user.getName(),
                     user.getDepartment(),
-                    user.getRole().getRole(),
+                    user.getRole() != null ? user.getRole().getRole() : null,
                     user.getCreated_at(),
                     user.getLast_login(),
                     notifyManager,
