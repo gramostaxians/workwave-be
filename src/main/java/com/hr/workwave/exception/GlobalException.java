@@ -9,15 +9,15 @@ import java.math.BigInteger;
 
 @ControllerAdvice
 public class GlobalException {
-
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ResponseExceptionDto> generalException(RuntimeException ex) {
-        ResponseExceptionDto response = new ResponseExceptionDto();
-        response.setCustomCode(BigInteger.valueOf(1000));
-        response.setMessage(ex.getMessage());
-
-        return ResponseEntity.ok(response);
-    }
+//
+//    @ExceptionHandler(RuntimeException.class)
+//    public ResponseEntity<ResponseExceptionDto> generalException(RuntimeException ex) {
+//        ResponseExceptionDto response = new ResponseExceptionDto();
+//        response.setCustomCode(BigInteger.valueOf(1000));
+//        response.setMessage(ex.getMessage());
+//
+//        return ResponseEntity.ok(response);
+//    }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ResponseExceptionDto> handleIllegalArgumentException(IllegalArgumentException ex) {

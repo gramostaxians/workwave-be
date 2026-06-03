@@ -66,56 +66,62 @@ public class UsersService {
         return new ArrayList<>();
     }
 
-    /**
-     * Retrieves all users along with their associated managers.
-     * For each user, fetches their manager links and maps them into DTOs,
-     * then returns a list of UserWithManagersDTO containing user details and their managers.
-     *
-     * @return list of UserWithManagersDTO representing users and their managers
-     */
-
     public List<UserWithManagersDTO> getAllUsersWithManagers() {
-        List<User> users = usersRepository.findAll();
+        List<Object[]> results = usersRepository.findAllUsersWithManagers();
 
-        List<UserWithManagersDTO> result = new ArrayList<>();
+        Map<BigInteger, UserWithManagersDTO> userMap = new LinkedHashMap<>();
 
-        for (User user : users) {
+        for (Object[] row : results) {
+            BigInteger userId = ((Number) row[0]).longValue() == 0 ? null : BigInteger.valueOf(((Number) row[0]).longValue());
+            String email = (String) row[1];
+            String name = (String) row[2];
+            String department = (String) row[3];
+            String role = (String) row[4];
+            LocalDateTime createdAt = (row[5] != null)
+                    ? ((java.sql.Timestamp) row[5]).toLocalDateTime()
+                    : null;
 
-            BigInteger userId = user.getId();
-            List<UserManagers> links = userManagerRepository.findByUserId(userId);
+            LocalDateTime lastLogin = (row[6] != null)
+                    ? ((java.sql.Timestamp) row[6]).toLocalDateTime()
+                    : null;
+            Boolean notifyManager = (Boolean) row[7];
+            LocalDate startOfWork = (row[8] != null)
+                    ? ((java.sql.Date) row[8]).toLocalDate()
+                    : null;
+            BigInteger projectId = row[9] != null ? BigInteger.valueOf(((Number) row[9]).longValue()) : null;
+            BigInteger availableLeaveDays = row[10] != null ? BigInteger.valueOf(((Number) row[10]).longValue()) : null;
+            BigInteger managerId = row[11] != null ? BigInteger.valueOf(((Number) row[11]).longValue()) : null;
+            String managerName = (String) row[12];
+            String managerEmail = (String) row[13];
 
-            List<ManagerDTO> managers = links.stream()
-                    .map(link -> {
+            if (!userMap.containsKey(userId)) {
+                userMap.put(userId, new UserWithManagersDTO(
+                        userId != null ? userId.longValue() : null,
+                        email,
+                        name,
+                        department,
+                        role,
+                        createdAt,
+                        lastLogin,
+                        Boolean.TRUE.equals(notifyManager),
+                        startOfWork,
+                        projectId,
+                        availableLeaveDays,
+                        new ArrayList<>()
+                ));
+            }
 
-                        String managerIdStr = link.getManagerId().toString();
-                        return usersRepository.findById(BigInteger.valueOf(link.getManagerId().longValue())).orElse(null);
-                    })
-                    .filter(Objects::nonNull)
-                    .map(manager -> new ManagerDTO(
-                            manager.getId().longValue(),
-                            manager.getName(),
-                            manager.getEmail()
-                    ))
-                    .toList();
-            Boolean notifyManager = Boolean.TRUE.equals(user.getNotifyManager());
-
-            result.add(new UserWithManagersDTO(
-                    user.getId().longValue(),
-                    user.getEmail(),
-                    user.getName(),
-                    user.getDepartment(),
-                    user.getRole() != null ? user.getRole().getRole() : null,
-                    user.getCreated_at(),
-                    user.getLast_login(),
-                    notifyManager,
-                    user.getStart_Of_Work(),
-                    user.getProject() != null ? BigInteger.valueOf(user.getProject().getId()) : null,
-                    user.getAvailableLeaveDays(),
-                    managers
-            ));
+            if (managerId != null) {
+                UserWithManagersDTO userDto = userMap.get(userId);
+                userDto.getManagers().add(new ManagerDTO(
+                        managerId.longValue(),
+                        managerName,
+                        managerEmail
+                ));
+            }
         }
 
-        return result;
+        return new ArrayList<>(userMap.values());
     }
 
     /**
