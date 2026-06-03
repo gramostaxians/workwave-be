@@ -233,8 +233,19 @@ public class UsersService {
     public Map<String, Object> getUserByEmail(String email) {
         Map<String, Object> result = usersRepository.findUserWithManagerByEmail(email);
         if (result == null || result.isEmpty()) {
-            throw new EntityNotFoundException("User not found");
+            // Auto-create a minimal default user when not present
+            NewUserDTO newUser = new NewUserDTO();
+            newUser.setEmail(email);
+            newUser.setStartOfWork(LocalDate.now());
+            createNewDefaultUser(newUser);
+
+            // attempt to read back the user record (with manager info)
+            result = usersRepository.findUserWithManagerByEmail(email);
+            if (result == null || result.isEmpty()) {
+                throw new EntityNotFoundException("User not found after creation");
+            }
         }
+
         return result;
     }
 
