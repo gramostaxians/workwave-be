@@ -115,4 +115,13 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
 
     @Query("SELECT lr FROM LeaveRequest lr WHERE lr.status = 'APPROVED' AND lr.leave_type <> 'HOME_OFFICE' ORDER BY lr.user.id ASC, lr.start_date DESC")
     List<LeaveRequest> findAllApprovedExcludingHomeOffice();
+
+    @Query("""
+    SELECT lr 
+    FROM LeaveRequest lr 
+    WHERE lr.leave_type = com.hr.workwave.enums.LeaveRequestTypeEnum.HOME_OFFICE
+      AND lr.start_date = CURRENT_DATE
+    ORDER BY lr.start_date ASC
+""")
+    List<LeaveRequest> findAllHomeOffice();
     }

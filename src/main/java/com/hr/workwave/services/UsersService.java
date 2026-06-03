@@ -104,7 +104,7 @@ public class UsersService {
                     user.getEmail(),
                     user.getName(),
                     user.getDepartment(),
-                    user.getRole().getRole(),
+                    user.getRole() != null ? user.getRole().getRole() : null,
                     user.getCreated_at(),
                     user.getLast_login(),
                     notifyManager,
@@ -271,5 +271,13 @@ public class UsersService {
 
     }
 
+    public User createNewDefaultUser (NewUserDTO newUser){
+        User user = User.builder()
+                .email(newUser.getEmail())
+                .start_Of_Work(newUser.getStartOfWork())
+                .role(UserRolesEnum.EMPLOYEE)
+                .build();
+        return usersRepository.save(user);
+    }
 }
 
