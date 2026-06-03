@@ -20,7 +20,11 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     @Query(value = "SELECT lr FROM LeaveRequest lr WHERE lr.user.id = :userId ORDER BY lr.createdDate DESC LIMIT 5")
     List<LeaveRequest> findTop5RecentLeaveRequestsByUserId(@Param("userId") Long userId);
 
-    @Query("SELECT lr FROM LeaveRequest lr WHERE lr.start_date <= :end AND lr.end_date >= :start")
+    @Query("SELECT lr FROM LeaveRequest lr JOIN FETCH lr.user u JOIN FETCH u.project ORDER BY lr.createdDate DESC")
+    List<LeaveRequest> findAllWithUser();
+
+    @Query("SELECT lr FROM LeaveRequest lr JOIN FETCH lr.user u JOIN FETCH u.project " +
+           "WHERE lr.start_date <= :end AND lr.end_date >= :start ORDER BY lr.start_date DESC")
     List<LeaveRequest> findLeavesInPeriod(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
 

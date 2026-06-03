@@ -41,8 +41,11 @@ public class LeaveRequestController {
      */
 
     @GetMapping("/leave-requests")
-    public List<LeaveRequest> getAllLeaveRequests() {
-        return leaveRequestService.getAllLeaveRequests();
+    public List<LeaveRequest> getAllLeaveRequests(
+            @RequestParam(required = false) Integer month,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) LocalDate week) {
+        return leaveRequestService.getAllLeaveRequestsFiltered(month, year, week);
     }
 
     /**

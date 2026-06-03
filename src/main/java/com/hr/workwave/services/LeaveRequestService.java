@@ -46,6 +46,31 @@ public class LeaveRequestService {
      */
 
     public List<LeaveRequest> getAllLeaveRequests() {
+        return leaveRequestRepository.findAllWithUser();
+    }
+
+    /**
+     * Retrieves leave requests filtered by month+year or by the ISO week containing a given date.
+     * Provide either (month + year) OR (week as any date within the desired week, e.g. "2026-06-02").
+     *
+     * @param month  month number 1–12 (used together with year)
+     * @param year   4-digit year (used together with month)
+     * @param week   any ISO date (yyyy-MM-dd) inside the desired calendar week (Mon–Sun)
+     * @return filtered list of LeaveRequest entities
+     */
+    public List<LeaveRequest> getAllLeaveRequestsFiltered(Integer month, Integer year, LocalDate week) {
+        if (week != null) {
+            LocalDateTime weekStart = week.with(DayOfWeek.MONDAY).atStartOfDay();
+            LocalDateTime weekEnd   = week.with(DayOfWeek.SUNDAY).atTime(23, 59, 59);
+            return leaveRequestRepository.findLeavesInPeriod(weekStart, weekEnd);
+        }
+        if (month != null && year != null) {
+            LocalDateTime monthStart = LocalDate.of(year, month, 1).atStartOfDay();
+            LocalDateTime monthEnd   = monthStart.toLocalDate()
+                    .with(TemporalAdjusters.lastDayOfMonth())
+                    .atTime(23, 59, 59);
+            return leaveRequestRepository.findLeavesInPeriod(monthStart, monthEnd);
+        }
         return leaveRequestRepository.findAll();
     }
 

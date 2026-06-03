@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <changeSet id="021-add-indexes-leave-requests" author="system">
+        <createIndex indexName="idx_leave_requests_start_date" tableName="leave_requests">
+            <column name="start_date"/>
+        </createIndex>
+        <createIndex indexName="idx_leave_requests_end_date" tableName="leave_requests">
+            <column name="end_date"/>
+        </createIndex>
+        <createIndex indexName="idx_leave_requests_user_id" tableName="leave_requests">
+            <column name="user_id"/>
+        </createIndex>
+        <createIndex indexName="idx_leave_requests_status" tableName="leave_requests">
+            <column name="status"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
+

@@ -1,6 +1,7 @@
 package com.hr.workwave.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.hr.workwave.enums.LeaveRequestStatusEnum;
 import com.hr.workwave.enums.LeaveRequestTypeEnum;
 import jakarta.persistence.*;
@@ -14,6 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Entity
 @Table(name = "leave_requests")
 public class LeaveRequest {
@@ -41,7 +43,7 @@ public class LeaveRequest {
     @Column(name = "employee_email")
     private String employee_email;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
     @OneToMany(mappedBy = "leaveRequest", cascade = CascadeType.ALL)
