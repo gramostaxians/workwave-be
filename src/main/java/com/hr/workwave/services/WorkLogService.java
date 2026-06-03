@@ -1,8 +1,10 @@
 package com.hr.workwave.services;
 
 import com.hr.workwave.dto.projection.ProjectWorkLogDTO;
+import com.hr.workwave.model.ProjectApplication;
 import com.hr.workwave.model.User;
 import com.hr.workwave.model.WorkLog;
+import com.hr.workwave.repo.ProjectApplicationRepository;
 import com.hr.workwave.repo.UsersRepository;
 import com.hr.workwave.repo.WorkLogRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,7 @@ public class WorkLogService {
 
     private final WorkLogRepository workLogRepository;
     private final UsersRepository usersRepository;
+    private final ProjectApplicationRepository projectApplicationRepository;
 
     public List<WorkLog> getWorkLogsByUserId(BigInteger userId) {
         return workLogRepository.findByUserId(userId);
@@ -28,6 +31,14 @@ public class WorkLogService {
         User user = usersRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id " + userId));
         workLog.setUser(user);
+
+        // Resolve projectApplication from DB to avoid detached entity issues
+        if (workLog.getProjectApplication() != null && workLog.getProjectApplication().getId() != null) {
+            ProjectApplication pa = projectApplicationRepository.findById(workLog.getProjectApplication().getId())
+                    .orElse(null);
+            workLog.setProjectApplication(pa);
+        }
+
         return workLogRepository.save(workLog);
     }
 
@@ -47,6 +58,16 @@ public class WorkLogService {
             workLog.setHourType(updatedWorkLog.getHourType());
             workLog.setDescription(updatedWorkLog.getDescription());
             workLog.setProject(updatedWorkLog.getProject());
+
+            // Resolve projectApplication from DB to avoid detached entity issues
+            if (updatedWorkLog.getProjectApplication() != null && updatedWorkLog.getProjectApplication().getId() != null) {
+                ProjectApplication pa = projectApplicationRepository.findById(updatedWorkLog.getProjectApplication().getId())
+                        .orElse(null);
+                workLog.setProjectApplication(pa);
+            } else {
+                workLog.setProjectApplication(null);
+            }
+
             return workLogRepository.save(workLog);
         }
         else{
