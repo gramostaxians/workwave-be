@@ -10,9 +10,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,12 +22,25 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = usersRepository.findByEmail(email);
 
-        List<String> roles = new ArrayList<>();
-        roles.add(user.getRole().name());
+        // New user: not in DB yet but has a valid Azure JWT.
+        // Return a default EMPLOYEE role so the request is not blocked.
+        // The /api/users/{email} endpoint will auto-create them on the same first request.
+        if (user == null) {
 
-        List<GrantedAuthority> authorities = roles.stream()
-                .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toList());
+            //TODO
+            // Setting what role to what user
+            // we should consult the VESI /persons api
+            // for time being we will just assign EMPLOYEE role to all new users
+            return new org.springframework.security.core.userdetails.User(
+                    email,
+                    "",
+                    List.of(new SimpleGrantedAuthority("EMPLOYEE"))
+            );
+        }
+
+        List<GrantedAuthority> authorities = List.of(
+                new SimpleGrantedAuthority(user.getRole().name())
+        );
 
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
@@ -37,5 +48,4 @@ public class CustomUserDetailsService implements UserDetailsService {
                 authorities
         );
     }
-
 }
