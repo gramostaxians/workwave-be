@@ -15,7 +15,7 @@ import java.util.Optional;
 public interface UsersRepository extends JpaRepository<User, BigInteger> {
     User findByEmail(String email);
 
-    List<User> findByProjectId(BigInteger projectId);
+    List<User> findByProjectId(Long projectId);
 
     @Query("SELECT u FROM User u WHERE u.role = :role")
     List<User> findByRole(@Param("role") UserRolesEnum role);

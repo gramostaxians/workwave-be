@@ -585,7 +585,7 @@ public class LeaveRequestService {
             throw new RuntimeException("User does not have a project assigned. Cannot request HOME_OFFICE leave.");
         }
 
-        BigInteger projectId = BigInteger.valueOf(user.getProject().getId());
+        Long projectId = user.getProject().getId();
 
         List<User> teamMembers = usersRepository.findByProjectId(projectId);
         int teamSize = teamMembers.size();

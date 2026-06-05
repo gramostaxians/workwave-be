@@ -11,6 +11,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
@@ -155,6 +158,20 @@ public class UsersController {
     @PostMapping("/users/new-user")
     public ResponseEntity<User> createNewUser(@RequestBody   NewUserDTO newUser) {
         return ResponseEntity.ok(usersService.createNewDefaultUser(newUser));
+    }
+
+    /**
+     * Returns all members of the same project as the authenticated user.
+     * Response includes: id, name, email, projectId, projectName.
+     */
+    @GetMapping("/users/my-team")
+    public ResponseEntity<List<TeamMemberDTO>> getMyTeam(@AuthenticationPrincipal Jwt jwt) {
+        if (jwt == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        String email = jwt.getClaimAsString("upn");
+        List<TeamMemberDTO> team = usersService.getMyTeam(email);
+        return ResponseEntity.ok(team);
     }
 
 }

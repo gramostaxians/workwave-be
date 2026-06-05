@@ -294,6 +294,37 @@ public class UsersService {
 
     }
 
+    /**
+     * Returns all members of the same project as the given user.
+     *
+     * @param email the email of the requesting user
+     * @return list of TeamMemberDTOs (id, name, email, projectId, projectName)
+     */
+    public List<TeamMemberDTO> getMyTeam(String email) {
+        User currentUser = usersRepository.findByEmail(email);
+        if (currentUser == null) {
+            throw new EntityNotFoundException("User not found with email: " + email);
+        }
+
+        if (currentUser.getProject() == null) {
+            return Collections.emptyList();
+        }
+
+        Long projectId = currentUser.getProject().getId();
+        String projectName = currentUser.getProject().getProjectName();
+
+        return usersRepository.findByProjectId(projectId)
+                .stream()
+                .map(u -> new TeamMemberDTO(
+                        u.getId(),
+                        u.getName(),
+                        u.getEmail(),
+                        projectId,
+                        projectName
+                ))
+                .collect(Collectors.toList());
+    }
+
     public User createNewDefaultUser (NewUserDTO newUser){
         User user = User.builder()
                 .email(newUser.getEmail())
