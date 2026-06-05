@@ -1,4 +1,4 @@
-package com.hr.workwave.services;
+package com.hr.workwave.service;
 
 import com.hr.workwave.dto.*;
 import com.hr.workwave.enums.UserRolesEnum;

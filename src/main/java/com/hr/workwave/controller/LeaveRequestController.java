@@ -7,15 +7,13 @@ import com.hr.workwave.enums.LeaveRequestTypeEnum;
 import com.hr.workwave.model.LeaveRequest;
 import com.hr.workwave.model.User;
 import com.hr.workwave.repo.UsersRepository;
-import com.hr.workwave.services.LeaveApprovalsService;
-import com.hr.workwave.services.LeaveRequestService;
+import com.hr.workwave.service.LeaveRequestService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 

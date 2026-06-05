@@ -1,16 +1,14 @@
-package com.hr.workwave.services;
+package com.hr.workwave.service;
 
 
 
 import com.hr.workwave.model.BankHolidays;
 import com.hr.workwave.repo.BankHolidaysRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 

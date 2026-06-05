@@ -1,4 +1,4 @@
-package com.hr.workwave.WebConfig;
+package com.hr.workwave.config;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;

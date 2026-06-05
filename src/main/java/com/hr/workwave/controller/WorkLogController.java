@@ -1,11 +1,11 @@
 package com.hr.workwave.controller;
 
-import com.hr.workwave.WebConfig.SecurityHelper;
+import com.hr.workwave.config.SecurityHelper;
 import com.hr.workwave.dto.projection.ProjectWorkLogDTO;
 import com.hr.workwave.model.User;
 import com.hr.workwave.model.WorkLog;
 import com.hr.workwave.repo.UsersRepository;
-import com.hr.workwave.services.WorkLogService;
+import com.hr.workwave.service.WorkLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +14,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/work-logs")

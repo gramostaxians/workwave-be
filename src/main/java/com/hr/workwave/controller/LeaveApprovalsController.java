@@ -2,7 +2,7 @@ package com.hr.workwave.controller;
 
 import com.hr.workwave.dto.LeaveApprovalsDto;
 import com.hr.workwave.dto.UpdateApprovalStatusRequest;
-import com.hr.workwave.services.LeaveApprovalsService;
+import com.hr.workwave.service.LeaveApprovalsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;

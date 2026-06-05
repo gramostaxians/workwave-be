@@ -1,4 +1,4 @@
-package com.hr.workwave.services;
+package com.hr.workwave.service;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;

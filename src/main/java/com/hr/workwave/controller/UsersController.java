@@ -2,7 +2,7 @@ package com.hr.workwave.controller;
 
 import com.hr.workwave.dto.*;
 import com.hr.workwave.model.User;
-import com.hr.workwave.services.UsersService;
+import com.hr.workwave.service.UsersService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

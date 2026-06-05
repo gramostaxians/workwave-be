@@ -1,7 +1,7 @@
 package com.hr.workwave.controller;
 
 import com.hr.workwave.model.UserManagers;
-import com.hr.workwave.services.UserManagerService;
+import com.hr.workwave.service.UserManagerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

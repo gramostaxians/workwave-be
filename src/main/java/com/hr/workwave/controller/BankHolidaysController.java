@@ -1,7 +1,7 @@
 package com.hr.workwave.controller;
 
 import com.hr.workwave.model.BankHolidays;
-import com.hr.workwave.services.BankHolidaysService;
+import com.hr.workwave.service.BankHolidaysService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;

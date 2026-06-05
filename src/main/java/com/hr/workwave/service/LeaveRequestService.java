@@ -1,4 +1,4 @@
-package com.hr.workwave.services;
+package com.hr.workwave.service;
 
 import com.hr.workwave.dto.LeaveRequestApprovalSummaryDTO;
 import com.hr.workwave.dto.LeaveRequestDTO;
@@ -22,7 +22,6 @@ import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
-import com.hr.workwave.services.GraphCalendarService;
 
 import static com.hr.workwave.enums.LeaveRequestStatusEnum.APPROVED;
 

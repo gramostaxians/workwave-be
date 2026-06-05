@@ -2,7 +2,7 @@ package com.hr.workwave.controller;
 
 import com.hr.workwave.dto.MsGraphTokenDTO;
 import com.hr.workwave.model.MsGraphToken;
-import com.hr.workwave.services.MsGraphTokenService;
+import com.hr.workwave.service.MsGraphTokenService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

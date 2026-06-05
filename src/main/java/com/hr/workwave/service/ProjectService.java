@@ -1,4 +1,4 @@
-package com.hr.workwave.services;
+package com.hr.workwave.service;
 
 import com.hr.workwave.dto.request.RequestProjectDto;
 import com.hr.workwave.model.Project;
