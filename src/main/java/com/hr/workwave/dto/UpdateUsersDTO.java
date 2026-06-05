@@ -28,4 +28,5 @@ public class UpdateUsersDTO {
     private List<BigInteger> managerIds;
     private BigInteger projectId;
     private BigInteger availableLeaveDays;
+    private LocalDate contractDueDate;
 }

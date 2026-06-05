@@ -79,7 +79,8 @@ public interface UsersRepository extends JpaRepository<User, BigInteger> {
                 u.available_leave_days,
                 m.id as manager_id,
                 m.name as manager_name,
-                m.email as manager_email
+                m.email as manager_email,
+                u.contract_due_date
             FROM users u
             LEFT JOIN user_managers um ON u.id = um.user_id
             LEFT JOIN users m ON um.manager_id = m.id

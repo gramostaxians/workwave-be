@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @BatchSize(size = 50)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Entity
-@Table(name = "Users")
+@Table(name = "users")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,4 +51,7 @@ public class User {
 
     @Column(name = "resource_no")
     private String resourceNo;
+
+    @Column(name = "contract_due_date")
+    private LocalDate contractDueDate;
 }

@@ -79,6 +79,7 @@ public class UsersService {
             String role = (String) row[4];
             LocalDateTime createdAt = toLocalDateTime(row[5]);
 
+
             LocalDateTime lastLogin = toLocalDateTime(row[6]);
             Boolean notifyManager = (Boolean) row[7];
             LocalDate startOfWork = toLocalDate(row[8]);
@@ -87,7 +88,7 @@ public class UsersService {
             BigInteger managerId = row[11] != null ? BigInteger.valueOf(((Number) row[11]).longValue()) : null;
             String managerName = (String) row[12];
             String managerEmail = (String) row[13];
-
+            LocalDate contractDueDate = toLocalDate(row[14]);
             if (!userMap.containsKey(userId)) {
                 userMap.put(userId, new UserWithManagersDTO(
                         userId != null ? userId.longValue() : null,
@@ -101,7 +102,8 @@ public class UsersService {
                         startOfWork,
                         projectId,
                         availableLeaveDays,
-                        new ArrayList<>()
+                        new ArrayList<>(),
+                        contractDueDate
                 ));
             }
 
@@ -162,6 +164,7 @@ public class UsersService {
         user.setStart_Of_Work(dto.getStartOfWork());
         user.setNotifyManager(dto.getNotifyManager());
         user.setAvailableLeaveDays(dto.getAvailableLeaveDays());
+        user.setContractDueDate(dto.getContractDueDate());
         if(dto.getProjectId() != null) {
             Project project = projectRepository.findById(dto.getProjectId()).orElseThrow();
             user.setProject(project);

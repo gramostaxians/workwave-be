@@ -25,4 +25,5 @@ public class UserWithManagersDTO {
     private BigInteger projectId;
     private BigInteger availableLeaveDays;
     private List<ManagerDTO> managers;
+    private LocalDate contractDueDate;
 }
