@@ -77,17 +77,11 @@ public class UsersService {
             String name = (String) row[2];
             String department = (String) row[3];
             String role = (String) row[4];
-            LocalDateTime createdAt = (row[5] != null)
-                    ? ((java.sql.Timestamp) row[5]).toLocalDateTime()
-                    : null;
+            LocalDateTime createdAt = toLocalDateTime(row[5]);
 
-            LocalDateTime lastLogin = (row[6] != null)
-                    ? ((java.sql.Timestamp) row[6]).toLocalDateTime()
-                    : null;
+            LocalDateTime lastLogin = toLocalDateTime(row[6]);
             Boolean notifyManager = (Boolean) row[7];
-            LocalDate startOfWork = (row[8] != null)
-                    ? ((java.sql.Date) row[8]).toLocalDate()
-                    : null;
+            LocalDate startOfWork = toLocalDate(row[8]);
             BigInteger projectId = row[9] != null ? BigInteger.valueOf(((Number) row[9]).longValue()) : null;
             BigInteger availableLeaveDays = row[10] != null ? BigInteger.valueOf(((Number) row[10]).longValue()) : null;
             BigInteger managerId = row[11] != null ? BigInteger.valueOf(((Number) row[11]).longValue()) : null;
@@ -122,6 +116,28 @@ public class UsersService {
         }
 
         return new ArrayList<>(userMap.values());
+    }
+
+    private LocalDateTime toLocalDateTime(Object value) {
+        if (value == null) return null;
+        if (value instanceof LocalDateTime localDateTime) return localDateTime;
+        if (value instanceof java.sql.Timestamp timestamp) return timestamp.toLocalDateTime();
+        if (value instanceof java.util.Date date) {
+            return LocalDateTime.ofInstant(date.toInstant(), java.time.ZoneId.systemDefault());
+        }
+        throw new IllegalArgumentException("Unsupported LocalDateTime value type: " + value.getClass().getName());
+    }
+
+    private LocalDate toLocalDate(Object value) {
+        if (value == null) return null;
+        if (value instanceof LocalDate localDate) return localDate;
+        if (value instanceof java.sql.Date sqlDate) return sqlDate.toLocalDate();
+        if (value instanceof java.sql.Timestamp timestamp) return timestamp.toLocalDateTime().toLocalDate();
+        if (value instanceof LocalDateTime localDateTime) return localDateTime.toLocalDate();
+        if (value instanceof java.util.Date date) {
+            return date.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate();
+        }
+        throw new IllegalArgumentException("Unsupported LocalDate value type: " + value.getClass().getName());
     }
 
     /**
