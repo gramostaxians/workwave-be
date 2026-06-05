@@ -146,8 +146,10 @@ public class UsersService {
         user.setStart_Of_Work(dto.getStartOfWork());
         user.setNotifyManager(dto.getNotifyManager());
         user.setAvailableLeaveDays(dto.getAvailableLeaveDays());
-        Project project = projectRepository.findById(dto.getProjectId()).orElseThrow();
-        user.setProject(project);
+        if(dto.getProjectId() != null) {
+            Project project = projectRepository.findById(dto.getProjectId()).orElseThrow();
+            user.setProject(project);
+        }
 
         usersRepository.save(user);
 
@@ -234,6 +236,10 @@ public class UsersService {
         Map<String, Object> result = usersRepository.findUserWithManagerByEmail(email);
         if (result == null || result.isEmpty()) {
             // Auto-create a minimal default user when not present
+            // TODO
+            // From /persons api get the information if the user is employee or not
+            // From /persons api get the information for start-of-work
+
             NewUserDTO newUser = new NewUserDTO();
             newUser.setEmail(email);
             newUser.setStartOfWork(LocalDate.now());
