@@ -38,6 +38,7 @@ public class LeaveRequestController {
      * @return List of LeaveRequest entities representing all leave requests.
      */
 
+    @PreAuthorize("ADMIN")
     @GetMapping("/leave-requests")
     public List<LeaveRequest> getAllLeaveRequests(
             @RequestParam(required = false) Integer month,
