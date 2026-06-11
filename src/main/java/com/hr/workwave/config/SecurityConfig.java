@@ -42,7 +42,10 @@ public class SecurityConfig {
             "/swagger-resources/**",
             "/webjars/**",
             // App
-            "/api/v1/user/info"
+            "/api/v1/user/info",
+            //GRAPHIQL
+            "/graphiql**",
+            "/graphql**"
     };
 
     @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}")
@@ -92,7 +95,6 @@ public class SecurityConfig {
                 .cors(withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(AUTH_WHITELIST).permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2

@@ -1,0 +1,38 @@
+type Query {
+    allLeaveRequests: [LeaveRequest]
+}
+
+type LeaveRequest {
+    id: ID!
+    employeeId: ID!
+    employeeEmail: String!
+    user: User
+    leaveType: LeaveRequestTypeEnum
+    status : LeaveRequestStatusEnum
+    startDate: String!
+    endDate: String!
+    reason: String
+}
+enum LeaveRequestTypeEnum {
+    ANNUAL_LEAVE
+    SICK_LEAVE
+    MATERNITY_LEAVE
+    PATERNITY_LEAVE
+    BEREAVEMENT_LEAVE
+    MATRIMONIAL_LEAVE
+    BLOOD_DONATION_LEAVE
+    HOME_OFFICE
+    PARTIAL_DAILY_LEAVE
+}
+
+enum LeaveRequestStatusEnum {
+    APPROVED
+    PENDING
+    REJECTED
+}
+type User {
+    id: ID!
+    email: String!
+    name: String!
+    department: String
+}

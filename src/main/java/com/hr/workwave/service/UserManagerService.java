@@ -4,6 +4,7 @@ import com.hr.workwave.model.UserManagers;
 import com.hr.workwave.repo.UserManagerRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 @Transactional
+@Slf4j
 public class UserManagerService {
 
     private final UserManagerRepository userManagerRepository;

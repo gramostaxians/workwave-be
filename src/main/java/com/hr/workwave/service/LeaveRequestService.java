@@ -154,7 +154,7 @@ public class LeaveRequestService {
         if (user == null) {
             throw new RuntimeException("Leave request has no associated user");
         }
-        String userEmail = request.getEmployee_email();
+        String userEmail = request.getEmployeeEmail();
 
 
         List<UserManagers> managerLinks = userManagerRepository.findByUserId(user.getId());
@@ -279,7 +279,7 @@ public class LeaveRequestService {
 
             LeaveRequestApprovalSummaryDTO summaryDTO = new LeaveRequestApprovalSummaryDTO();
             summaryDTO.setLeaveRequestId(leaveRequest.getId());
-            summaryDTO.setEmployeeEmail(leaveRequest.getEmployee_email());
+            summaryDTO.setEmployeeEmail(leaveRequest.getEmployeeEmail());
             summaryDTO.setLeaveType(leaveRequest.getLeave_type().getValue());
             summaryDTO.setDays(effectiveDays);
             summaryDTO.setStartDate(leaveRequest.getStart_date().toLocalDate());
@@ -408,7 +408,7 @@ public class LeaveRequestService {
         leaveRequest.setStart_date(dto.getStartDate());
         leaveRequest.setEnd_date(dto.getEndDate());
         leaveRequest.setUser(user);
-        leaveRequest.setEmployee_email(dto.getEmployeeEmail());
+        leaveRequest.setEmployeeEmail(dto.getEmployeeEmail());
         leaveRequest.setStatus(LeaveRequestStatusEnum.PENDING);
         double effectiveDays = calculateEffectiveLeaveDays(leaveRequest.getStart_date().toLocalDate(), leaveRequest.getEnd_date().toLocalDate());
 
@@ -669,7 +669,7 @@ public class LeaveRequestService {
                     LeaveRequestApprovalSummaryDTO dto = new LeaveRequestApprovalSummaryDTO();
                     long effectiveDays = bankHolidaysService.calculateEffectiveLeaveDays(leaveRequest.getStart_date().toLocalDate(), leaveRequest.getEnd_date().toLocalDate());
                     dto.setLeaveRequestId(leaveRequest.getId());
-                    dto.setEmployeeEmail(leaveRequest.getEmployee_email());
+                    dto.setEmployeeEmail(leaveRequest.getEmployeeEmail());
                     dto.setLeaveType(leaveRequest.getLeave_type().getValue());
                     dto.setStartDate(leaveRequest.getStart_date().toLocalDate());
                     dto.setEndDate(leaveRequest.getEnd_date().toLocalDate());
@@ -735,7 +735,7 @@ public class LeaveRequestService {
 
                     LeaveRequestApprovalSummaryDTO summaryDTO = new LeaveRequestApprovalSummaryDTO();
                     summaryDTO.setLeaveRequestId(leaveRequest.getId());
-                    summaryDTO.setEmployeeEmail(leaveRequest.getEmployee_email());
+                    summaryDTO.setEmployeeEmail(leaveRequest.getEmployeeEmail());
                     summaryDTO.setLeaveType(leaveRequest.getLeave_type().getValue());
                     summaryDTO.setStartDate(leaveRequest.getStart_date().toLocalDate());
                     summaryDTO.setEndDate(leaveRequest.getEnd_date().toLocalDate());
@@ -801,7 +801,7 @@ public class LeaveRequestService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
 
-        LocalDate employmentStart = user.getStart_Of_Work();
+        LocalDate employmentStart = user.getStartOfWork();
         if (employmentStart == null) {
             throw new IllegalStateException("Employment start date is not set for user " + userId);
         }
@@ -911,11 +911,11 @@ public class LeaveRequestService {
      */
 
     public double calculateLeaveDays(User user, LocalDate currentDate) {
-        if (user == null || user.getStart_Of_Work() == null || currentDate == null) {
+        if (user == null || user.getStartOfWork() == null || currentDate == null) {
             return 0;
         }
 
-        LocalDate startOfWork = user.getStart_Of_Work();
+        LocalDate startOfWork = user.getStartOfWork();
 
         if (startOfWork.isAfter(currentDate)) {
             return 0;
@@ -1075,7 +1075,7 @@ public class LeaveRequestService {
      * @return the number of sick leave days available
      */
     public double calculateSickLeaveDays(User user, LocalDate today) {
-        LocalDate startOfWork = user.getStart_Of_Work();
+        LocalDate startOfWork = user.getStartOfWork();
         if (startOfWork == null) {
             return 0;
         }

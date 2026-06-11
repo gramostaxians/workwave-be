@@ -53,7 +53,7 @@ public class GraphCalendarService {
         // Organizer = employee
         body.put("organizer", Map.of(
                 "emailAddress", Map.of(
-                        "address", leave.getEmployee_email()
+                        "address", leave.getEmployeeEmail()
                 )
         ));
 
@@ -81,7 +81,7 @@ public class GraphCalendarService {
         body.put("attendees", attendees);
 
         Map response = webClient.post()
-                .uri("/users/{email}/events", leave.getEmployee_email())
+                .uri("/users/{email}/events", leave.getEmployeeEmail())
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token.getAccessToken())
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .bodyValue(body)
@@ -110,7 +110,7 @@ public class GraphCalendarService {
 
         webClient.delete()
                 .uri("/users/{email}/events/{eventId}",
-                        leave.getEmployee_email(),
+                        leave.getEmployeeEmail(),
                         leave.getCalendar_event_id())
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token.getAccessToken())
                 .retrieve()

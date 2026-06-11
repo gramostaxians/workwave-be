@@ -6,7 +6,7 @@ import com.hr.workwave.enums.LeaveRequestStatusEnum;
 import com.hr.workwave.enums.LeaveRequestTypeEnum;
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.LocalDate;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -41,7 +41,7 @@ public class LeaveRequest {
     private LeaveRequestStatusEnum status;
 
     @Column(name = "employee_email")
-    private String employee_email;
+    private String employeeEmail;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;

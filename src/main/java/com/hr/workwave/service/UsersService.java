@@ -161,7 +161,7 @@ public class UsersService {
         user.setName(dto.getName());
         user.setDepartment(dto.getDepartment());
         user.setRole(dto.getRole());
-        user.setStart_Of_Work(dto.getStartOfWork());
+        user.setStartOfWork(dto.getStartOfWork());
         user.setNotifyManager(dto.getNotifyManager());
         user.setAvailableLeaveDays(dto.getAvailableLeaveDays());
         user.setContractDueDate(dto.getContractDueDate());
@@ -226,16 +226,16 @@ public class UsersService {
             newUser.setDepartment(dto.getDepartment());
             newUser.setRole(dto.getRole() != null ? dto.getRole() : UserRolesEnum.EMPLOYEE);
             newUser.setNotifyManager(dto.getNotifyManager() != null ? dto.getNotifyManager() : Boolean.FALSE);
-            newUser.setCreated_at(LocalDateTime.now());
-            newUser.setLast_login(LocalDateTime.now());
-            newUser.setStart_Of_Work(LocalDate.now());
+            newUser.setCreatedAt(LocalDateTime.now());
+            newUser.setLastLogin(LocalDateTime.now());
+            newUser.setStartOfWork(LocalDate.now());
             return usersRepository.save(newUser);
         } else {
 
             existing.setName(dto.getName() != null ? dto.getName() : existing.getName());
             existing.setDepartment(dto.getDepartment() != null ? dto.getDepartment() : existing.getDepartment());
             existing.setNotifyManager(dto.getNotifyManager() != null ? dto.getNotifyManager() : existing.getNotifyManager());
-            existing.setLast_login(LocalDateTime.now());
+            existing.setLastLogin(LocalDateTime.now());
             if (dto.getRole() != null) existing.setRole(dto.getRole());
             return usersRepository.save(existing);
         }
@@ -248,7 +248,7 @@ public class UsersService {
             return null;
         }
 
-        userOpt.setLast_login(LocalDateTime.now());
+        userOpt.setLastLogin(LocalDateTime.now());
         return usersRepository.save(userOpt);
     }
     public Map<String, Object> getUserByEmail(String email) {
@@ -321,9 +321,6 @@ public class UsersService {
      */
     public List<TeamMemberDTO> getMyTeam(String email) {
         User currentUser = usersRepository.findByEmail(email);
-        if (currentUser == null) {
-            throw new EntityNotFoundException("User not found with email: " + email);
-        }
 
         if (currentUser.getProject() == null) {
             return Collections.emptyList();
@@ -347,7 +344,7 @@ public class UsersService {
     public User createNewDefaultUser (NewUserDTO newUser){
         User user = User.builder()
                 .email(newUser.getEmail())
-                .start_Of_Work(newUser.getStartOfWork())
+                .startOfWork(newUser.getStartOfWork())
                 .role(UserRolesEnum.EMPLOYEE)
                 .build();
         return usersRepository.save(user);

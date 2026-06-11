@@ -1,0 +1,15 @@
+# GraphQL schema for admin dashboard data
+extend type Query {
+    adminDashboard: AdminDashboard
+}
+
+type AdminDashboard {
+    totalUsers: Int
+    activeProjects: Int
+    pendingLeaveApprovals: Int
+    approvedLeavesThisMonth: Int
+    rejectedLeavesThisMonth: Int
+    totalHomeOfficeThisMonth: Int
+    totalBillableHoursThisMonth: Float
+}
+

@@ -1,0 +1,5 @@
+# Keep user-related GraphQL query fields in this schema file.
+extend type Query {
+    leaveRequestsByUserId(userId: ID!): [LeaveRequest]
+}
+

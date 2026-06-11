@@ -28,11 +28,6 @@ public class WorkLogController {
     public ResponseEntity<List<WorkLog>> getWorkLogs() {
 
         User currentUser = usersRepository.findByEmail(securityHelper.getCurrentUserId());
-
-        if (currentUser == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
         List<WorkLog> workLogs = workLogService.getWorkLogsByUserId(currentUser.getId());
         return ResponseEntity.ok(workLogs);
     }

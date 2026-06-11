@@ -53,7 +53,7 @@ public class LeaveRequestExcelExportService {
 
             User user = userRequests.get(0).getUser();
             String Name = user.getName();
-            LocalDate start_Date = user.getStart_Of_Work();
+            LocalDate start_Date = user.getStartOfWork();
 
 
             Font boldFont = workbook.createFont();
@@ -220,7 +220,7 @@ public class LeaveRequestExcelExportService {
                 if (sheetName.length() > 31) sheetName = sheetName.substring(0, 31);
                 Sheet sheet = workbook.createSheet(sheetName);
 
-                LocalDate start_Date = user.getStart_Of_Work();
+                LocalDate start_Date = user.getStartOfWork();
 
                 CellStyle boxStyle = workbook.createCellStyle();
                 boxStyle.setBorderBottom(BorderStyle.THIN);

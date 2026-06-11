@@ -10,6 +10,8 @@ import com.hr.workwave.repo.UsersRepository;
 import com.hr.workwave.service.LeaveRequestService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.graphql.data.method.annotation.Argument;
+import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -328,4 +330,11 @@ public class LeaveRequestController {
 
         return leaveRequestService.getLeaveRequestsForCurrentPeriod(userId);
     }
+
+    @QueryMapping
+    public List<LeaveRequest> allLeaveRequests() {
+        return leaveRequestService.getAllLeaveRequests();
+    }
+
+
 }

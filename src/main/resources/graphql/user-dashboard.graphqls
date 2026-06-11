@@ -1,0 +1,18 @@
+# GraphQL schema for employee dashboard data
+extend type Query {
+    userDashboard(userId: ID!): UserDashboard
+}
+
+type UserDashboard {
+    userId: ID!
+    userName: String
+    userEmail: String
+    projectId: ID
+    projectName: String
+    availableLeaveDays: Int
+    pendingLeaveRequests: Int
+    approvedLeaveRequests: Int
+    rejectedLeaveRequests: Int
+    totalWorkedHoursThisMonth: Float
+}
+

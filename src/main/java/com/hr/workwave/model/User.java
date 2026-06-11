@@ -1,7 +1,6 @@
 package com.hr.workwave.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.hr.workwave.enums.UserRolesEnum;
 import jakarta.persistence.*;
 import lombok.*;
@@ -29,16 +28,20 @@ public class User {
     private String email;
 
     private String name;
+
     private String department;
 
     @Enumerated(EnumType.STRING)
     private UserRolesEnum role;
 
     @Column(name = "created_at")
-    private LocalDateTime created_at;
-    private LocalDateTime last_login;
+    private LocalDateTime createdAt;
 
-    private LocalDate start_Of_Work;
+    @Column(name ="last_login")
+    private LocalDateTime lastLogin;
+
+    @Column(name = "start_Of_Work")
+    private LocalDate startOfWork;
 
     private Boolean notifyManager;
 
