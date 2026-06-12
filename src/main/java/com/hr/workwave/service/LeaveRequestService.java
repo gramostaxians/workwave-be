@@ -73,6 +73,44 @@ public class LeaveRequestService {
         return leaveRequestRepository.findAll();
     }
 
+    public List<LeaveRequest> getProjectLeaveRequestsFiltered(String email, Integer month, Integer year, LocalDate week) {
+        User currentUser = usersRepository.findByEmail(email);
+        if (currentUser == null || currentUser.getProject() == null || currentUser.getProject().getId() == null) {
+            return Collections.emptyList();
+        }
+
+        Long projectId = currentUser.getProject().getId();
+
+        if (week != null) {
+            LocalDateTime weekStart = week.with(DayOfWeek.MONDAY).atStartOfDay();
+            LocalDateTime weekEnd = week.with(DayOfWeek.SUNDAY).atTime(23, 59, 59);
+            return leaveRequestRepository.findByProjectIdAndPeriod(projectId, weekStart, weekEnd);
+        }
+
+        if (month != null && year != null) {
+            LocalDateTime monthStart = LocalDate.of(year, month, 1).atStartOfDay();
+            LocalDateTime monthEnd = monthStart.toLocalDate()
+                    .with(TemporalAdjusters.lastDayOfMonth())
+                    .atTime(23, 59, 59);
+            return leaveRequestRepository.findByProjectIdAndPeriod(projectId, monthStart, monthEnd);
+        }
+
+        return leaveRequestRepository.findByProjectId(projectId);
+    }
+
+    public List<LeaveRequest> getVisibleLeaveRequestsFiltered(String email, Integer month, Integer year, LocalDate week) {
+        User currentUser = usersRepository.findByEmail(email);
+        if (currentUser == null) {
+            return Collections.emptyList();
+        }
+
+        if (currentUser.getRole() == UserRolesEnum.ADMIN) {
+            return getAllLeaveRequestsFiltered(month, year, week);
+        }
+
+        return getProjectLeaveRequestsFiltered(email, month, year, week);
+    }
+
     /**
      * Retrieves the 5 most recent leave requests for a specific user.
      *

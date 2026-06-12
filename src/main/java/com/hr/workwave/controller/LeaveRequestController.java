@@ -40,13 +40,37 @@ public class LeaveRequestController {
      * @return List of LeaveRequest entities representing all leave requests.
      */
 
-    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/leave-requests")
-    public List<LeaveRequest> getAllLeaveRequests(
+    public ResponseEntity<List<LeaveRequest>> getAllLeaveRequests(
+            @AuthenticationPrincipal Jwt jwt,
             @RequestParam(required = false) Integer month,
             @RequestParam(required = false) Integer year,
             @RequestParam(required = false) LocalDate week) {
-        return leaveRequestService.getAllLeaveRequestsFiltered(month, year, week);
+        if (jwt == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String email = jwt.getClaimAsString("upn");
+        return ResponseEntity.ok(leaveRequestService.getVisibleLeaveRequestsFiltered(email, month, year, week));
+    }
+
+    /**
+     * @deprecated Use /api/leave-requests instead.
+     * That endpoint is role-aware (ADMIN sees all, others see their team/project).
+     */
+    @Deprecated(since = "2026-06", forRemoval = false)
+    @GetMapping("/leave-requests/my-project")
+    public ResponseEntity<List<LeaveRequest>> getMyProjectLeaveRequests(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestParam(required = false) Integer month,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) LocalDate week) {
+        if (jwt == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String email = jwt.getClaimAsString("upn");
+        return ResponseEntity.ok(leaveRequestService.getProjectLeaveRequestsFiltered(email, month, year, week));
     }
 
     /**
@@ -330,11 +354,5 @@ public class LeaveRequestController {
 
         return leaveRequestService.getLeaveRequestsForCurrentPeriod(userId);
     }
-
-    @QueryMapping
-    public List<LeaveRequest> allLeaveRequests() {
-        return leaveRequestService.getAllLeaveRequests();
-    }
-
 
 }

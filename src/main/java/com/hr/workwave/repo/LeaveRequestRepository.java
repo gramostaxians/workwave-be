@@ -1,5 +1,6 @@
 package com.hr.workwave.repo;
 
+import com.hr.workwave.dto.projection.LeaveRequestAbsencePlannerDTO;
 import com.hr.workwave.enums.LeaveRequestStatusEnum;
 import com.hr.workwave.enums.LeaveRequestTypeEnum;
 import com.hr.workwave.model.LeaveRequest;
@@ -128,4 +129,58 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     ORDER BY lr.start_date ASC
 """)
     List<LeaveRequest> findAllHomeOffice();
-    }
+
+    @Query("""
+    SELECT new com.hr.workwave.dto.projection.LeaveRequestAbsencePlannerDTO(
+        lr.id,
+        lr.leave_type,
+        lr.start_date,
+        lr.end_date,
+        lr.employeeEmail,
+        u.id,
+        (CAST(FUNCTION('DATE_PART', 'day', FUNCTION('AGE', lr.end_date, lr.start_date)) AS integer) + 1),
+        p.id,
+        p.projectName
+    )
+    FROM LeaveRequest lr
+    JOIN lr.user u
+    JOIN u.project p
+    WHERE lr.status = com.hr.workwave.enums.LeaveRequestStatusEnum.APPROVED
+      AND p.id = :projectId
+      AND lr.start_date <= :end
+      AND lr.end_date >= :start
+    ORDER BY u.id ASC, lr.start_date ASC
+    """)
+    List<LeaveRequestAbsencePlannerDTO> findAbsencePlannerByPeriod(
+            @Param("projectId") Long projectId,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end
+    );
+
+    @Query("""
+    SELECT lr
+    FROM LeaveRequest lr
+    JOIN FETCH lr.user u
+    JOIN FETCH u.project p
+    WHERE p.id = :projectId
+    ORDER BY lr.start_date DESC
+    """)
+    List<LeaveRequest> findByProjectId(@Param("projectId") Long projectId);
+
+    @Query("""
+    SELECT lr
+    FROM LeaveRequest lr
+    JOIN FETCH lr.user u
+    JOIN FETCH u.project p
+    WHERE p.id = :projectId
+      AND lr.start_date <= :end
+      AND lr.end_date >= :start
+    ORDER BY lr.start_date DESC
+    """)
+    List<LeaveRequest> findByProjectIdAndPeriod(
+            @Param("projectId") Long projectId,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end
+    );
+
+}
