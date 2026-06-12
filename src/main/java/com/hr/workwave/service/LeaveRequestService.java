@@ -1,5 +1,6 @@
 package com.hr.workwave.service;
 
+import com.hr.workwave.dto.projection.LeaveRequestAbsencePlannerDTO;
 import com.hr.workwave.dto.LeaveRequestApprovalSummaryDTO;
 import com.hr.workwave.dto.LeaveRequestDTO;
 import com.hr.workwave.dto.ManagerApprovalDTO;
@@ -109,6 +110,41 @@ public class LeaveRequestService {
         }
 
         return getProjectLeaveRequestsFiltered(email, month, year, week);
+    }
+
+    public List<LeaveRequestAbsencePlannerDTO> getVisibleAbsencePlannerFiltered(String email, Integer month, Integer year, LocalDate week) {
+        User currentUser = usersRepository.findByEmail(email);
+        if (currentUser == null) {
+            return Collections.emptyList();
+        }
+
+        LocalDateTime start = null;
+        LocalDateTime end = null;
+
+        if (week != null) {
+            start = week.with(DayOfWeek.MONDAY).atStartOfDay();
+            end = week.with(DayOfWeek.SUNDAY).atTime(23, 59, 59);
+        } else if (month != null && year != null) {
+            start = LocalDate.of(year, month, 1).atStartOfDay();
+            end = start.toLocalDate()
+                    .with(TemporalAdjusters.lastDayOfMonth())
+                    .atTime(23, 59, 59);
+        }
+
+        if (currentUser.getRole() == UserRolesEnum.ADMIN) {
+            return start != null && end != null
+                    ? leaveRequestRepository.findAllAbsencePlannerByPeriod(start, end)
+                    : leaveRequestRepository.findAllAbsencePlanner();
+        }
+
+        if (currentUser.getProject() == null || currentUser.getProject().getId() == null) {
+            return Collections.emptyList();
+        }
+
+        Long projectId = currentUser.getProject().getId();
+        return start != null && end != null
+                ? leaveRequestRepository.findAbsencePlannerByPeriod(projectId, start, end)
+                : leaveRequestRepository.findAbsencePlannerByProjectId(projectId);
     }
 
     /**

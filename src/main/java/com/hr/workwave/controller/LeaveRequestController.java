@@ -2,6 +2,7 @@ package com.hr.workwave.controller;
 
 import com.hr.workwave.dto.LeaveRequestApprovalSummaryDTO;
 import com.hr.workwave.dto.LeaveRequestDTO;
+import com.hr.workwave.dto.projection.LeaveRequestAbsencePlannerDTO;
 import com.hr.workwave.enums.LeaveRequestStatusEnum;
 import com.hr.workwave.enums.LeaveRequestTypeEnum;
 import com.hr.workwave.model.LeaveRequest;
@@ -37,11 +38,11 @@ public class LeaveRequestController {
     /**
      * Retrieves a list of all leave requests in the system.
      *
-     * @return List of LeaveRequest entities representing all leave requests.
+     * @return absence planner rows for all approved leave requests visible to the current user.
      */
 
     @GetMapping("/leave-requests")
-    public ResponseEntity<List<LeaveRequest>> getAllLeaveRequests(
+    public ResponseEntity<List<LeaveRequestAbsencePlannerDTO>> getAllLeaveRequests(
             @AuthenticationPrincipal Jwt jwt,
             @RequestParam(required = false) Integer month,
             @RequestParam(required = false) Integer year,
@@ -51,7 +52,7 @@ public class LeaveRequestController {
         }
 
         String email = jwt.getClaimAsString("upn");
-        return ResponseEntity.ok(leaveRequestService.getVisibleLeaveRequestsFiltered(email, month, year, week));
+        return ResponseEntity.ok(leaveRequestService.getVisibleAbsencePlannerFiltered(email, month, year, week));
     }
 
     /**

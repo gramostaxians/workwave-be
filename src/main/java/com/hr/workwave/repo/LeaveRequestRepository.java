@@ -146,6 +146,72 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     JOIN lr.user u
     JOIN u.project p
     WHERE lr.status = com.hr.workwave.enums.LeaveRequestStatusEnum.APPROVED
+    ORDER BY u.id ASC, lr.start_date ASC
+    """)
+    List<LeaveRequestAbsencePlannerDTO> findAllAbsencePlanner();
+
+    @Query("""
+    SELECT new com.hr.workwave.dto.projection.LeaveRequestAbsencePlannerDTO(
+        lr.id,
+        lr.leave_type,
+        lr.start_date,
+        lr.end_date,
+        lr.employeeEmail,
+        u.id,
+        (CAST(FUNCTION('DATE_PART', 'day', FUNCTION('AGE', lr.end_date, lr.start_date)) AS integer) + 1),
+        p.id,
+        p.projectName
+    )
+    FROM LeaveRequest lr
+    JOIN lr.user u
+    JOIN u.project p
+    WHERE lr.status = com.hr.workwave.enums.LeaveRequestStatusEnum.APPROVED
+      AND lr.start_date <= :end
+      AND lr.end_date >= :start
+    ORDER BY u.id ASC, lr.start_date ASC
+    """)
+    List<LeaveRequestAbsencePlannerDTO> findAllAbsencePlannerByPeriod(
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end
+    );
+
+    @Query("""
+    SELECT new com.hr.workwave.dto.projection.LeaveRequestAbsencePlannerDTO(
+        lr.id,
+        lr.leave_type,
+        lr.start_date,
+        lr.end_date,
+        lr.employeeEmail,
+        u.id,
+        (CAST(FUNCTION('DATE_PART', 'day', FUNCTION('AGE', lr.end_date, lr.start_date)) AS integer) + 1),
+        p.id,
+        p.projectName
+    )
+    FROM LeaveRequest lr
+    JOIN lr.user u
+    JOIN u.project p
+    WHERE lr.status = com.hr.workwave.enums.LeaveRequestStatusEnum.APPROVED
+      AND p.id = :projectId
+    ORDER BY u.id ASC, lr.start_date ASC
+    """)
+    List<LeaveRequestAbsencePlannerDTO> findAbsencePlannerByProjectId(@Param("projectId") Long projectId);
+
+    @Query("""
+    SELECT new com.hr.workwave.dto.projection.LeaveRequestAbsencePlannerDTO(
+        lr.id,
+        lr.leave_type,
+        lr.start_date,
+        lr.end_date,
+        lr.employeeEmail,
+        u.id,
+        (CAST(FUNCTION('DATE_PART', 'day', FUNCTION('AGE', lr.end_date, lr.start_date)) AS integer) + 1),
+        p.id,
+        p.projectName
+    )
+    FROM LeaveRequest lr
+    JOIN lr.user u
+    JOIN u.project p
+    WHERE lr.status = com.hr.workwave.enums.LeaveRequestStatusEnum.APPROVED
       AND p.id = :projectId
       AND lr.start_date <= :end
       AND lr.end_date >= :start
