@@ -152,9 +152,10 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     JOIN lr.user u
     JOIN u.project p
     WHERE lr.status = com.hr.workwave.enums.LeaveRequestStatusEnum.APPROVED
+      AND (:leaveType IS NULL OR lr.leaveType = :leaveType)
     ORDER BY u.id ASC, lr.start_date ASC
     """)
-    List<LeaveRequestAbsencePlannerDTO> findAllAbsencePlanner();
+    List<LeaveRequestAbsencePlannerDTO> findAllAbsencePlanner(@Param("leaveType") LeaveRequestTypeEnum leaveType);
 
     @Query("""
     SELECT new com.hr.workwave.dto.projection.LeaveRequestAbsencePlannerDTO(
@@ -172,13 +173,15 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     JOIN lr.user u
     JOIN u.project p
     WHERE lr.status = com.hr.workwave.enums.LeaveRequestStatusEnum.APPROVED
+      AND (:leaveType IS NULL OR lr.leaveType = :leaveType)
       AND lr.start_date <= :end
       AND lr.end_date >= :start
     ORDER BY u.id ASC, lr.start_date ASC
     """)
     List<LeaveRequestAbsencePlannerDTO> findAllAbsencePlannerByPeriod(
             @Param("start") LocalDateTime start,
-            @Param("end") LocalDateTime end
+            @Param("end") LocalDateTime end,
+            @Param("leaveType") LeaveRequestTypeEnum leaveType
     );
 
     @Query("""
@@ -198,9 +201,13 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     JOIN u.project p
     WHERE lr.status = com.hr.workwave.enums.LeaveRequestStatusEnum.APPROVED
       AND p.id = :projectId
+      AND (:leaveType IS NULL OR lr.leaveType = :leaveType)
     ORDER BY u.id ASC, lr.start_date ASC
     """)
-    List<LeaveRequestAbsencePlannerDTO> findAbsencePlannerByProjectId(@Param("projectId") Long projectId);
+    List<LeaveRequestAbsencePlannerDTO> findAbsencePlannerByProjectId(
+            @Param("projectId") Long projectId,
+            @Param("leaveType") LeaveRequestTypeEnum leaveType
+    );
 
     @Query("""
     SELECT new com.hr.workwave.dto.projection.LeaveRequestAbsencePlannerDTO(
@@ -219,6 +226,7 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     JOIN u.project p
     WHERE lr.status = com.hr.workwave.enums.LeaveRequestStatusEnum.APPROVED
       AND p.id = :projectId
+      AND (:leaveType IS NULL OR lr.leaveType = :leaveType)
       AND lr.start_date <= :end
       AND lr.end_date >= :start
     ORDER BY u.id ASC, lr.start_date ASC
@@ -226,7 +234,8 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     List<LeaveRequestAbsencePlannerDTO> findAbsencePlannerByPeriod(
             @Param("projectId") Long projectId,
             @Param("start") LocalDateTime start,
-            @Param("end") LocalDateTime end
+            @Param("end") LocalDateTime end,
+            @Param("leaveType") LeaveRequestTypeEnum leaveType
     );
 
     @Query("""

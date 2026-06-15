@@ -46,13 +46,14 @@ public class LeaveRequestController {
             @AuthenticationPrincipal Jwt jwt,
             @RequestParam(required = false) Integer month,
             @RequestParam(required = false) Integer year,
-            @RequestParam(required = false) LocalDate week) {
+            @RequestParam(required = false) LocalDate week,
+            @RequestParam(required = false) LeaveRequestTypeEnum leaveType) {
         if (jwt == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         String email = jwt.getClaimAsString("upn");
-        return ResponseEntity.ok(leaveRequestService.getVisibleAbsencePlannerFiltered(email, month, year, week));
+        return ResponseEntity.ok(leaveRequestService.getVisibleAbsencePlannerFiltered(email, month, year, week, leaveType));
     }
 
     /**
@@ -205,6 +206,7 @@ public class LeaveRequestController {
      * @return ResponseEntity with appropriate HTTP status
      */
 
+    @PreAuthorize("hasAnyAuthority('MANAGER', 'ADMIN')")
     @DeleteMapping("/leave-request/{id}/delete")
     public ResponseEntity<Void> deleteRequestById(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {
         if (jwt == null) {

@@ -112,7 +112,13 @@ public class LeaveRequestService {
         return getProjectLeaveRequestsFiltered(email, month, year, week);
     }
 
-    public List<LeaveRequestAbsencePlannerDTO> getVisibleAbsencePlannerFiltered(String email, Integer month, Integer year, LocalDate week) {
+    public List<LeaveRequestAbsencePlannerDTO> getVisibleAbsencePlannerFiltered(
+            String email,
+            Integer month,
+            Integer year,
+            LocalDate week,
+            LeaveRequestTypeEnum leaveType
+    ) {
         User currentUser = usersRepository.findByEmail(email);
         if (currentUser == null) {
             return Collections.emptyList();
@@ -133,8 +139,8 @@ public class LeaveRequestService {
 
         if (currentUser.getRole() == UserRolesEnum.ADMIN) {
             return start != null && end != null
-                    ? leaveRequestRepository.findAllAbsencePlannerByPeriod(start, end)
-                    : leaveRequestRepository.findAllAbsencePlanner();
+                    ? leaveRequestRepository.findAllAbsencePlannerByPeriod(start, end, leaveType)
+                    : leaveRequestRepository.findAllAbsencePlanner(leaveType);
         }
 
         if (currentUser.getProject() == null || currentUser.getProject().getId() == null) {
@@ -143,8 +149,8 @@ public class LeaveRequestService {
 
         Long projectId = currentUser.getProject().getId();
         return start != null && end != null
-                ? leaveRequestRepository.findAbsencePlannerByPeriod(projectId, start, end)
-                : leaveRequestRepository.findAbsencePlannerByProjectId(projectId);
+                ? leaveRequestRepository.findAbsencePlannerByPeriod(projectId, start, end, leaveType)
+                : leaveRequestRepository.findAbsencePlannerByProjectId(projectId, leaveType);
     }
 
     /**
