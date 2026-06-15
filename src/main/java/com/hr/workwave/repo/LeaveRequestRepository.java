@@ -29,10 +29,16 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     List<LeaveRequest> findLeavesInPeriod(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
 
-    @Query("SELECT lr FROM LeaveRequest lr WHERE lr.user.id = :userId AND lr.leave_type = :leaveType")
+    @Query("SELECT lr FROM LeaveRequest lr WHERE lr.user.id = :userId AND lr.leaveType = :leaveType")
     List<LeaveRequest> findByUserIdAndLeaveType(@Param("userId") BigInteger userId, @Param("leaveType") LeaveRequestTypeEnum leaveType);
 
-    @Query("SELECT lr FROM LeaveRequest lr WHERE lr.user.id = :userId AND lr.leave_type = 'SICK_LEAVE'")
+    boolean existsByUserIdAndLeaveTypeAndStatus(
+            BigInteger userId,
+            LeaveRequestTypeEnum leaveType,
+            LeaveRequestStatusEnum status
+    );
+
+    @Query("SELECT lr FROM LeaveRequest lr WHERE lr.user.id = :userId AND lr.leaveType = 'SICK_LEAVE'")
     List<LeaveRequest> findSickLeaveByUserId(@Param("userId") BigInteger userId);
 
     List<LeaveRequest> findByStatus(LeaveRequestStatusEnum status);
@@ -44,12 +50,12 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     @Query("SELECT lr FROM LeaveRequest lr WHERE lr.id = :userId")
     List<LeaveRequest> getLeaveRequestsById(@Param("userId") BigInteger Id);
 
-    @Query("SELECT lr FROM LeaveRequest lr WHERE lr.user.id = :userId AND lr.status = 'APPROVED' AND lr.leave_type <> 'HOME_OFFICE' ORDER BY lr.start_date DESC")
+    @Query("SELECT lr FROM LeaveRequest lr WHERE lr.user.id = :userId AND lr.status = 'APPROVED' AND lr.leaveType <> 'HOME_OFFICE' ORDER BY lr.start_date DESC")
     List<LeaveRequest> getApprovedLeaveRequests(@Param("userId") Long userId);
 
     @Query("SELECT lr FROM LeaveRequest lr " +
             "WHERE lr.user.id = :userId " +
-            "AND lr.leave_type = com.hr.workwave.enums.LeaveRequestTypeEnum.ANNUAL_LEAVE " +
+            "AND lr.leaveType = com.hr.workwave.enums.LeaveRequestTypeEnum.ANNUAL_LEAVE " +
             "AND lr.status = 'APPROVED' " +
             "AND lr.start_date >= :startDate " +
             "AND lr.end_date <= :endDate")
@@ -59,12 +65,12 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
             @Param("endDate") LocalDateTime endDate);
 
 
-    @Query("SELECT COUNT(lr) FROM LeaveRequest lr WHERE lr.leave_type = 'HOME_OFFICE' AND lr.start_date <= :date AND lr.end_date >= :date AND lr.user.project.id = :projectId")
+    @Query("SELECT COUNT(lr) FROM LeaveRequest lr WHERE lr.leaveType = 'HOME_OFFICE' AND lr.start_date <= :date AND lr.end_date >= :date AND lr.user.project.id = :projectId")
     int countHomeOfficeRequestsOnDateAndProject(@Param("date") LocalDateTime date, @Param("projectId") Long projectId);
 
     @Query("SELECT CASE WHEN COUNT(lr) > 0 THEN true ELSE false END FROM LeaveRequest lr " +
             "WHERE lr.user.id = :userId AND lr.start_date <= :weekEnd AND lr.end_date >= :weekStart " +
-            "AND lr.leave_type = :leaveType")
+            "AND lr.leaveType = :leaveType")
     boolean existsByUserIdAndDateRange(@Param("userId") BigInteger userId,
                                        @Param("leaveType") LeaveRequestTypeEnum leaveType,
                                        @Param("weekStart") LocalDateTime weekStart,
@@ -74,7 +80,7 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     @Query("SELECT lr FROM LeaveRequest lr WHERE " +
             "(EXTRACT(MONTH FROM lr.start_date) = :month OR EXTRACT(MONTH FROM lr.end_date) = :month) " +
             "AND (EXTRACT(YEAR FROM lr.start_date) = :year OR EXTRACT(YEAR FROM lr.end_date) = :year) " +
-            "AND lr.leave_type = 'HOME_OFFICE'")
+            "AND lr.leaveType = 'HOME_OFFICE'")
     List<LeaveRequest> findByMonthAndYear(@Param("month") int month, @Param("year") int year);
 
 
@@ -85,7 +91,7 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     SELECT CASE WHEN COUNT(lr) > 0 THEN TRUE ELSE FALSE END
     FROM LeaveRequest lr
     WHERE lr.user.id = :userId
-      AND lr.leave_type = :leaveType
+      AND lr.leaveType = :leaveType
       AND lr.status IN :statuses
 """)
     boolean existsMatrimonialLeave(
@@ -108,7 +114,7 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
         @Query("""
            SELECT lr
            FROM LeaveRequest lr
-           WHERE lr.leave_type = :leaveType
+           WHERE lr.leaveType = :leaveType
              AND lr.start_date <= :endDate
              AND lr.end_date >= :startDate
            """)
@@ -118,13 +124,13 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
                 @Param("endDate") LocalDateTime endDate
         );
 
-    @Query("SELECT lr FROM LeaveRequest lr WHERE lr.status = 'APPROVED' AND lr.leave_type <> 'HOME_OFFICE' ORDER BY lr.user.id ASC, lr.start_date DESC")
+    @Query("SELECT lr FROM LeaveRequest lr WHERE lr.status = 'APPROVED' AND lr.leaveType <> 'HOME_OFFICE' ORDER BY lr.user.id ASC, lr.start_date DESC")
     List<LeaveRequest> findAllApprovedExcludingHomeOffice();
 
     @Query("""
     SELECT lr 
     FROM LeaveRequest lr 
-    WHERE lr.leave_type = com.hr.workwave.enums.LeaveRequestTypeEnum.HOME_OFFICE
+    WHERE lr.leaveType = com.hr.workwave.enums.LeaveRequestTypeEnum.HOME_OFFICE
       AND lr.start_date = CURRENT_DATE
     ORDER BY lr.start_date ASC
 """)
@@ -133,7 +139,7 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     @Query("""
     SELECT new com.hr.workwave.dto.projection.LeaveRequestAbsencePlannerDTO(
         lr.id,
-        lr.leave_type,
+        lr.leaveType,
         lr.start_date,
         lr.end_date,
         lr.employeeEmail,
@@ -153,7 +159,7 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     @Query("""
     SELECT new com.hr.workwave.dto.projection.LeaveRequestAbsencePlannerDTO(
         lr.id,
-        lr.leave_type,
+        lr.leaveType,
         lr.start_date,
         lr.end_date,
         lr.employeeEmail,
@@ -178,7 +184,7 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     @Query("""
     SELECT new com.hr.workwave.dto.projection.LeaveRequestAbsencePlannerDTO(
         lr.id,
-        lr.leave_type,
+        lr.leaveType,
         lr.start_date,
         lr.end_date,
         lr.employeeEmail,
@@ -199,7 +205,7 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     @Query("""
     SELECT new com.hr.workwave.dto.projection.LeaveRequestAbsencePlannerDTO(
         lr.id,
-        lr.leave_type,
+        lr.leaveType,
         lr.start_date,
         lr.end_date,
         lr.employeeEmail,

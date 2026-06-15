@@ -133,7 +133,7 @@ public class LeaveApprovalsService {
                         "<p style=\"font-size: 16px;\">Your Leave request has been <Strong> REJECTED </strong></p>" +
                         "<p><Strong> Rejection reason :</strong>" + leaveRequest.getRejectReason() + "</p>" +
                         "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
-                        "<p><strong>Leave Type:</strong> " + leaveRequest.getLeave_type() + "</p>" +
+                        "<p><strong>Leave Type:</strong> " + leaveRequest.getLeaveType() + "</p>" +
                         "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date().format(formatter) + "</p>" +
                         "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date().format(formatter) + "</p>" +
                         "<p><strong>Reason:</strong> " + leaveRequest.getReason() + "</p>" +
@@ -173,7 +173,7 @@ public class LeaveApprovalsService {
                     "<p style=\"font-size: 16px;\">Dear " + leaveRequest.getUser().getName() + ",</p>" +
                     "<p style=\"font-size: 16px;\">Your Leave request has been <Strong> APPROVED </strong></p>" +
                     "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
-                    "<p><strong>Leave Type:</strong> " + leaveRequest.getLeave_type() + "</p>" +
+                    "<p><strong>Leave Type:</strong> " + leaveRequest.getLeaveType() + "</p>" +
                     "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date().format(formatter) + "</p>" +
                     "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date().format(formatter) + "</p>" +
                     "<p><strong>Reason:</strong> " + leaveRequest.getReason() + "</p>" +
@@ -200,7 +200,7 @@ public class LeaveApprovalsService {
                         "<p style=\"font-size: 16px;\">A new leave request has been <Strong> APPROVED </strong></p>" +
                         "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
                         "<p><strong>From: :</strong> " + leaveRequest.getUser().getName() + "</p>" +
-                        "<p><strong>Leave Type:</strong> " + leaveRequest.getLeave_type() + "</p>" +
+                        "<p><strong>Leave Type:</strong> " + leaveRequest.getLeaveType() + "</p>" +
                         "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date().format(formatter) + "</p>" +
                         "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date().format(formatter) + "</p>" +
                         "<p><strong>Reason:</strong> " + leaveRequest.getReason() + "</p>" +

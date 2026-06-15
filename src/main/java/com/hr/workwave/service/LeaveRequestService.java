@@ -267,7 +267,7 @@ public class LeaveRequestService {
                     "<p style=\"font-size: 16px;\">A leave request has been CANCELED</p>" +
                     "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
                     "<p><strong>From: :</strong> " + user.getName() + "</p>" +
-                    "<p><strong>Leave Type:</strong> " + request.getLeave_type() + "</p>" +
+                    "<p><strong>Leave Type:</strong> " + request.getLeaveType() + "</p>" +
                     "<p><strong>Start Date:</strong> " + request.getStart_date().format(formatter) + "</p>" +
                     "<p><strong>End Date:</strong> " + request.getEnd_date().format(formatter) + "</p>" +
                     "<p><strong>Reason:</strong> " + request.getReason() + "</p>" +
@@ -299,7 +299,7 @@ public class LeaveRequestService {
                         "<p style=\"font-size: 16px;\">A leave request has been CANCELED</p>" +
                         "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
                         "<p><strong>From: :</strong> " + user.getName() + "</p>" +
-                        "<p><strong>Leave Type:</strong> " + request.getLeave_type() + "</p>" +
+                        "<p><strong>Leave Type:</strong> " + request.getLeaveType() + "</p>" +
                         "<p><strong>Start Date:</strong> " + request.getStart_date().format(formatter) + "</p>" +
                         "<p><strong>End Date:</strong> " + request.getEnd_date().format(formatter) + "</p>" +
                         "<p><strong>Reason:</strong> " + request.getReason() + "</p>" +
@@ -354,7 +354,7 @@ public class LeaveRequestService {
             LeaveRequestApprovalSummaryDTO summaryDTO = new LeaveRequestApprovalSummaryDTO();
             summaryDTO.setLeaveRequestId(leaveRequest.getId());
             summaryDTO.setEmployeeEmail(leaveRequest.getEmployeeEmail());
-            summaryDTO.setLeaveType(leaveRequest.getLeave_type().getValue());
+            summaryDTO.setLeaveType(leaveRequest.getLeaveType().getValue());
             summaryDTO.setDays(effectiveDays);
             summaryDTO.setStartDate(leaveRequest.getStart_date().toLocalDate());
             summaryDTO.setEndDate(leaveRequest.getEnd_date().toLocalDate());
@@ -414,6 +414,15 @@ public class LeaveRequestService {
 
         Long userIdLong = user.getId().longValue();
         List<LeaveRequest> userLeaves = leaveRequestRepository.findByUserId(user.getId());
+
+        if (dto.getLeaveType() == LeaveRequestTypeEnum.ANNUAL_LEAVE
+                && leaveRequestRepository.existsByUserIdAndLeaveTypeAndStatus(
+                        user.getId(),
+                        LeaveRequestTypeEnum.ANNUAL_LEAVE,
+                        LeaveRequestStatusEnum.PENDING
+                )) {
+            throw new IllegalArgumentException("You already have a pending annual leave request. Please wait until it is reviewed before creating another one.");
+        }
 
         if (dto.getLeaveType() == LeaveRequestTypeEnum.MATERNITY_LEAVE) {
             LocalDate expectedEnd = dto.getStartDate().toLocalDate().plusMonths(6);
@@ -477,7 +486,7 @@ public class LeaveRequestService {
 
         LeaveRequest leaveRequest = new LeaveRequest();
         leaveRequest.setEmployeeId(1L);
-        leaveRequest.setLeave_type(dto.getLeaveType());
+        leaveRequest.setLeaveType(dto.getLeaveType());
         leaveRequest.setReason(dto.getReason());
         leaveRequest.setStart_date(dto.getStartDate());
         leaveRequest.setEnd_date(dto.getEndDate());
@@ -557,7 +566,7 @@ public class LeaveRequestService {
 
             String htmlMessage;
 
-            String leaveTypeFormatted = Arrays.stream(leaveRequest.getLeave_type().name().split("_"))
+            String leaveTypeFormatted = Arrays.stream(leaveRequest.getLeaveType().name().split("_"))
                     .map(w -> w.substring(0,1).toUpperCase() + w.substring(1).toLowerCase())
                     .collect(Collectors.joining(" "));
 
@@ -600,7 +609,7 @@ public class LeaveRequestService {
                         "<p style=\"font-size: 16px;\">You have a new leave request awaiting your review and approval</p>" +
                         "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
                         "<p><strong>From:</strong> " + user.getName() + "</p>" +
-                        "<p><strong>Leave Type:</strong> " + leaveRequest.getLeave_type() + "</p>" +
+                        "<p><strong>Leave Type:</strong> " + leaveRequest.getLeaveType() + "</p>" +
                         "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date().format(formatter) + "</p>" +
                         "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date().format(formatter) + "</p>" +
                         "<p><strong>Reason:</strong> " + leaveRequest.getReason() + "</p>" +
@@ -630,7 +639,7 @@ public class LeaveRequestService {
                 "<p style=\"font-size: 16px;\">Your leave request has been successfully submitted and is currently in <strong>" +
                 leaveRequest.getStatus() + "</strong> status.</p>" +
                 "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">" +
-                "<p><strong>Leave Type:</strong> " + leaveRequest.getLeave_type() + "</p>" +
+                "<p><strong>Leave Type:</strong> " + leaveRequest.getLeaveType() + "</p>" +
                 "<p><strong>Start Date:</strong> " + leaveRequest.getStart_date().format(formatter) + "</p>" +
                 "<p><strong>End Date:</strong> " + leaveRequest.getEnd_date().format(formatter) + "</p>" +
                 "<p><strong>Reason:</strong> " + leaveRequest.getReason() + "</p>" +
@@ -744,7 +753,7 @@ public class LeaveRequestService {
                     long effectiveDays = bankHolidaysService.calculateEffectiveLeaveDays(leaveRequest.getStart_date().toLocalDate(), leaveRequest.getEnd_date().toLocalDate());
                     dto.setLeaveRequestId(leaveRequest.getId());
                     dto.setEmployeeEmail(leaveRequest.getEmployeeEmail());
-                    dto.setLeaveType(leaveRequest.getLeave_type().getValue());
+                    dto.setLeaveType(leaveRequest.getLeaveType().getValue());
                     dto.setStartDate(leaveRequest.getStart_date().toLocalDate());
                     dto.setEndDate(leaveRequest.getEnd_date().toLocalDate());
                     dto.setReason(leaveRequest.getReason());
@@ -810,7 +819,7 @@ public class LeaveRequestService {
                     LeaveRequestApprovalSummaryDTO summaryDTO = new LeaveRequestApprovalSummaryDTO();
                     summaryDTO.setLeaveRequestId(leaveRequest.getId());
                     summaryDTO.setEmployeeEmail(leaveRequest.getEmployeeEmail());
-                    summaryDTO.setLeaveType(leaveRequest.getLeave_type().getValue());
+                    summaryDTO.setLeaveType(leaveRequest.getLeaveType().getValue());
                     summaryDTO.setStartDate(leaveRequest.getStart_date().toLocalDate());
                     summaryDTO.setEndDate(leaveRequest.getEnd_date().toLocalDate());
                     summaryDTO.setReason(leaveRequest.getReason());
@@ -955,7 +964,7 @@ public class LeaveRequestService {
         LeaveRequestDTO dto = new LeaveRequestDTO();
         dto.setId(request.getId());
         dto.setReason(request.getReason());
-        dto.setLeaveType(request.getLeave_type());
+        dto.setLeaveType(request.getLeaveType());
         dto.setStartDate(request.getStart_date());
         dto.setEndDate(request.getEnd_date());
         dto.setUserId(request.getUser().getId().longValue());

@@ -149,7 +149,7 @@ public class LeaveRequestExcelExportService {
             int rowIdx = 7;
 
             for (LeaveRequest lr : userRequests) {
-                if ("HOME_OFFICE".equalsIgnoreCase(lr.getLeave_type().toString())) {
+                if ("HOME_OFFICE".equalsIgnoreCase(lr.getLeaveType().toString())) {
                     continue;
                 }
                 Row row = sheet.createRow(rowIdx++);
@@ -178,7 +178,7 @@ public class LeaveRequestExcelExportService {
                 c3.setCellStyle(cellStyle);
 
                 Cell c4 = row.createCell(4);
-                c4.setCellValue(lr.getLeave_type().toString());
+                c4.setCellValue(lr.getLeaveType().toString());
                 c4.setCellStyle(cellStyle);
 
                 Cell c5 = row.createCell(5);
@@ -318,7 +318,7 @@ public class LeaveRequestExcelExportService {
                     Cell c1 = row.createCell(1); c1.setCellValue(start.format(formatter)); c1.setCellStyle(cellStyle);
                     Cell c2 = row.createCell(2); c2.setCellValue(end.format(formatter)); c2.setCellStyle(cellStyle);
                     Cell c3 = row.createCell(3); c3.setCellValue(backToWork.format(formatter)); c3.setCellStyle(cellStyle);
-                    Cell c4 = row.createCell(4); c4.setCellValue(lr.getLeave_type().toString()); c4.setCellStyle(cellStyle);
+                    Cell c4 = row.createCell(4); c4.setCellValue(lr.getLeaveType().toString()); c4.setCellStyle(cellStyle);
                     Cell c5 = row.createCell(5); c5.setCellValue(days); c5.setCellStyle(cellStyle);
                 }
 

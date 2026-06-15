@@ -26,7 +26,7 @@ public class LeaveRequest {
     private Long employeeId;
 
     @Enumerated(EnumType.STRING)
-    private LeaveRequestTypeEnum leave_type;
+    private LeaveRequestTypeEnum leaveType;
 
     private LocalDateTime start_date;
     private LocalDateTime end_date;
