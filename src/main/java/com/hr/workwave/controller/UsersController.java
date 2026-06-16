@@ -6,15 +6,23 @@ import com.hr.workwave.service.UsersService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 
+import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
 
@@ -59,7 +67,7 @@ public class UsersController {
      */
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @PutMapping("/update/user/{userId}")
+      @PutMapping(value = "/update/user/{userId}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<User> updateUserAndManagers(
             @PathVariable BigInteger userId,
             @Valid @RequestBody UpdateUsersDTO dto) {
@@ -67,6 +75,61 @@ public class UsersController {
         User updatedUser = usersService.updateUserAndManagers(userId, dto);
 
         return ResponseEntity.ok(updatedUser);
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @PutMapping(value = "/update/user/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<User> updateUserAndManagersWithContracts(
+            @PathVariable BigInteger userId,
+            @Valid @RequestPart("user") UpdateUsersDTO dto,
+            @RequestPart(value = "contracts", required = false) List<MultipartFile> contracts) {
+
+        User updatedUser = usersService.updateUserAndManagers(userId, dto, contracts);
+
+        return ResponseEntity.ok(updatedUser);
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping("/users/{userId}/contracts")
+    public ResponseEntity<List<UserContractFileDTO>> getUserContracts(@PathVariable BigInteger userId) {
+        return ResponseEntity.ok(usersService.getUserContractFiles(userId));
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping("/users/{userId}/contracts/{contractId}")
+    public ResponseEntity<Resource> downloadUserContract(
+            @PathVariable BigInteger userId,
+            @PathVariable Long contractId) {
+
+        UsersService.UserContractDownload contract = usersService.getUserContractFile(userId, contractId);
+        MediaType mediaType = MediaType.APPLICATION_OCTET_STREAM;
+
+        try {
+            String detectedType = Files.probeContentType(contract.resource().getFile().toPath());
+            if (detectedType != null && !detectedType.isBlank()) {
+                mediaType = MediaType.parseMediaType(detectedType);
+            }
+        } catch (IOException | IllegalArgumentException ignored) {
+            // fall back to application/octet-stream
+        }
+
+        return ResponseEntity.ok()
+                .contentType(mediaType)
+                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment()
+                        .filename(contract.filename(), StandardCharsets.UTF_8)
+                        .build()
+                        .toString())
+                .body(contract.resource());
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @DeleteMapping("/users/{userId}/contracts/{contractId}")
+    public ResponseEntity<Void> deleteUserContract(
+            @PathVariable BigInteger userId,
+            @PathVariable Long contractId) {
+
+        usersService.deleteUserContractFile(userId, contractId);
+        return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")

@@ -1,6 +1,7 @@
 package com.hr.workwave.exception;
 
 import com.hr.workwave.dto.ResponseExceptionDto;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -32,5 +33,13 @@ public class GlobalException {
         response.setCustomCode(BigInteger.valueOf(1001));
         response.setMessage(ex.getMessage());
         return ResponseEntity.status(400).body(response);
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ResponseExceptionDto> handleEntityNotFoundException(EntityNotFoundException ex) {
+        ResponseExceptionDto response = new ResponseExceptionDto();
+        response.setCustomCode(BigInteger.valueOf(1004));
+        response.setMessage(ex.getMessage());
+        return ResponseEntity.status(404).body(response);
     }
 }

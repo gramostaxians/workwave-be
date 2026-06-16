@@ -25,4 +25,5 @@
     <include file="020-add-project-application-property-on-work-logs-table.xml" relativeToChangelogFile="true"/>
     <include file="021-add-indexes-leave-requests.xml" relativeToChangelogFile="true"/>
     <include file="022-add-contract-due-date-users.xml" relativeToChangelogFile="true"/>
+    <include file="023-create-user-contract-files.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

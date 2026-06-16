@@ -5,15 +5,19 @@ import com.hr.workwave.enums.UserRolesEnum;
 import com.hr.workwave.model.Project;
 import com.hr.workwave.model.UserManagers;
 import com.hr.workwave.model.User;
+import com.hr.workwave.model.UserContractFile;
 import com.hr.workwave.repo.ProjectRepository;
+import com.hr.workwave.repo.UserContractFileRepository;
 import com.hr.workwave.repo.UserManagerRepository;
 import com.hr.workwave.repo.UsersRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import org.springframework.core.io.Resource;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigInteger;
 import java.time.LocalDate;
@@ -30,6 +34,8 @@ public class UsersService {
     private final UserManagerRepository userManagerRepository;
     private final UserManagerService userManagerService;
     private final ProjectRepository projectRepository;
+    private final UserContractFileRepository userContractFileRepository;
+    private final UserContractStorageService userContractStorageService;
 
 
     /**
@@ -154,9 +160,12 @@ public class UsersService {
      */
 
     public User updateUserAndManagers(BigInteger userId, UpdateUsersDTO dto) {
+        return updateUserAndManagers(userId, dto, List.of());
+    }
 
-        User user = usersRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+    public User updateUserAndManagers(BigInteger userId, UpdateUsersDTO dto, List<MultipartFile> contractFiles) {
+
+        User user = getExistingUser(userId);
 
         user.setName(dto.getName());
         user.setDepartment(dto.getDepartment());
@@ -175,7 +184,37 @@ public class UsersService {
         List<BigInteger> managerIds = dto.getManagerIds();
         userManagerService.syncManagersForUser(userId, managerIds != null ? managerIds : Collections.emptyList());
 
+        List<UserContractFile> storedContracts = userContractStorageService.storeContracts(user, contractFiles);
+        if (!storedContracts.isEmpty()) {
+            userContractFileRepository.saveAll(storedContracts);
+        }
+
         return user;
+    }
+
+    public List<UserContractFileDTO> getUserContractFiles(BigInteger userId) {
+        getExistingUser(userId);
+
+        return userContractFileRepository.findByUserIdOrderByCreatedAtDesc(userId)
+                .stream()
+                .map(contract -> new UserContractFileDTO(
+                        contract.getId(),
+                        contract.getFilename(),
+                        contract.getCreatedAt()
+                ))
+                .toList();
+    }
+
+    public UserContractDownload getUserContractFile(BigInteger userId, Long contractId) {
+        UserContractFile contractFile = getExistingContractFile(userId, contractId);
+        Resource resource = userContractStorageService.loadAsResource(userId, contractFile.getFilename());
+        return new UserContractDownload(contractFile.getFilename(), resource);
+    }
+
+    public void deleteUserContractFile(BigInteger userId, Long contractId) {
+        UserContractFile contractFile = getExistingContractFile(userId, contractId);
+        userContractFileRepository.delete(contractFile);
+        userContractStorageService.deleteStoredContract(userId, contractFile.getFilename());
     }
 
     public User setProjectID(BigInteger userId, BigInteger projectId) {
@@ -348,6 +387,21 @@ public class UsersService {
                 .role(UserRolesEnum.EMPLOYEE)
                 .build();
         return usersRepository.save(user);
+    }
+
+    private User getExistingUser(BigInteger userId) {
+        return usersRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + userId));
+    }
+
+    private UserContractFile getExistingContractFile(BigInteger userId, Long contractId) {
+        getExistingUser(userId);
+        return userContractFileRepository.findByIdAndUserId(contractId, userId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Contract file not found with ID: " + contractId + " for user ID: " + userId));
+    }
+
+    public record UserContractDownload(String filename, Resource resource) {
     }
 }
 
