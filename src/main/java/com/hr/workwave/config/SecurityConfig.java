@@ -54,7 +54,9 @@ public class SecurityConfig {
             "/api/v1/user/info",
             //GRAPHIQL
             "/graphiql**",
-            "/graphql**"
+            "/graphql**",
+            // Error forwarding
+            "/error"
     };
 
     @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}")
@@ -147,15 +149,10 @@ public class SecurityConfig {
 
         RestTemplate restTemplate = new RestTemplate(requestFactory);
 
-        NimbusJwtDecoder decoder = NimbusJwtDecoder
+        return NimbusJwtDecoder
                 .withJwkSetUri(this.jwkSetUri)
                 .restOperations(restTemplate)
                 .build();
-
-        OAuth2TokenValidator<Jwt> validator = JwtValidators.createDefaultWithIssuer(issuerUri);
-        decoder.setJwtValidator(validator);
-
-        return decoder;
     }
 
     @Bean
