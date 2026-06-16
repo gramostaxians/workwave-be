@@ -8,4 +8,6 @@ COPY src ./src
 
 ENV USER_CONTRACTS_DIR=/opt/app/contracts
 
+VOLUME /opt/app/contracts
+
 CMD ["./mvnw", "spring-boot:run"]
