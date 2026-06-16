@@ -207,7 +207,12 @@ public class UsersService {
 
     public UserContractDownload getUserContractFile(BigInteger userId, Long contractId) {
         UserContractFile contractFile = getExistingContractFile(userId, contractId);
-        Resource resource = userContractStorageService.loadAsResource(userId, contractFile.getFilename());
+        Resource resource = userContractStorageService.loadAsResource(
+                userId,
+                contractFile.getFilename(),
+                contractFile.getEncryptionKey(),
+                contractFile.getEncryptionIv()
+        );
         return new UserContractDownload(contractFile.getFilename(), resource);
     }
 

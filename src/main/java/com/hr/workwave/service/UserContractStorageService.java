@@ -4,12 +4,13 @@ import com.hr.workwave.model.User;
 import com.hr.workwave.model.UserContractFile;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -26,11 +27,15 @@ public class UserContractStorageService {
     private static final DateTimeFormatter FILENAME_TIMESTAMP = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
     private static final int MAX_BASE_NAME_LENGTH = 120;
 
+    private final FileEncryptionService fileEncryptionService;
+
     private final Path storageRoot;
 
     public UserContractStorageService(
-            @Value("${app.storage.user-contracts-dir:uploads/user-contracts}") String storageRootDirectory) {
+            @Value("${app.storage.user-contracts-dir:uploads/user-contracts}") String storageRootDirectory,
+            FileEncryptionService fileEncryptionService) {
         this.storageRoot = Path.of(storageRootDirectory).toAbsolutePath().normalize();
+        this.fileEncryptionService = fileEncryptionService;
     }
 
     public List<UserContractFile> storeContracts(User user, List<MultipartFile> files) {
@@ -57,11 +62,19 @@ public class UserContractStorageService {
                 Path targetPath = userDirectory.resolve(storedFilename).normalize();
                 ensureWithinDirectory(targetPath, userDirectory);
 
-                file.transferTo(targetPath);
+                // Encrypt file content while writing to disk
+                FileEncryptionService.EncryptionMetadata meta;
+                try (InputStream in = file.getInputStream();
+                     OutputStream out = Files.newOutputStream(targetPath)) {
+                    meta = fileEncryptionService.encrypt(in, out);
+                }
+
                 storedPaths.add(targetPath);
                 storedContracts.add(UserContractFile.builder()
                         .user(user)
                         .filename(storedFilename)
+                        .encryptionKey(meta.base64Key())
+                        .encryptionIv(meta.base64Iv())
                         .build());
             }
         } catch (IOException | IllegalStateException ex) {
@@ -72,7 +85,11 @@ public class UserContractStorageService {
         return storedContracts;
     }
 
-    public Resource loadAsResource(BigInteger userId, String filename) {
+    /**
+     * Loads a contract file and decrypts it if encryption metadata is present.
+     * Falls back to raw file for legacy unencrypted files.
+     */
+    public Resource loadAsResource(BigInteger userId, String filename, String encryptionKey, String encryptionIv) {
         Path userDirectory = resolveUserDirectory(userId);
         Path filePath = userDirectory.resolve(filename).normalize();
         ensureWithinDirectory(filePath, userDirectory);
@@ -81,7 +98,17 @@ public class UserContractStorageService {
             throw new EntityNotFoundException("Contract file not found on server.");
         }
 
-        return new FileSystemResource(filePath);
+        // Legacy file with no encryption — return raw
+        if (encryptionKey == null || encryptionIv == null) {
+            return new org.springframework.core.io.FileSystemResource(filePath);
+        }
+
+        // Decrypt and return as in-memory stream
+        try (InputStream in = Files.newInputStream(filePath)) {
+            return fileEncryptionService.decryptAsResource(in, encryptionKey, encryptionIv);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to read contract file for decryption.", e);
+        }
     }
 
     public void deleteStoredContract(BigInteger userId, String filename) {
@@ -115,9 +142,7 @@ public class UserContractStorageService {
         for (Path path : paths) {
             try {
                 Files.deleteIfExists(path);
-            } catch (IOException ignored) {
-                // best effort cleanup
-            }
+            } catch (IOException ignored) {}
         }
     }
 
@@ -125,7 +150,6 @@ public class UserContractStorageService {
         if (!Files.exists(userDirectory) || !Files.isDirectory(userDirectory)) {
             return;
         }
-
         try (var entries = Files.list(userDirectory)) {
             if (entries.findAny().isEmpty()) {
                 Files.deleteIfExists(userDirectory);
@@ -142,14 +166,11 @@ public class UserContractStorageService {
     private String generateStoredFilename(String originalFilename) {
         String safeFilename = sanitizeOriginalFilename(originalFilename);
         int lastDotIndex = safeFilename.lastIndexOf('.');
-
         String extension = lastDotIndex > 0 ? safeFilename.substring(lastDotIndex) : "";
-        String baseName = lastDotIndex > 0 ? safeFilename.substring(0, lastDotIndex) : safeFilename;
-
+        String baseName  = lastDotIndex > 0 ? safeFilename.substring(0, lastDotIndex) : safeFilename;
         if (baseName.length() > MAX_BASE_NAME_LENGTH) {
             baseName = baseName.substring(0, MAX_BASE_NAME_LENGTH);
         }
-
         return "%s-%s%s".formatted(
                 baseName,
                 LocalDateTime.now().format(FILENAME_TIMESTAMP) + "-" + UUID.randomUUID(),
@@ -163,12 +184,10 @@ public class UserContractStorageService {
         if (lastSlashIndex >= 0) {
             candidate = candidate.substring(lastSlashIndex + 1);
         }
-
         String sanitized = candidate
                 .replaceAll("[^a-zA-Z0-9._-]", "_")
                 .replaceAll("_+", "_")
                 .replaceAll("^[._-]+|[._-]+$", "");
-
         if (sanitized.isBlank()) {
             return "contract";
         }

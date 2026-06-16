@@ -28,4 +28,5 @@
     <include file="023-create-user-contract-files.xml" relativeToChangelogFile="true"/>
     <include file="024-create-security-audit-logs.xml" relativeToChangelogFile="true"/>
     <include file="025-add-user-name-to-security-audit-logs.xml" relativeToChangelogFile="true"/>
+    <include file="026-add-encryption-columns-to-user-contract-files.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

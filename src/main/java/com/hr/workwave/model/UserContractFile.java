@@ -29,6 +29,20 @@ public class UserContractFile {
     @Column(nullable = false, length = 512)
     private String filename;
 
+    /**
+     * Base64-encoded AES-256 key used to encrypt this file.
+     * Null for legacy files uploaded before encryption was introduced.
+     */
+    @Column(name = "encryption_key", length = 64)
+    private String encryptionKey;
+
+    /**
+     * Base64-encoded 96-bit GCM IV used during encryption.
+     * Null for legacy files uploaded before encryption was introduced.
+     */
+    @Column(name = "encryption_iv", length = 32)
+    private String encryptionIv;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

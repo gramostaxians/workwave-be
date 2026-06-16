@@ -19,10 +19,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
 
@@ -102,16 +100,15 @@ public class UsersController {
             @PathVariable Long contractId) {
 
         UsersService.UserContractDownload contract = usersService.getUserContractFile(userId, contractId);
-        MediaType mediaType = MediaType.APPLICATION_OCTET_STREAM;
 
+        // Detect content type from filename (works for both encrypted and legacy files)
+        MediaType mediaType = MediaType.APPLICATION_OCTET_STREAM;
         try {
-            String detectedType = Files.probeContentType(contract.resource().getFile().toPath());
+            String detectedType = java.net.URLConnection.guessContentTypeFromName(contract.filename());
             if (detectedType != null && !detectedType.isBlank()) {
                 mediaType = MediaType.parseMediaType(detectedType);
             }
-        } catch (IOException | IllegalArgumentException ignored) {
-            // fall back to application/octet-stream
-        }
+        } catch (IllegalArgumentException ignored) {}
 
         return ResponseEntity.ok()
                 .contentType(mediaType)
