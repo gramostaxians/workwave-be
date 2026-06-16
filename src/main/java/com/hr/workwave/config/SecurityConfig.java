@@ -1,10 +1,12 @@
 package com.hr.workwave.config;
 
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,10 +18,14 @@ import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.transport.ProxyProvider;
 
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -29,6 +35,9 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
+
+    private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
+    private static final Logger THREAT_LOG = LoggerFactory.getLogger("SECURITY_THREAT");
 
     private static final String[] AUTH_WHITELIST = {
             // Swagger / OpenAPI
@@ -60,6 +69,12 @@ public class SecurityConfig {
     @Value("${app.jwt.issuer-uri}")
     private String issuerUri;
 
+    @Value("${app.jwt.connect-timeout-ms:10000}")
+    private int connectTimeoutMs;
+
+    @Value("${app.jwt.read-timeout-ms:10000}")
+    private int readTimeoutMs;
+
     @Bean
     public ReactiveJwtDecoder customDecoder() {
         HttpClient httpClient = HttpClient.create();
@@ -87,26 +102,33 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(
             HttpSecurity http,
-            JwtAuthenticationConverter jwtAuthenticationConverter
+            JwtAuthenticationConverter jwtAuthenticationConverter,
+            SecurityAuditFilter securityAuditFilter,
+            JwtDecoder jwtDecoder
     ) throws Exception {
 
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(withDefaults())
+                .addFilterBefore(securityAuditFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(AUTH_WHITELIST).permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .authenticationEntryPoint((request, response, authException) -> {
-                            System.err.println("Authentication failed: " + authException.getMessage());
-                            authException.printStackTrace();
+                            THREAT_LOG.warn("AUTH_FAILED ip={} uri={} reason=\"{}\"",
+                                    request.getRemoteAddr(),
+                                    request.getRequestURI(),
+                                    authException.getMessage());
                             response.sendError(
                                     HttpServletResponse.SC_UNAUTHORIZED,
                                     authException.getMessage()
                             );
                         })
-                        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter))
+                        .jwt(jwt -> jwt
+                                .decoder(jwtDecoder)
+                                .jwtAuthenticationConverter(jwtAuthenticationConverter))
                 );
 
         return http.build();
@@ -114,7 +136,26 @@ public class SecurityConfig {
 
     @Bean
     public JwtDecoder jwtDecoder() {
-        return NimbusJwtDecoder.withJwkSetUri(this.jwkSetUri).build();
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(connectTimeoutMs);
+        requestFactory.setReadTimeout(readTimeoutMs);
+
+        if (!proxyHost.isEmpty() && proxyPort > 0) {
+            Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+            requestFactory.setProxy(proxy);
+        }
+
+        RestTemplate restTemplate = new RestTemplate(requestFactory);
+
+        NimbusJwtDecoder decoder = NimbusJwtDecoder
+                .withJwkSetUri(this.jwkSetUri)
+                .restOperations(restTemplate)
+                .build();
+
+        OAuth2TokenValidator<Jwt> validator = JwtValidators.createDefaultWithIssuer(issuerUri);
+        decoder.setJwtValidator(validator);
+
+        return decoder;
     }
 
     @Bean
@@ -127,7 +168,7 @@ public class SecurityConfig {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
                 return new ArrayList<>(userDetails.getAuthorities());
             } catch (UsernameNotFoundException e) {
-                System.err.println("User not found: " + username + ", continuing without user details.");
+                log.warn("User not found in DB: {} — continuing without user details.", username);
                 return Collections.emptyList();
             }
         });

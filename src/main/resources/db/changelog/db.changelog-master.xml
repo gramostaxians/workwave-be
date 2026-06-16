@@ -26,4 +26,6 @@
     <include file="021-add-indexes-leave-requests.xml" relativeToChangelogFile="true"/>
     <include file="022-add-contract-due-date-users.xml" relativeToChangelogFile="true"/>
     <include file="023-create-user-contract-files.xml" relativeToChangelogFile="true"/>
+    <include file="024-create-security-audit-logs.xml" relativeToChangelogFile="true"/>
+    <include file="025-add-user-name-to-security-audit-logs.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
