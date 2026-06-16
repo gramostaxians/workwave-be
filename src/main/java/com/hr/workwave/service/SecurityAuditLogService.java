@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 
 @Service
@@ -68,6 +69,20 @@ public class SecurityAuditLogService {
                 .userAgent(userAgent)
                 .eventType("SUSPICIOUS")
                 .threatDetail("Matched pattern: " + matchedPattern)
+                .build());
+    }
+
+    @Async
+    public void logContractDownload(String adminEmail, String adminName,
+                                    BigInteger targetUserId, Long contractId, String filename) {
+        save(SecurityAuditLog.builder()
+                .timestamp(LocalDateTime.now())
+                .userEmail(adminEmail)
+                .userName(adminName)
+                .eventType("CONTRACT_DOWNLOAD")
+                .threatDetail("contractId=" + contractId
+                        + " targetUserId=" + targetUserId
+                        + " filename=" + filename)
                 .build());
     }
 

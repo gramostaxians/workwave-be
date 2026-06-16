@@ -2,6 +2,7 @@ package com.hr.workwave.controller;
 
 import com.hr.workwave.dto.*;
 import com.hr.workwave.model.User;
+import com.hr.workwave.service.SecurityAuditLogService;
 import com.hr.workwave.service.UsersService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
@@ -31,6 +32,7 @@ public class UsersController {
 
 
     private final UsersService usersService;
+    private final SecurityAuditLogService auditLogService;
 
 
     /**
@@ -97,11 +99,17 @@ public class UsersController {
     @GetMapping("/users/{userId}/contracts/{contractId}")
     public ResponseEntity<Resource> downloadUserContract(
             @PathVariable BigInteger userId,
-            @PathVariable Long contractId) {
+            @PathVariable Long contractId,
+            @AuthenticationPrincipal Jwt jwt) {
 
         UsersService.UserContractDownload contract = usersService.getUserContractFile(userId, contractId);
 
-        // Detect content type from filename (works for both encrypted and legacy files)
+        // Log which admin downloaded which contract
+        String adminEmail = jwt != null ? jwt.getClaimAsString("upn") : "unknown";
+        String adminName  = jwt != null ? jwt.getClaimAsString("name") : "unknown";
+        auditLogService.logContractDownload(adminEmail, adminName, userId, contractId, contract.filename());
+
+        // Detect content type from filename
         MediaType mediaType = MediaType.APPLICATION_OCTET_STREAM;
         try {
             String detectedType = java.net.URLConnection.guessContentTypeFromName(contract.filename());
