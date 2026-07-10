@@ -1014,7 +1014,10 @@ public class LeaveRequestService {
         LocalDate leaveYearStart = LocalDate.of(leaveYear, 7, 1);
         LocalDate leaveYearEnd = LocalDate.of(leaveYear + 1, 6, 30);
 
-        double baseDays = user.getAvailableLeaveDays() != null ? user.getAvailableLeaveDays().doubleValue() : 20;
+        double baseDays = 20.0;
+
+        double additionalDays = user.getAvailableLeaveDays() != null ? user.getAvailableLeaveDays().doubleValue() : 0;
+
         double leaveDays = 0;
 
         if (currentDate.isAfter(leaveYearEnd)) {
@@ -1033,6 +1036,8 @@ public class LeaveRequestService {
         } else {
             leaveDays = baseDays;
         }
+
+        leaveDays += additionalDays;
 
         long totalMonthsWorked = ChronoUnit.MONTHS.between(
                 startOfWork.withDayOfMonth(1),
