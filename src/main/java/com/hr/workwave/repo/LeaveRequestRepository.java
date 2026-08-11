@@ -252,7 +252,7 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     SELECT lr
     FROM LeaveRequest lr
     JOIN FETCH lr.user u
-    JOIN FETCH u.project p
+    LEFT JOIN FETCH u.project p
     WHERE p.id = :projectId
       AND lr.start_date <= :end
       AND lr.end_date >= :start
@@ -262,6 +262,60 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
             @Param("projectId") Long projectId,
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end
+    );
+
+    @Query("""
+    SELECT new com.hr.workwave.dto.projection.LeaveRequestAbsencePlannerDTO(
+        lr.id,
+        lr.leaveType,
+        lr.start_date,
+        lr.end_date,
+        lr.employeeEmail,
+        u.id,
+        (CAST(FUNCTION('DATE_PART', 'day', FUNCTION('AGE', lr.end_date, lr.start_date)) AS integer) + 1),
+        p.id,
+        p.projectName
+    )
+    FROM LeaveRequest lr
+    JOIN lr.user u
+    LEFT JOIN u.project p
+    WHERE lr.status = com.hr.workwave.enums.LeaveRequestStatusEnum.APPROVED
+      AND u.id IN :userIds
+      AND (:leaveType IS NULL OR lr.leaveType = :leaveType)
+    ORDER BY u.id ASC, lr.start_date ASC
+    """)
+    List<LeaveRequestAbsencePlannerDTO> findAbsencePlannerByUserIds(
+            @Param("userIds") List<BigInteger> userIds,
+            @Param("leaveType") LeaveRequestTypeEnum leaveType
+    );
+
+    @Query("""
+    SELECT new com.hr.workwave.dto.projection.LeaveRequestAbsencePlannerDTO(
+        lr.id,
+        lr.leaveType,
+        lr.start_date,
+        lr.end_date,
+        lr.employeeEmail,
+        u.id,
+        (CAST(FUNCTION('DATE_PART', 'day', FUNCTION('AGE', lr.end_date, lr.start_date)) AS integer) + 1),
+        p.id,
+        p.projectName
+    )
+    FROM LeaveRequest lr
+    JOIN lr.user u
+    LEFT JOIN u.project p
+    WHERE lr.status = com.hr.workwave.enums.LeaveRequestStatusEnum.APPROVED
+      AND u.id IN :userIds
+      AND (:leaveType IS NULL OR lr.leaveType = :leaveType)
+      AND lr.start_date <= :end
+      AND lr.end_date >= :start
+    ORDER BY u.id ASC, lr.start_date ASC
+    """)
+    List<LeaveRequestAbsencePlannerDTO> findAbsencePlannerByUserIdsAndPeriod(
+            @Param("userIds") List<BigInteger> userIds,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end,
+            @Param("leaveType") LeaveRequestTypeEnum leaveType
     );
 
 }

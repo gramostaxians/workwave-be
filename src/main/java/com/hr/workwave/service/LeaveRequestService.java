@@ -143,6 +143,22 @@ public class LeaveRequestService {
                     : leaveRequestRepository.findAllAbsencePlanner(leaveType);
         }
 
+        if (currentUser.getRole() == UserRolesEnum.MANAGER) {
+            List<BigInteger> managedUserIds = userManagerRepository
+                    .findByManagerId(currentUser.getId())
+                    .stream()
+                    .map(UserManagers::getUserId)
+                    .toList();
+
+            if (managedUserIds.isEmpty()) {
+                return Collections.emptyList();
+            }
+
+            return start != null && end != null
+                    ? leaveRequestRepository.findAbsencePlannerByUserIdsAndPeriod(managedUserIds, start, end, leaveType)
+                    : leaveRequestRepository.findAbsencePlannerByUserIds(managedUserIds, leaveType);
+        }
+
         if (currentUser.getProject() == null || currentUser.getProject().getId() == null) {
             return Collections.emptyList();
         }

@@ -1,0 +1,43 @@
+# Build output
+target/
+*.class
+*.jar
+*.war
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+
+# Generated sources
+target/generated-sources/
+target/generated-test-sources/
+target/apt-generated/
+
+# Test fixtures / snapshots
+src/test/resources/fixtures/
+src/test/resources/__snapshots__/
+
+# Uploads / user data
+uploads/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Maven wrapper binaries
+.mvn/wrapper/maven-wrapper.jar
+
+# Docker
+Dockerfile
+docker-compose*.yml
+
+# Environment / secrets
+.env
+*.env.*

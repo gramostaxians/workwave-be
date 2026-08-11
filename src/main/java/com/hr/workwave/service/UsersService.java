@@ -72,6 +72,41 @@ public class UsersService {
         return new ArrayList<>();
     }
 
+    /**
+     * Returns users that have no project assigned.
+     * ADMIN sees all unassigned users.
+     * MANAGER sees only unassigned users that are assigned to them via user_managers.
+     */
+    public List<User> getUnassignedUsers() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+
+        User loggedUser = usersRepository.findByEmail(email);
+        if (loggedUser == null) {
+            throw new EntityNotFoundException("Authenticated user not found");
+        }
+
+        if (UserRolesEnum.ADMIN.equals(loggedUser.getRole())) {
+            return usersRepository.findAllByProjectIsNull();
+        }
+
+        if (UserRolesEnum.MANAGER.equals(loggedUser.getRole())) {
+            List<BigInteger> managedUserIds = userManagerRepository
+                    .findByManagerId(loggedUser.getId())
+                    .stream()
+                    .map(UserManagers::getUserId)
+                    .toList();
+
+            if (managedUserIds.isEmpty()) {
+                return Collections.emptyList();
+            }
+
+            return usersRepository.findUnassignedByIds(managedUserIds);
+        }
+
+        return Collections.emptyList();
+    }
+
     public List<UserWithManagersDTO> getAllUsersWithManagers() {
         List<Object[]> results = usersRepository.findAllUsersWithManagers();
 
@@ -224,10 +259,37 @@ public class UsersService {
 
     public User setProjectID(BigInteger userId, BigInteger projectId) {
         User user = usersRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+                .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + userId));
 
         Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new RuntimeException("Project not found with ID: " + projectId));
+                .orElseThrow(() -> new EntityNotFoundException("Project not found with ID: " + projectId));
+
+        user.setProject(project);
+
+        return usersRepository.save(user);
+    }
+
+    public User setProjectIDAsManager(BigInteger userId, BigInteger projectId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User manager = usersRepository.findByEmail(authentication.getName());
+
+        if (manager == null) {
+            throw new EntityNotFoundException("Authenticated manager not found");
+        }
+
+        boolean isAssigned = userManagerRepository.findByManagerId(manager.getId())
+                .stream()
+                .anyMatch(link -> link.getUserId().equals(userId));
+
+        if (!isAssigned) {
+            throw new IllegalArgumentException("You are not authorised to assign a project to this user");
+        }
+
+        User user = usersRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + userId));
+
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new EntityNotFoundException("Project not found with ID: " + projectId));
 
         user.setProject(project);
 

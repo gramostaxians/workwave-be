@@ -42,6 +42,12 @@ public class UsersController {
      * This can be achieved by uncommenting and configuring the @PreAuthorize annotation.
      **/
 
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    @GetMapping("/users/unassigned")
+    public ResponseEntity<List<User>> getUnassignedUsers() {
+        return ResponseEntity.ok(usersService.getUnassignedUsers());
+    }
+
     @PreAuthorize("hasAnyAuthority('MANAGER', 'ADMIN')")
     @GetMapping("/users")
     public List<User> getUsers() {
@@ -144,6 +150,16 @@ public class UsersController {
             @Valid @RequestBody ProjectIdRequest request
     ) {
         User updatedUser = usersService.setProjectID(userId, request.getProjectId());
+        return ResponseEntity.ok(updatedUser);
+    }
+
+    @PreAuthorize("hasAuthority('MANAGER')")
+    @PutMapping("/manager/assign-project/{userId}")
+    public ResponseEntity<User> assignProjectAsManager(
+            @PathVariable BigInteger userId,
+            @Valid @RequestBody ProjectIdRequest request
+    ) {
+        User updatedUser = usersService.setProjectIDAsManager(userId, request.getProjectId());
         return ResponseEntity.ok(updatedUser);
     }
 

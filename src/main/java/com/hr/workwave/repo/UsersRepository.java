@@ -87,4 +87,9 @@ public interface UsersRepository extends JpaRepository<User, BigInteger> {
             ORDER BY u.id
             """, nativeQuery = true)
     List<Object[]> findAllUsersWithManagers();
+
+    List<User> findAllByProjectIsNull();
+
+    @Query("SELECT u FROM User u WHERE u.project IS NULL AND u.id IN :ids")
+    List<User> findUnassignedByIds(@Param("ids") List<BigInteger> ids);
 }
