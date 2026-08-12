@@ -1,8 +1,10 @@
 package com.hr.workwave.controller;
 
+import com.hr.workwave.dto.UserWithLeaveRequestsDTO;
 import com.hr.workwave.dto.request.RequestProjectDto;
 import com.hr.workwave.model.Project;
 import com.hr.workwave.model.ProjectApplication;
+import com.hr.workwave.model.User;
 import com.hr.workwave.service.ProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +21,7 @@ public class ProjectController {
 
     private final ProjectService projectService;
 
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER')")
     @GetMapping("")
     public List<Project> getAllProjects() {
         return projectService.getAllProject();
@@ -47,6 +50,15 @@ public class ProjectController {
     public ResponseEntity<?> deleteProject(@PathVariable BigInteger projectId) {
         projectService.deleteProject(projectId);
         return ResponseEntity.ok().build();
+    }
+
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER')")
+    @GetMapping("/{projectId}/users")
+    public ResponseEntity<List<UserWithLeaveRequestsDTO>> getUsersByProject(
+            @PathVariable Long projectId,
+            @RequestParam int month,
+            @RequestParam int year) {
+        return ResponseEntity.ok(projectService.getUsersWithLeaveRequestsByProjectId(projectId, month, year));
     }
 
     @GetMapping("/project-application")

@@ -55,6 +55,7 @@ public interface UsersRepository extends JpaRepository<User, BigInteger> {
     @Query("""
                 SELECT new com.hr.workwave.dto.UserRequestDTO
                 (
+                    u.id,
                     u.email,
                     u.name,
                     u.role

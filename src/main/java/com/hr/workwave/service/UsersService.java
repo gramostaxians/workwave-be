@@ -2,10 +2,12 @@ package com.hr.workwave.service;
 
 import com.hr.workwave.dto.*;
 import com.hr.workwave.enums.UserRolesEnum;
+import com.hr.workwave.model.LeaveRequest;
 import com.hr.workwave.model.Project;
 import com.hr.workwave.model.UserManagers;
 import com.hr.workwave.model.User;
 import com.hr.workwave.model.UserContractFile;
+import com.hr.workwave.repo.LeaveRequestRepository;
 import com.hr.workwave.repo.ProjectRepository;
 import com.hr.workwave.repo.UserContractFileRepository;
 import com.hr.workwave.repo.UserManagerRepository;
@@ -34,6 +36,7 @@ public class UsersService {
     private final UserManagerRepository userManagerRepository;
     private final UserManagerService userManagerService;
     private final ProjectRepository projectRepository;
+    private final LeaveRequestRepository leaveRequestRepository;
     private final UserContractFileRepository userContractFileRepository;
     private final UserContractStorageService userContractStorageService;
 
@@ -425,7 +428,7 @@ public class UsersService {
      * @param email the email of the requesting user
      * @return list of TeamMemberDTOs (id, name, email, projectId, projectName)
      */
-    public List<TeamMemberDTO> getMyTeam(String email) {
+    public List<TeamMemberDTO> getMyTeam(String email, int month, int year) {
         User currentUser = usersRepository.findByEmail(email);
 
         if (currentUser.getProject() == null) {
@@ -435,14 +438,22 @@ public class UsersService {
         Long projectId = currentUser.getProject().getId();
         String projectName = currentUser.getProject().getProjectName();
 
-        return usersRepository.findByProjectId(projectId)
+        List<User> members = usersRepository.findByProjectId(projectId);
+        List<BigInteger> userIds = members.stream().map(User::getId).collect(Collectors.toList());
+
+        Map<BigInteger, List<LeaveRequest>> leavesByUser = leaveRequestRepository
+                .findByUserIdsAndMonthYear(userIds, month, year)
                 .stream()
+                .collect(Collectors.groupingBy(lr -> lr.getUser().getId()));
+
+        return members.stream()
                 .map(u -> new TeamMemberDTO(
                         u.getId(),
                         u.getName(),
                         u.getEmail(),
                         projectId,
-                        projectName
+                        projectName,
+                        leavesByUser.getOrDefault(u.getId(), List.of())
                 ))
                 .collect(Collectors.toList());
     }

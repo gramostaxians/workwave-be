@@ -33,4 +33,7 @@ public class Project {
     @Column(name = "quarter_4")
     private String quarter4;
 
+    @Column(name = "assigned_to")
+    private Long assignedToId;
+
 }

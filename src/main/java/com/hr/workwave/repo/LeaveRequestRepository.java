@@ -88,6 +88,19 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     List<LeaveRequest> findAllByUserIdOrderByCreatedDateDesc(@Param("userId") BigInteger userId);
 
     @Query("""
+        SELECT lr FROM LeaveRequest lr
+        WHERE lr.user.id IN :userIds
+          AND (EXTRACT(MONTH FROM lr.start_date) = :month OR EXTRACT(MONTH FROM lr.end_date) = :month)
+          AND (EXTRACT(YEAR FROM lr.start_date) = :year OR EXTRACT(YEAR FROM lr.end_date) = :year)
+        ORDER BY lr.user.id ASC, lr.start_date ASC
+    """)
+    List<LeaveRequest> findByUserIdsAndMonthYear(
+            @Param("userIds") List<BigInteger> userIds,
+            @Param("month") int month,
+            @Param("year") int year
+    );
+
+    @Query("""
     SELECT CASE WHEN COUNT(lr) > 0 THEN TRUE ELSE FALSE END
     FROM LeaveRequest lr
     WHERE lr.user.id = :userId

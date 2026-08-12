@@ -5,10 +5,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigInteger;
+
 @Getter
 @Setter
 @NoArgsConstructor
 public class UserRequestDTO {
+    private BigInteger id;
     private String email;
     private String name;
     private String department;
@@ -25,7 +28,8 @@ public class UserRequestDTO {
         this.notifyManager = notifyManager;
     }
 
-    public UserRequestDTO(String email, String name, UserRolesEnum role) {
+    public UserRequestDTO(BigInteger id, String email, String name, UserRolesEnum role) {
+        this.id = id;
         this.email = email;
         this.name = name;
         this.role = role;

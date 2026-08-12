@@ -249,12 +249,15 @@ public class UsersController {
      * Response includes: id, name, email, projectId, projectName.
      */
     @GetMapping("/users/my-team")
-    public ResponseEntity<List<TeamMemberDTO>> getMyTeam(@AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<List<TeamMemberDTO>> getMyTeam(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestParam int month,
+            @RequestParam int year) {
         if (jwt == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         String email = jwt.getClaimAsString("upn");
-        List<TeamMemberDTO> team = usersService.getMyTeam(email);
+        List<TeamMemberDTO> team = usersService.getMyTeam(email, month, year);
         return ResponseEntity.ok(team);
     }
 

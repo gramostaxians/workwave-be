@@ -25,4 +25,6 @@ public class RequestProjectDto {
 
     private String quarter4;
 
+    private Long assignedToId;
+
 }
