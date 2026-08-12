@@ -39,6 +39,10 @@ public class ProjectService {
         return projectRepository.findByAssignedToId(currentUser.getId().longValue());
     }
 
+    public List<Project> getAllProjectsUnfiltered() {
+        return projectRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
+    }
+
     public List<Project> getAllProject() {
         String email = securityHelper.getCurrentUserId();
         User currentUser = usersRepository.findByEmail(email);
@@ -54,7 +58,14 @@ public class ProjectService {
         return projectRepository.findByAssignedToId(currentUser.getId().longValue());
     }
 
-    public Project createProject(Project project) {
+    public Project createProject(RequestProjectDto request) {
+        Project project = new Project();
+        project.setProjectName(request.getProjectName());
+        project.setQuarter1(request.getQuarter1());
+        project.setQuarter2(request.getQuarter2());
+        project.setQuarter3(request.getQuarter3());
+        project.setQuarter4(request.getQuarter4());
+        project.setAssignedToId(request.getAssignedToId());
         return projectRepository.save(project);
     }
 

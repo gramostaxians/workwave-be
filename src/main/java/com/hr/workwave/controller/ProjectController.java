@@ -7,6 +7,7 @@ import com.hr.workwave.model.ProjectApplication;
 import com.hr.workwave.model.User;
 import com.hr.workwave.service.ProjectService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -27,11 +28,17 @@ public class ProjectController {
         return projectService.getAllProject();
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER')")
+    @GetMapping("/all")
+    public ResponseEntity<List<Project>> getAllProjectsUnfiltered() {
+        return ResponseEntity.ok(projectService.getAllProjectsUnfiltered());
+    }
+
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER')")
     @PostMapping("/add")
-    public ResponseEntity<Project> createProject(@RequestBody Project project) {
-        Project savedProject = projectService.createProject(project);
-        return ResponseEntity.ok(savedProject);
+    public ResponseEntity<Project> createProject(@RequestBody RequestProjectDto request) {
+        Project savedProject = projectService.createProject(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedProject);
     }
 
     @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER')")
