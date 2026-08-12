@@ -1,13 +1,8 @@
 package com.hr.workwave.dto.request;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.math.BigInteger;
 
 @Getter
 @Setter
@@ -25,6 +20,7 @@ public class RequestProjectDto {
 
     private String quarter4;
 
+    @JsonAlias({"assigned_to", "assignedTo"})
     private Long assignedToId;
 
 }
