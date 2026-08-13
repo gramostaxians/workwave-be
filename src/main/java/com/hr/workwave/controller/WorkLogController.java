@@ -25,10 +25,19 @@ public class WorkLogController {
     private final SecurityHelper securityHelper;
 
     @GetMapping
-    public ResponseEntity<List<WorkLog>> getWorkLogs() {
-
+    public ResponseEntity<List<WorkLog>> getWorkLogs(@RequestParam(required = false) Integer month,
+                                                     @RequestParam(required = false) Integer year) {
         User currentUser = usersRepository.findByEmail(securityHelper.getCurrentUserId());
-        List<WorkLog> workLogs = workLogService.getWorkLogsByUserId(currentUser.getId());
+        if (currentUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        List<WorkLog> workLogs;
+        if (month != null && year != null) {
+            workLogs = workLogService.getWorkLogsByUserIdAndMonthYear(currentUser.getId(), month, year);
+        } else {
+            workLogs = workLogService.getWorkLogsByUserId(currentUser.getId());
+        }
         return ResponseEntity.ok(workLogs);
     }
 

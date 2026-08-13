@@ -53,6 +53,9 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     @Query("SELECT lr FROM LeaveRequest lr WHERE lr.user.id = :userId AND lr.status = 'APPROVED' AND lr.leaveType <> 'HOME_OFFICE' ORDER BY lr.start_date DESC")
     List<LeaveRequest> getApprovedLeaveRequests(@Param("userId") Long userId);
 
+    @Query("SELECT lr FROM LeaveRequest lr WHERE lr.user.id = :userId AND lr.status = 'PENDING' ORDER BY lr.start_date DESC")
+    List<LeaveRequest> getPendingLeaveRequests(@Param("userId") Long userId);
+
     @Query("SELECT lr FROM LeaveRequest lr " +
             "WHERE lr.user.id = :userId " +
             "AND lr.leaveType = com.hr.workwave.enums.LeaveRequestTypeEnum.ANNUAL_LEAVE " +

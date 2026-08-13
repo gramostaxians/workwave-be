@@ -16,6 +16,9 @@ import java.util.List;
 public interface WorkLogRepository extends JpaRepository<WorkLog, Long> {
     List<WorkLog> findByUserId(BigInteger userId);
 
+    @Query(value = "SELECT * FROM work_logs WHERE user_id = :userId AND EXTRACT(MONTH FROM date) = :month AND EXTRACT(YEAR FROM date) = :year", nativeQuery = true)
+    List<WorkLog> findByUserIdAndMonthAndYear(@Param("userId") BigInteger userId, @Param("month") int month, @Param("year") int year);
+
     @Query("delete from WorkLog where id in :workLogIds")
     @Modifying
     @Transactional

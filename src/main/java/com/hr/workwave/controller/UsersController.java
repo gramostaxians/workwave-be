@@ -2,6 +2,7 @@ package com.hr.workwave.controller;
 
 import com.hr.workwave.dto.*;
 import com.hr.workwave.model.User;
+import com.hr.workwave.service.EmployeeSummaryService;
 import com.hr.workwave.service.SecurityAuditLogService;
 import com.hr.workwave.service.UsersService;
 import jakarta.persistence.EntityNotFoundException;
@@ -33,6 +34,7 @@ public class UsersController {
 
     private final UsersService usersService;
     private final SecurityAuditLogService auditLogService;
+    private final EmployeeSummaryService employeeSummaryService;
 
 
     /**
@@ -41,6 +43,18 @@ public class UsersController {
      * secure this endpoint by limiting access to users with the 'ADMIN' role.
      * This can be achieved by uncommenting and configuring the @PreAuthorize annotation.
      **/
+
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    @GetMapping("/users/{userId}/employee-summary")
+    public ResponseEntity<EmployeeSummaryDTO> getEmployeeSummary(
+            @PathVariable BigInteger userId,
+            @AuthenticationPrincipal Jwt jwt) {
+        if (jwt == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        String email = jwt.getClaimAsString("upn");
+        return ResponseEntity.ok(employeeSummaryService.getEmployeeSummary(userId, email));
+    }
 
     @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
     @GetMapping("/users/unassigned")

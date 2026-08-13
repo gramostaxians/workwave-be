@@ -65,10 +65,15 @@ public class UsersService {
 
         if ("MANAGER".equalsIgnoreCase(loggedUser.getRole().getRole())) {
             List<UserManagers> links = userManagerRepository.findByManagerId(loggedUser.getId());
-            return links.stream()
+            List<User> managedUsers = links.stream()
                     .map(link -> usersRepository.findById(link.getUserId()).orElse(null))
                     .filter(Objects::nonNull)
-                    .toList();
+                    .collect(Collectors.toCollection(ArrayList::new));
+
+            if (managedUsers.stream().noneMatch(u -> u.getId().equals(loggedUser.getId()))) {
+                managedUsers.add(0, loggedUser);
+            }
+            return managedUsers;
         }
 
 

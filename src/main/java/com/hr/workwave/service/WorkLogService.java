@@ -27,6 +27,10 @@ public class WorkLogService {
         return workLogRepository.findByUserId(userId);
     }
 
+    public List<WorkLog> getWorkLogsByUserIdAndMonthYear(BigInteger userId, int month, int year) {
+        return workLogRepository.findByUserIdAndMonthAndYear(userId, month, year);
+    }
+
     public WorkLog createWorkLog(WorkLog workLog, BigInteger userId) {
         User user = usersRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id " + userId));
