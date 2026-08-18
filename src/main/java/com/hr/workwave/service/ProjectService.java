@@ -1,6 +1,7 @@
 package com.hr.workwave.service;
 
 import com.hr.workwave.config.SecurityHelper;
+import com.hr.workwave.dto.ProjectNameResponseDTO;
 import com.hr.workwave.dto.UserWithLeaveRequestsDTO;
 import com.hr.workwave.dto.request.RequestProjectDto;
 import com.hr.workwave.enums.UserRolesEnum;
@@ -41,6 +42,10 @@ public class ProjectService {
 
     public List<Project> getAllProjectsUnfiltered() {
         return projectRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
+    }
+
+    public List<ProjectNameResponseDTO> getAllProjectsAsEmployee() {
+        return projectRepository.findAllProjectNames(Sort.by(Sort.Direction.ASC, "id"));
     }
 
     public List<Project> getAllProject() {

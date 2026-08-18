@@ -1,5 +1,6 @@
 package com.hr.workwave.controller;
 
+import com.hr.workwave.dto.ProjectNameResponseDTO;
 import com.hr.workwave.dto.UserWithLeaveRequestsDTO;
 import com.hr.workwave.dto.request.RequestProjectDto;
 import com.hr.workwave.model.Project;
@@ -32,6 +33,11 @@ public class ProjectController {
     @GetMapping("/all")
     public ResponseEntity<List<Project>> getAllProjectsUnfiltered() {
         return ResponseEntity.ok(projectService.getAllProjectsUnfiltered());
+    }
+
+    @GetMapping("/names")
+    public ResponseEntity<List<ProjectNameResponseDTO>> getAllProjectsAsEmployee() {
+        return ResponseEntity.ok(projectService.getAllProjectsAsEmployee());
     }
 
     @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER')")
