@@ -84,7 +84,7 @@ public class EmployeeSummaryService {
 
         // ── approved leaves — one query, days computed as business days ────────────
         List<ApprovedLeaveDTO> approvedLeaves = leaveRequestRepository
-                .getApprovedLeaveRequests(userId.longValue())
+                .getAllApprovedLeaveRequests(userId.longValue())
                 .stream()
                 .map(lr -> ApprovedLeaveDTO.builder()
                         .id(lr.getId())
